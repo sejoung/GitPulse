@@ -1,13 +1,13 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import "../i18n/config";
-import i18n from "../i18n/config";
-import { useUiStore } from "../app/store/ui-store";
-import { ActivityPage } from "../features/activity/ActivityPage";
-import { OverviewPage } from "../features/overview/OverviewPage";
-import { SettingsPage } from "../features/settings/SettingsPage";
-import { renderWithClient } from "../test/render";
+import "../../src/i18n/config";
+import i18n from "../../src/i18n/config";
+import { useUiStore } from "../../src/app/store/ui-store";
+import { ActivityPage } from "../../src/features/activity/ActivityPage";
+import { OverviewPage } from "../../src/features/overview/OverviewPage";
+import { SettingsPage } from "../../src/features/settings/SettingsPage";
+import { renderWithClient } from "./support/render";
 
 const api = vi.hoisted(() => ({
   checkGitRemoteStatus: vi.fn(),
@@ -22,7 +22,7 @@ const api = vi.hoisted(() => ({
   pullGitRemoteUpdates: vi.fn(),
 }));
 
-vi.mock("../services/tauri/analysis-api", () => api);
+vi.mock("../../src/services/tauri/analysis-api", () => api);
 
 function resetStore() {
   window.localStorage.clear();
