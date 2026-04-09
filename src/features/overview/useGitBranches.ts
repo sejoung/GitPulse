@@ -5,12 +5,22 @@ import {
   checkoutGitBranch,
   checkGitRemoteStatus,
   getGitBranches,
+  getGitRepositoryState,
+  pullGitRemoteUpdates,
 } from "../../services/tauri/analysis-api";
 
 export function useGitBranches(workspacePath: string) {
   return useQuery({
     queryKey: queryKeys.branches(workspacePath),
     queryFn: () => getGitBranches(workspacePath),
+    enabled: Boolean(workspacePath),
+  });
+}
+
+export function useGitRepositoryState(workspacePath: string) {
+  return useQuery({
+    queryKey: queryKeys.repositoryState(workspacePath),
+    queryFn: () => getGitRepositoryState(workspacePath),
     enabled: Boolean(workspacePath),
   });
 }
@@ -24,6 +34,8 @@ export function useCheckoutGitBranch(workspacePath: string) {
     onSuccess: (branchName) => {
       setSelectedBranch(branchName);
       void queryClient.invalidateQueries({ queryKey: queryKeys.branches(workspacePath) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.repositoryState(workspacePath) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.remoteStatus(workspacePath) });
       void queryClient.invalidateQueries({ queryKey: ["overview"] });
       void queryClient.invalidateQueries({ queryKey: ["hotspots"] });
       void queryClient.invalidateQueries({ queryKey: ["ownership"] });
@@ -40,6 +52,24 @@ export function useCheckGitRemoteStatus(workspacePath: string) {
     mutationFn: () => checkGitRemoteStatus(workspacePath),
     onSuccess: (remoteStatus) => {
       queryClient.setQueryData(queryKeys.remoteStatus(workspacePath), remoteStatus);
+    },
+  });
+}
+
+export function usePullGitRemoteUpdates(workspacePath: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => pullGitRemoteUpdates(workspacePath),
+    onSuccess: (remoteStatus) => {
+      queryClient.setQueryData(queryKeys.remoteStatus(workspacePath), remoteStatus);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.branches(workspacePath) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.repositoryState(workspacePath) });
+      void queryClient.invalidateQueries({ queryKey: ["overview"] });
+      void queryClient.invalidateQueries({ queryKey: ["hotspots"] });
+      void queryClient.invalidateQueries({ queryKey: ["ownership"] });
+      void queryClient.invalidateQueries({ queryKey: ["activity"] });
+      void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
     },
   });
 }

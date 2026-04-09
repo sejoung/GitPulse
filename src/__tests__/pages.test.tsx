@@ -15,9 +15,11 @@ const api = vi.hoisted(() => ({
   getActivityAnalysis: vi.fn(),
   getDeliveryRiskAnalysis: vi.fn(),
   getGitBranches: vi.fn(),
+  getGitRepositoryState: vi.fn(),
   getHotspotsAnalysis: vi.fn(),
   getOverviewAnalysis: vi.fn(),
   getOwnershipAnalysis: vi.fn(),
+  pullGitRemoteUpdates: vi.fn(),
 }));
 
 vi.mock("../services/tauri/analysis-api", () => api);
@@ -58,6 +60,12 @@ beforeEach(async () => {
   api.getOwnershipAnalysis.mockResolvedValue([]);
   api.getDeliveryRiskAnalysis.mockResolvedValue([]);
   api.getGitBranches.mockResolvedValue([]);
+  api.getGitRepositoryState.mockResolvedValue({
+    branch: "main",
+    headSha: "1234567890abcdef",
+    shortHeadSha: "1234567",
+    dirty: false,
+  });
   api.checkGitRemoteStatus.mockResolvedValue({
     status: "up_to_date",
     upstream: "origin/main",
@@ -66,6 +74,13 @@ beforeEach(async () => {
     message: null,
   });
   api.checkoutGitBranch.mockResolvedValue("main");
+  api.pullGitRemoteUpdates.mockResolvedValue({
+    status: "up_to_date",
+    upstream: "origin/main",
+    ahead: 0,
+    behind: 0,
+    message: null,
+  });
 });
 
 describe("SettingsPage", () => {
@@ -152,6 +167,38 @@ describe("OverviewPage branch controls", () => {
     expect(api.checkGitRemoteStatus).toHaveBeenCalledWith("/repo");
     expect(await screen.findByText("Behind 2")).toBeInTheDocument();
     expect(screen.getByText("Tracking origin/main")).toBeInTheDocument();
+  });
+
+  it("shows analysis basis and can pull after a behind remote check", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getGitBranches.mockResolvedValue([
+      { name: "main", label: "main", kind: "local", current: true },
+    ]);
+    api.checkGitRemoteStatus.mockResolvedValue({
+      status: "behind",
+      upstream: "origin/main",
+      ahead: 0,
+      behind: 1,
+      message: null,
+    });
+    api.pullGitRemoteUpdates.mockResolvedValue({
+      status: "up_to_date",
+      upstream: "origin/main",
+      ahead: 0,
+      behind: 0,
+      message: null,
+    });
+
+    renderWithClient(<OverviewPage />);
+
+    expect(await screen.findByText("1234567")).toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "Check remote" }));
+    await screen.findByText("Behind 1");
+    await user.click(screen.getByRole("button", { name: "Pull" }));
+
+    expect(api.pullGitRemoteUpdates).toHaveBeenCalledWith("/repo");
+    expect(await screen.findByText("Up to date")).toBeInTheDocument();
   });
 });
 

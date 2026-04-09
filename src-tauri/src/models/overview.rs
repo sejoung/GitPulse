@@ -71,3 +71,12 @@ pub struct GitRemoteStatus {
     pub behind: u32,
     pub message: Option<String>,
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitRepositoryState {
+    pub branch: Option<String>,
+    pub head_sha: Option<String>,
+    pub short_head_sha: Option<String>,
+    pub dirty: bool,
+}

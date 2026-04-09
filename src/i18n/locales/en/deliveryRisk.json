@@ -12,6 +12,15 @@
   },
   "patterns": {
     "title": "Emergency patterns",
-    "description": "Emergency response every two weeks is a signal to inspect deeper delivery issues."
+    "description": "Emergency response every two weeks is a signal to inspect deeper delivery issues.",
+    "details": "Details",
+    "inspect": "Inspect",
+    "selected": "Selected"
+  },
+  "details": {
+    "title": "Pattern details",
+    "description": "Review the selected emergency pattern for {{pattern}}.",
+    "configuredSignal": "Configured signal",
+    "noConfiguredSignal": "No configured signal was found for this pattern."
   }
 }

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
 import {
@@ -18,7 +19,13 @@ import { useOverviewAnalysis } from "./useOverviewAnalysis";
 import { useActivityAnalysis } from "../activity/useActivityAnalysis";
 import { useHotspotsAnalysis } from "../hotspots/useHotspotsAnalysis";
 import { useWorkspacePrompt } from "../workspace/useWorkspacePrompt";
-import { useCheckoutGitBranch, useCheckGitRemoteStatus, useGitBranches } from "./useGitBranches";
+import {
+  useCheckoutGitBranch,
+  useCheckGitRemoteStatus,
+  useGitBranches,
+  useGitRepositoryState,
+  usePullGitRemoteUpdates,
+} from "./useGitBranches";
 import type { GitRemoteStatus } from "../../domains/metrics/overview";
 
 const periodTabs = [
@@ -35,6 +42,8 @@ function remoteStatusTone(status?: GitRemoteStatus["status"]) {
     case "diverged":
       return "watch";
     case "fetch_failed":
+    case "dirty":
+    case "pull_failed":
       return "critical";
     case "ahead":
       return "brand";
@@ -45,6 +54,7 @@ function remoteStatusTone(status?: GitRemoteStatus["status"]) {
 
 export function OverviewPage() {
   const { t } = useTranslation(["overview", "common", "settings"]);
+  const queryClient = useQueryClient();
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
@@ -53,19 +63,25 @@ export function OverviewPage() {
   const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
   const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
+  const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);
   const selectWorkspace = useWorkspacePrompt();
   const { data: branches = [], isLoading: isBranchLoading } = useGitBranches(workspacePath);
+  const { data: repositoryState, isError: isRepositoryStateError } =
+    useGitRepositoryState(workspacePath);
   const checkoutBranch = useCheckoutGitBranch(workspacePath);
+  const pullRemoteUpdates = usePullGitRemoteUpdates(workspacePath);
+  const resetPullRemoteUpdates = pullRemoteUpdates.reset;
   const {
-    data: remoteStatus,
+    data: checkedRemoteStatus,
     error: remoteStatusError,
     isError: isRemoteStatusError,
     isPending: isRemoteStatusPending,
     mutate: checkRemoteStatus,
     reset: resetRemoteStatus,
   } = useCheckGitRemoteStatus(workspacePath);
+  const remoteStatus = pullRemoteUpdates.data ?? checkedRemoteStatus;
   const currentBranch = branches.find((branch) => branch.current)?.name ?? "";
-  const activeBranch = selectedBranch || currentBranch;
+  const activeBranch = selectedBranch || currentBranch || repositoryState?.branch || "";
   const { data, isLoading, isError } = useOverviewAnalysis(
     workspacePath,
     activeBranch,
@@ -104,7 +120,27 @@ export function OverviewPage() {
     ? t("workspaceDetails.remoteStatus.upstream", { upstream: remoteStatus.upstream })
     : remoteStatus?.status === "no_upstream"
       ? t("workspaceDetails.remoteStatus.noUpstreamDescription")
-      : remoteStatus?.message || t("workspaceDetails.remoteStatus.description");
+      : remoteStatus?.status === "dirty"
+        ? t("workspaceDetails.remoteStatus.dirtyDescription")
+        : remoteStatus?.message || t("workspaceDetails.remoteStatus.description");
+  const lastAnalyzedAt = data
+    ? new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date())
+    : t("common:status.notAnalyzed");
+  const canPullRemoteUpdates = Boolean(hasWorkspace && remoteStatus?.status === "behind");
+  const isRepositoryActionPending =
+    checkoutBranch.isPending || isRemoteStatusPending || pullRemoteUpdates.isPending;
+
+  function refreshAnalysis() {
+    void queryClient.invalidateQueries({ queryKey: ["overview"] });
+    void queryClient.invalidateQueries({ queryKey: ["hotspots"] });
+    void queryClient.invalidateQueries({ queryKey: ["ownership"] });
+    void queryClient.invalidateQueries({ queryKey: ["activity"] });
+    void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
+    void queryClient.invalidateQueries({ queryKey: ["repository-state"] });
+  }
 
   useEffect(() => {
     if (!selectedBranch && currentBranch) {
@@ -114,17 +150,27 @@ export function OverviewPage() {
 
   useEffect(() => {
     resetRemoteStatus();
-  }, [activeBranch, resetRemoteStatus, workspacePath]);
+    resetPullRemoteUpdates();
+  }, [activeBranch, resetPullRemoteUpdates, resetRemoteStatus, workspacePath]);
+
+  useEffect(() => {
+    if (workspacePath && isRepositoryStateError) {
+      setWorkspacePath("");
+      setSelectedBranch("");
+    }
+  }, [isRepositoryStateError, setSelectedBranch, setWorkspacePath, workspacePath]);
 
   return (
     <div className="space-y-6">
-      {checkoutBranch.isPending || isRemoteStatusPending ? (
+      {isRepositoryActionPending ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gp-bg-primary/70 px-5 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-lg border border-gp-border bg-gp-bg-secondary p-5 shadow-xl">
             <p className="gp-kicker">
               {checkoutBranch.isPending
                 ? t("workspaceDetails.switchingBranch")
-                : t("workspaceDetails.checkingRemote")}
+                : pullRemoteUpdates.isPending
+                  ? t("workspaceDetails.pullingRemote")
+                  : t("workspaceDetails.checkingRemote")}
             </p>
             <h2 className="gp-heading mt-2 text-lg font-semibold">
               {checkoutBranch.isPending
@@ -134,7 +180,9 @@ export function OverviewPage() {
             <p className="gp-text-secondary mt-2 text-sm">
               {checkoutBranch.isPending
                 ? t("workspaceDetails.switchingBranchDescription")
-                : t("workspaceDetails.checkingRemoteDescription")}
+                : pullRemoteUpdates.isPending
+                  ? t("workspaceDetails.pullingRemoteDescription")
+                  : t("workspaceDetails.checkingRemoteDescription")}
             </p>
           </div>
         </div>
@@ -157,6 +205,17 @@ export function OverviewPage() {
           </>
         }
       />
+
+      {!hasWorkspace ? (
+        <DetailPanel title={t("onboarding.title")} description={t("onboarding.description")}>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="gp-text-secondary text-sm">{t("onboarding.body")}</p>
+            <Button variant="primary" onClick={selectWorkspace}>
+              {t("common:actions.selectWorkspace")}
+            </Button>
+          </div>
+        </DetailPanel>
+      ) : null}
 
       {isError ? <p className="gp-alert-critical">{t("error")}</p> : null}
 
@@ -243,12 +302,30 @@ export function OverviewPage() {
           <Button
             variant="secondary"
             className="gp-control-action"
-            disabled={!hasWorkspace || isRemoteStatusPending}
+            disabled={!hasWorkspace || isRemoteStatusPending || pullRemoteUpdates.isPending}
             onClick={() => checkRemoteStatus()}
           >
             {isRemoteStatusPending
               ? t("workspaceDetails.checkingRemote")
               : t("workspaceDetails.checkRemote")}
+          </Button>
+          <Button
+            variant={canPullRemoteUpdates ? "primary" : "secondary"}
+            className="gp-control-action"
+            disabled={!canPullRemoteUpdates || pullRemoteUpdates.isPending}
+            onClick={() => pullRemoteUpdates.mutate()}
+          >
+            {pullRemoteUpdates.isPending
+              ? t("workspaceDetails.pullingRemote")
+              : t("workspaceDetails.pullRemote")}
+          </Button>
+          <Button
+            variant="secondary"
+            className="gp-control-action"
+            disabled={!hasWorkspace}
+            onClick={refreshAnalysis}
+          >
+            {t("workspaceDetails.refreshAnalysis")}
           </Button>
         </div>
         {checkoutBranch.isError ? (
@@ -256,6 +333,9 @@ export function OverviewPage() {
         ) : null}
         {isRemoteStatusError ? (
           <p className="gp-alert-critical mb-4">{String(remoteStatusError)}</p>
+        ) : null}
+        {pullRemoteUpdates.isError ? (
+          <p className="gp-alert-critical mb-4">{String(pullRemoteUpdates.error)}</p>
         ) : null}
         <div className="gp-status-row mb-4">
           <div className="min-w-0">
@@ -265,6 +345,30 @@ export function OverviewPage() {
           <Badge tone={remoteStatusTone(remoteStatus?.status)} className="w-fit">
             {remoteStatusLabel}
           </Badge>
+        </div>
+        <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("workspaceDetails.analysisBasis.branch")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">
+              {activeBranch || t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("workspaceDetails.analysisBasis.head")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">
+              {repositoryState?.shortHeadSha ?? t("common:status.notAnalyzed")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("workspaceDetails.analysisBasis.window")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">
+              {t(`settings:defaults.analysisWindows.${analysisPeriod}`)}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("workspaceDetails.analysisBasis.lastAnalyzed")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">{lastAnalyzedAt}</p>
+          </div>
         </div>
         <Table
           columns={[

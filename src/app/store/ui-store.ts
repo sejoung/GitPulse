@@ -23,6 +23,7 @@ type UiState = {
   defaultBranch: string;
   bugKeywords: string;
   emergencyPatterns: EmergencyPattern[];
+  rememberLastRepository: boolean;
   setActiveItem: (item: NavigationItem) => void;
   setWorkspacePath: (path: string) => void;
   setSelectedBranch: (branch: string) => void;
@@ -30,7 +31,9 @@ type UiState = {
   setExcludedPaths: (paths: string) => void;
   setDefaultBranch: (branch: string) => void;
   setBugKeywords: (keywords: string) => void;
+  setEmergencyPatterns: (patterns: EmergencyPattern[]) => void;
   setEmergencyPattern: (index: number, pattern: EmergencyPattern) => void;
+  setRememberLastRepository: (remember: boolean) => void;
 };
 
 type PersistedUiSettings = {
@@ -41,6 +44,7 @@ type PersistedUiSettings = {
   defaultBranch: string;
   bugKeywords: string;
   emergencyPatterns: EmergencyPattern[];
+  rememberLastRepository: boolean;
 };
 
 type PersistedUiState = Partial<Omit<PersistedUiSettings, "analysisPeriod">> & {
@@ -100,6 +104,7 @@ export const useUiStore = create<UiState>()(
       defaultBranch: "main",
       bugKeywords: "fix, bug, broken",
       emergencyPatterns: defaultEmergencyPatterns,
+      rememberLastRepository: true,
       setActiveItem: (activeItem) => set({ activeItem }),
       setWorkspacePath: (workspacePath) => set({ workspacePath }),
       setSelectedBranch: (selectedBranch) => set({ selectedBranch }),
@@ -107,16 +112,23 @@ export const useUiStore = create<UiState>()(
       setExcludedPaths: (excludedPaths) => set({ excludedPaths }),
       setDefaultBranch: (defaultBranch) => set({ defaultBranch }),
       setBugKeywords: (bugKeywords) => set({ bugKeywords }),
+      setEmergencyPatterns: (emergencyPatterns) => set({ emergencyPatterns }),
       setEmergencyPattern: (index, pattern) =>
         set((state) => ({
           emergencyPatterns: state.emergencyPatterns.map((item, itemIndex) =>
             itemIndex === index ? pattern : item
           ),
         })),
+      setRememberLastRepository: (rememberLastRepository) =>
+        set((state) => ({
+          rememberLastRepository,
+          workspacePath: rememberLastRepository ? state.workspacePath : "",
+          selectedBranch: rememberLastRepository ? state.selectedBranch : "",
+        })),
     }),
     {
       name: "gitpulse.ui",
-      version: 3,
+      version: 4,
       partialize: ({
         workspacePath,
         selectedBranch,
@@ -125,14 +137,16 @@ export const useUiStore = create<UiState>()(
         defaultBranch,
         bugKeywords,
         emergencyPatterns,
+        rememberLastRepository,
       }) => ({
-        workspacePath,
-        selectedBranch,
+        workspacePath: rememberLastRepository ? workspacePath : "",
+        selectedBranch: rememberLastRepository ? selectedBranch : "",
         analysisPeriod,
         excludedPaths,
         defaultBranch,
         bugKeywords,
         emergencyPatterns,
+        rememberLastRepository,
       }),
       migrate: (persistedState) => {
         const state = persistedState as PersistedUiState;
@@ -146,6 +160,7 @@ export const useUiStore = create<UiState>()(
           bugKeywords: state.bugKeywords ?? "fix, bug, broken",
           emergencyPatterns:
             state.emergencyPatterns ?? emergencyPatternsFromKeywords(state.emergencyKeywords),
+          rememberLastRepository: state.rememberLastRepository ?? true,
         };
       },
     }

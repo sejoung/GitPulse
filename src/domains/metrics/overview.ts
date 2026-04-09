@@ -42,9 +42,24 @@ export type GitBranch = {
 };
 
 export type GitRemoteStatus = {
-  status: "up_to_date" | "behind" | "ahead" | "diverged" | "no_upstream" | "fetch_failed";
+  status:
+    | "up_to_date"
+    | "behind"
+    | "ahead"
+    | "diverged"
+    | "no_upstream"
+    | "fetch_failed"
+    | "dirty"
+    | "pull_failed";
   upstream: string | null;
   ahead: number;
   behind: number;
   message: string | null;
+};
+
+export type GitRepositoryState = {
+  branch: string | null;
+  headSha: string | null;
+  shortHeadSha: string | null;
+  dirty: boolean;
 };

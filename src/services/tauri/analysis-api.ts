@@ -3,6 +3,7 @@ import type {
   ActivityPoint,
   DeliveryEvent,
   GitBranch,
+  GitRepositoryState,
   GitRemoteStatus,
   HotspotFile,
   OverviewAnalysis,
@@ -104,6 +105,19 @@ export function getGitBranches(workspacePath: string) {
   return invoke<GitBranch[]>("list_git_branches", { workspacePath });
 }
 
+export function getGitRepositoryState(workspacePath: string) {
+  if (!isTauriRuntime() || !workspacePath) {
+    return Promise.resolve<GitRepositoryState>({
+      branch: null,
+      headSha: null,
+      shortHeadSha: null,
+      dirty: false,
+    });
+  }
+
+  return invoke<GitRepositoryState>("get_git_repository_state", { workspacePath });
+}
+
 export function checkoutGitBranch(workspacePath: string, branchName: string) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve(branchName);
@@ -124,4 +138,18 @@ export function checkGitRemoteStatus(workspacePath: string) {
   }
 
   return invoke<GitRemoteStatus>("check_git_remote_status", { workspacePath });
+}
+
+export function pullGitRemoteUpdates(workspacePath: string) {
+  if (!isTauriRuntime() || !workspacePath) {
+    return Promise.resolve<GitRemoteStatus>({
+      status: "up_to_date",
+      upstream: null,
+      ahead: 0,
+      behind: 0,
+      message: null,
+    });
+  }
+
+  return invoke<GitRemoteStatus>("pull_git_remote_updates", { workspacePath });
 }

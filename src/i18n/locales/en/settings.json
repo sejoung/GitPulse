@@ -8,8 +8,27 @@
     "description": "Controls which repository content GitPulse should consider when reading Git history.",
     "excludedPaths": "Excluded paths",
     "excludedPathsHelp": "Comma-separated paths to ignore when ranking changed files, for example: dist/, node_modules/, target/.",
+    "preview": "Filter preview",
+    "previewEmpty": "No excluded paths configured.",
     "defaultBranch": "Default branch",
     "defaultBranchHelp": "Used as the preferred branch label for future branch-aware analysis. Current analysis reads the selected repository HEAD."
+  },
+  "portable": {
+    "title": "Import and export",
+    "description": "Move GitPulse settings between machines or share them with a team.",
+    "import": "Import settings",
+    "export": "Export settings",
+    "exported": "Settings export was prepared.",
+    "imported": "Settings were imported.",
+    "importFailed": "Settings import failed. Check the JSON file and try again.",
+    "messagePlaceholder": "Settings stay local unless you export them."
+  },
+  "repositoryMemory": {
+    "title": "Repository memory",
+    "description": "Choose whether GitPulse should reopen the last repository after restart.",
+    "current": "Remember last repository",
+    "on": "On",
+    "off": "Off"
   },
   "language": {
     "title": "Language",
@@ -34,5 +53,14 @@
     "emergencySignal": "Emergency signal",
     "emergencyPatternsHelp": "Use commas for aliases in one row, for example: revert, reverted. The row signal is shared by every alias.",
     "cacheKey": "Cache key"
+  },
+  "cache": {
+    "title": "Cache and performance",
+    "description": "Analysis results are cached in memory while the app is running.",
+    "key": "Cache key",
+    "status": "Status",
+    "localQueryCache": "Using local query cache for this session.",
+    "clear": "Clear analysis cache",
+    "cleared": "Analysis cache was cleared."
   }
 }

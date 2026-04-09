@@ -1,7 +1,8 @@
 import type { EmergencyPattern } from "../../app/store/ui-store";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
-import { Badge, DetailPanel, PageHeader, StatCard, Table } from "../../components/ui";
+import { Badge, Button, DetailPanel, PageHeader, StatCard, Table } from "../../components/ui";
 import { useDeliveryRiskAnalysis } from "./useDeliveryRiskAnalysis";
 
 export function DeliveryRiskPage() {
@@ -9,6 +10,7 @@ export function DeliveryRiskPage() {
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const [selectedEvent, setSelectedEvent] = useState("");
   const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(
     workspacePath,
     selectedBranch,
@@ -16,6 +18,11 @@ export function DeliveryRiskPage() {
   );
   const hasWorkspace = Boolean(workspacePath);
   const hasData = deliveryRows.length > 0;
+  const selectedPattern =
+    deliveryRows.find((row) => row.event === selectedEvent) ?? deliveryRows[0];
+  const selectedConfiguredPattern = emergencyPatterns.find(
+    (item) => item.pattern === selectedPattern?.event
+  );
   const summaryRows = hasData
     ? deliveryRows.slice(0, 3)
     : emergencyPatterns
@@ -107,6 +114,18 @@ export function DeliveryRiskPage() {
                 </Badge>
               ),
             },
+            {
+              key: "details",
+              header: t("patterns.details"),
+              align: "right",
+              render: (row) => (
+                <Button variant="ghost" size="sm" onClick={() => setSelectedEvent(row.event)}>
+                  {selectedPattern?.event === row.event
+                    ? t("patterns.selected")
+                    : t("patterns.inspect")}
+                </Button>
+              ),
+            },
           ]}
           rows={deliveryRows}
           getRowKey={(row) => row.event}
@@ -115,6 +134,42 @@ export function DeliveryRiskPage() {
           }
         />
       </DetailPanel>
+
+      {selectedPattern ? (
+        <DetailPanel
+          title={t("details.title")}
+          description={t("details.description", { pattern: selectedPattern.event })}
+        >
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.pattern")}</p>
+              <p className="gp-text-secondary mt-1 break-words text-sm">{selectedPattern.event}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.count")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{selectedPattern.count}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.signal")}</p>
+              <p className="gp-text-secondary mt-1 break-words text-sm">
+                {selectedPattern.signal || t(`common:${selectedPattern.signalKey}`)}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.risk")}</p>
+              <Badge tone={selectedPattern.risk === "watch" ? "watch" : "healthy"} className="mt-2">
+                {t(`common:status.${selectedPattern.risk}`)}
+              </Badge>
+            </div>
+          </div>
+          <div className="gp-panel mt-3 min-w-0 p-3">
+            <p className="gp-kicker">{t("details.configuredSignal")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {selectedConfiguredPattern?.signal ?? t("details.noConfiguredSignal")}
+            </p>
+          </div>
+        </DetailPanel>
+      ) : null}
     </div>
   );
 }

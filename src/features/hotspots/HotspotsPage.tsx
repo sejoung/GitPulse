@@ -1,7 +1,16 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
-import { Badge, DetailPanel, EmptyState, PageHeader, StatCard, Table } from "../../components/ui";
+import {
+  Badge,
+  Button,
+  DetailPanel,
+  EmptyState,
+  PageHeader,
+  StatCard,
+  Table,
+} from "../../components/ui";
 import { useHotspotsAnalysis } from "./useHotspotsAnalysis";
 
 export function HotspotsPage() {
@@ -11,6 +20,7 @@ export function HotspotsPage() {
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
   const excludedPaths = useUiStore((state) => state.excludedPaths);
   const bugKeywords = useUiStore((state) => state.bugKeywords);
+  const [selectedPath, setSelectedPath] = useState("");
   const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(
     workspacePath,
     selectedBranch,
@@ -20,6 +30,7 @@ export function HotspotsPage() {
   );
   const hasWorkspace = Boolean(workspacePath);
   const hasData = hotspotRows.length > 0;
+  const selectedHotspot = hotspotRows.find((row) => row.path === selectedPath) ?? hotspotRows[0];
   const bugOverlap = hotspotRows.filter((row) => row.fixes > 0).length;
   const highestSignal = hotspotRows.some((row) => row.risk === "risky")
     ? "risky"
@@ -105,12 +116,71 @@ export function HotspotsPage() {
                 </Badge>
               ),
             },
+            {
+              key: "details",
+              header: t("ranking.details"),
+              align: "right",
+              render: (row) => (
+                <Button variant="ghost" size="sm" onClick={() => setSelectedPath(row.path)}>
+                  {selectedHotspot?.path === row.path
+                    ? t("ranking.selected")
+                    : t("ranking.inspect")}
+                </Button>
+              ),
+            },
           ]}
           rows={hotspotRows}
           getRowKey={(row) => row.path}
           emptyText={hasWorkspace ? t("common:empty.hotspots") : t("common:empty.selectWorkspace")}
         />
       </DetailPanel>
+
+      {selectedHotspot ? (
+        <DetailPanel
+          title={t("details.title")}
+          description={t("details.description", { path: selectedHotspot.path })}
+        >
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.file")}</p>
+              <p className="gp-text-secondary mt-1 break-words text-sm">{selectedHotspot.path}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.changes")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{selectedHotspot.changes}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.fixCommits")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{selectedHotspot.fixes}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.signal")}</p>
+              <Badge
+                tone={
+                  selectedHotspot.risk === "risky"
+                    ? "risky"
+                    : selectedHotspot.risk === "watch"
+                      ? "watch"
+                      : "healthy"
+                }
+                className="mt-2"
+              >
+                {t(`common:status.${selectedHotspot.risk}`)}
+              </Badge>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("details.bugKeywords")}</p>
+              <p className="gp-text-secondary mt-1 break-words text-sm">{bugKeywords}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("details.excludedPaths")}</p>
+              <p className="gp-text-secondary mt-1 break-words text-sm">{excludedPaths}</p>
+            </div>
+          </div>
+        </DetailPanel>
+      ) : null}
 
       <ChartCard title={t("chart.title")} description={t("chart.description")}>
         {hotspotRows.length === 0 ? (

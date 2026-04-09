@@ -12,7 +12,16 @@
   },
   "ranking": {
     "title": "Hotspot ranking",
-    "description": "많이 바뀌고 자주 고쳐지는 파일은 우선적으로 살펴볼 후보입니다."
+    "description": "많이 바뀌고 자주 고쳐지는 파일은 우선적으로 살펴볼 후보입니다.",
+    "details": "상세",
+    "inspect": "확인",
+    "selected": "선택됨"
+  },
+  "details": {
+    "title": "Hotspot details",
+    "description": "{{path}} 파일의 신호를 확인합니다.",
+    "bugKeywords": "Bug keywords",
+    "excludedPaths": "제외 경로"
   },
   "chart": {
     "title": "Change frequency",

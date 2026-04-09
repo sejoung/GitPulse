@@ -13,6 +13,11 @@
     "highChangeFiles": "High-change files",
     "deliverySignal": "Delivery signal"
   },
+  "onboarding": {
+    "title": "Start with a repository",
+    "description": "Choose a local Git repository before reading GitPulse signals.",
+    "body": "GitPulse analyzes local Git history only. Select a repository to enable branch, remote, and signal controls."
+  },
   "workspaceDetails": {
     "title": "Workspace details",
     "description": "Analysis controls for the current repository.",
@@ -21,6 +26,10 @@
     "checkRemote": "Check remote",
     "checkingRemote": "Checking remote",
     "checkingRemoteDescription": "Fetching remote refs and comparing the current branch with upstream.",
+    "pullRemote": "Pull",
+    "pullingRemote": "Pulling updates",
+    "pullingRemoteDescription": "Pulling remote changes with fast-forward only.",
+    "refreshAnalysis": "Refresh analysis",
     "switchingBranch": "Switching branch",
     "switchingBranchDescription": "Checking out the branch and refreshing analysis.",
     "remoteStatus": {
@@ -35,7 +44,16 @@
       "no_upstream": "No upstream",
       "noUpstreamDescription": "This branch does not have a remote tracking branch yet.",
       "fetch_failed": "Fetch failed",
+      "dirty": "Local changes",
+      "dirtyDescription": "Commit or stash local changes before pulling.",
+      "pull_failed": "Pull failed",
       "upstream": "Tracking {{upstream}}"
+    },
+    "analysisBasis": {
+      "branch": "Branch",
+      "head": "HEAD",
+      "window": "Window",
+      "lastAnalyzed": "Last analyzed"
     }
   },
   "chart": {

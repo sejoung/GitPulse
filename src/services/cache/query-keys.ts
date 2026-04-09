@@ -1,5 +1,6 @@
 export const queryKeys = {
   branches: (workspacePath: string) => ["branches", workspacePath] as const,
+  repositoryState: (workspacePath: string) => ["repository-state", workspacePath] as const,
   remoteStatus: (workspacePath: string) => ["remote-status", workspacePath] as const,
   overview: (
     workspacePath: string,

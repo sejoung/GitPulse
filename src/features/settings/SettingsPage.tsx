@@ -1,9 +1,24 @@
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
 import { useUiStore } from "../../app/store/ui-store";
-import { Badge, DetailPanel, Input, PageHeader, Table, Tabs } from "../../components/ui";
+import { Badge, Button, DetailPanel, Input, PageHeader, Table, Tabs } from "../../components/ui";
 import { languageStorageKey } from "../../i18n/config";
 
 type Language = "ko" | "en";
+type SettingsExport = {
+  version: 1;
+  language: Language;
+  settings: {
+    analysisPeriod: AnalysisPeriod;
+    excludedPaths: string;
+    defaultBranch: string;
+    bugKeywords: string;
+    emergencyPatterns: EmergencyPattern[];
+    rememberLastRepository: boolean;
+  };
+};
 
 const analysisWindowItems = [
   { id: "1y", labelKey: "defaults.analysisWindows.1y" },
@@ -20,18 +35,38 @@ function toSupportedLanguage(language: string): Language {
   return language.startsWith("en") ? "en" : "ko";
 }
 
+function parseList(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function isAnalysisPeriod(value: unknown): value is AnalysisPeriod {
+  return value === "1y" || value === "6m" || value === "3m";
+}
+
 export function SettingsPage() {
   const { t, i18n } = useTranslation(["settings", "common"]);
+  const queryClient = useQueryClient();
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [settingsMessage, setSettingsMessage] = useState("");
+  const [cacheMessage, setCacheMessage] = useState("");
   const excludedPaths = useUiStore((state) => state.excludedPaths);
   const defaultBranch = useUiStore((state) => state.defaultBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
   const bugKeywords = useUiStore((state) => state.bugKeywords);
   const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const rememberLastRepository = useUiStore((state) => state.rememberLastRepository);
+  const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);
+  const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
   const setExcludedPaths = useUiStore((state) => state.setExcludedPaths);
   const setDefaultBranch = useUiStore((state) => state.setDefaultBranch);
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
   const setBugKeywords = useUiStore((state) => state.setBugKeywords);
+  const setEmergencyPatterns = useUiStore((state) => state.setEmergencyPatterns);
   const setEmergencyPattern = useUiStore((state) => state.setEmergencyPattern);
+  const setRememberLastRepository = useUiStore((state) => state.setRememberLastRepository);
   const currentLanguage = toSupportedLanguage(i18n.resolvedLanguage ?? i18n.language);
   const translatedAnalysisWindowItems = analysisWindowItems.map((item) => ({
     id: item.id,
@@ -41,6 +76,7 @@ export function SettingsPage() {
     id: item.id,
     label: t(item.labelKey),
   }));
+  const excludedPathPreview = parseList(excludedPaths);
   const settingsRows = [
     {
       key: t("defaults.analysisWindow"),
@@ -105,6 +141,84 @@ export function SettingsPage() {
     void i18n.changeLanguage(language);
   }
 
+  function clearAnalysisCache() {
+    queryClient.clear();
+    setCacheMessage(t("cache.cleared"));
+  }
+
+  function exportSettings() {
+    const payload: SettingsExport = {
+      version: 1,
+      language: currentLanguage,
+      settings: {
+        analysisPeriod,
+        excludedPaths,
+        defaultBranch,
+        bugKeywords,
+        emergencyPatterns,
+        rememberLastRepository,
+      },
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "gitpulse-settings.json";
+    anchor.click();
+    URL.revokeObjectURL(url);
+    setSettingsMessage(t("portable.exported"));
+  }
+
+  async function importSettings(file: File) {
+    try {
+      const payload = JSON.parse(await file.text()) as Partial<SettingsExport>;
+      const importedSettings = payload.settings;
+
+      if (!importedSettings) {
+        throw new Error("settings missing");
+      }
+
+      if (isAnalysisPeriod(importedSettings.analysisPeriod)) {
+        setAnalysisPeriod(importedSettings.analysisPeriod);
+      }
+
+      setExcludedPaths(importedSettings.excludedPaths ?? excludedPaths);
+      setDefaultBranch(importedSettings.defaultBranch ?? defaultBranch);
+      setBugKeywords(importedSettings.bugKeywords ?? bugKeywords);
+      setRememberLastRepository(importedSettings.rememberLastRepository ?? rememberLastRepository);
+
+      if (Array.isArray(importedSettings.emergencyPatterns)) {
+        setEmergencyPatterns(
+          importedSettings.emergencyPatterns
+            .filter((item) => item.pattern?.trim() && item.signal?.trim())
+            .map((item) => ({ pattern: item.pattern, signal: item.signal }))
+        );
+      }
+
+      if (payload.language) {
+        handleLanguageChange(toSupportedLanguage(payload.language));
+      }
+
+      setSettingsMessage(t("portable.imported"));
+    } catch {
+      setSettingsMessage(t("portable.importFailed"));
+    } finally {
+      if (importInputRef.current) {
+        importInputRef.current.value = "";
+      }
+    }
+  }
+
+  function handleRememberLastRepository(remember: boolean) {
+    setRememberLastRepository(remember);
+
+    if (!remember) {
+      setWorkspacePath("");
+      setSelectedBranch("");
+      queryClient.clear();
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -143,6 +257,68 @@ export function SettingsPage() {
             <p className="gp-text-muted text-xs">{t("filters.defaultBranchHelp")}</p>
           </div>
         </div>
+        <div className="mt-4 gp-panel p-3">
+          <p className="gp-kicker">{t("filters.preview")}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {excludedPathPreview.length > 0 ? (
+              excludedPathPreview.map((path) => (
+                <Badge key={path} tone="neutral">
+                  {path}
+                </Badge>
+              ))
+            ) : (
+              <p className="gp-text-muted text-sm">{t("filters.previewEmpty")}</p>
+            )}
+          </div>
+        </div>
+      </DetailPanel>
+
+      <DetailPanel
+        title={t("repositoryMemory.title")}
+        description={t("repositoryMemory.description")}
+      >
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="gp-text-secondary text-sm">{t("repositoryMemory.current")}</p>
+          <Tabs
+            items={[
+              { id: "on", label: t("repositoryMemory.on") },
+              { id: "off", label: t("repositoryMemory.off") },
+            ]}
+            value={rememberLastRepository ? "on" : "off"}
+            onChange={(value) => handleRememberLastRepository(value === "on")}
+          />
+        </div>
+      </DetailPanel>
+
+      <DetailPanel
+        title={t("portable.title")}
+        description={t("portable.description")}
+        actions={
+          <div className="gp-header-actions">
+            <Button variant="secondary" onClick={() => importInputRef.current?.click()}>
+              {t("portable.import")}
+            </Button>
+            <Button variant="secondary" onClick={exportSettings}>
+              {t("portable.export")}
+            </Button>
+          </div>
+        }
+      >
+        <input
+          ref={importInputRef}
+          className="hidden"
+          type="file"
+          accept="application/json,.json"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) {
+              void importSettings(file);
+            }
+          }}
+        />
+        <p className="gp-text-secondary text-sm">
+          {settingsMessage || t("portable.messagePlaceholder")}
+        </p>
       </DetailPanel>
 
       <DetailPanel
@@ -169,6 +345,31 @@ export function SettingsPage() {
           rows={settingsRows}
           getRowKey={(row) => row.key}
         />
+      </DetailPanel>
+
+      <DetailPanel
+        title={t("cache.title")}
+        description={t("cache.description")}
+        actions={
+          <Button variant="danger" onClick={clearAnalysisCache}>
+            {t("cache.clear")}
+          </Button>
+        }
+      >
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.key")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              workspace + branch + period + HEAD_SHA
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.status")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {cacheMessage || t("cache.localQueryCache")}
+            </p>
+          </div>
+        </div>
       </DetailPanel>
     </div>
   );

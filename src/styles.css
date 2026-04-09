@@ -63,7 +63,7 @@
   }
 
   .gp-control-action {
-    @apply w-full md:w-auto;
+    @apply w-full min-w-32 whitespace-nowrap shadow-sm md:w-auto;
   }
 
   .gp-status-row {

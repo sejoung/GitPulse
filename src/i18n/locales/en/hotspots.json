@@ -12,7 +12,16 @@
   },
   "ranking": {
     "title": "Hotspot ranking",
-    "description": "Files that change often and break often are candidates to inspect first."
+    "description": "Files that change often and break often are candidates to inspect first.",
+    "details": "Details",
+    "inspect": "Inspect",
+    "selected": "Selected"
+  },
+  "details": {
+    "title": "Hotspot details",
+    "description": "Review the selected file signal for {{path}}.",
+    "bugKeywords": "Bug keywords",
+    "excludedPaths": "Excluded paths"
   },
   "chart": {
     "title": "Change frequency",

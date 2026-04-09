@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::process::Command;
 
-use crate::models::overview::{GitBranch, GitRemoteStatus};
+use crate::models::overview::{GitBranch, GitRemoteStatus, GitRepositoryState};
 
 fn is_git_workspace(workspace_path: &str) -> bool {
     Path::new(workspace_path).exists()
@@ -30,6 +30,20 @@ fn run_git(workspace_path: &str, args: &[&str]) -> Result<String, String> {
 
 fn current_branch(workspace_path: &str) -> Option<String> {
     run_git(workspace_path, &["symbolic-ref", "--short", "HEAD"]).ok()
+}
+
+fn head_sha(workspace_path: &str) -> Option<String> {
+    run_git(workspace_path, &["rev-parse", "HEAD"]).ok()
+}
+
+fn short_head_sha(workspace_path: &str) -> Option<String> {
+    run_git(workspace_path, &["rev-parse", "--short", "HEAD"]).ok()
+}
+
+fn working_tree_dirty(workspace_path: &str) -> bool {
+    run_git(workspace_path, &["status", "--porcelain"])
+        .map(|output| !output.trim().is_empty())
+        .unwrap_or(false)
 }
 
 fn local_branch_exists(workspace_path: &str, branch_name: &str) -> bool {
@@ -82,6 +96,22 @@ fn remote_status_from_counts(ahead: u32, behind: u32) -> String {
         _ => "diverged",
     }
     .to_string()
+}
+
+fn remote_status(
+    status: &str,
+    upstream: Option<String>,
+    ahead: u32,
+    behind: u32,
+    message: Option<String>,
+) -> GitRemoteStatus {
+    GitRemoteStatus {
+        status: status.to_string(),
+        upstream,
+        ahead,
+        behind,
+        message,
+    }
 }
 
 fn branches_from_ref_output(output: &str, current_branch: Option<&str>) -> Vec<GitBranch> {
@@ -163,6 +193,22 @@ pub async fn checkout_git_branch(
     .map_err(|error| error.to_string())?
 }
 
+#[tauri::command]
+pub fn get_git_repository_state(
+    workspace_path: Option<String>,
+) -> Result<GitRepositoryState, String> {
+    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+        return Err("Select a Git workspace first.".to_string());
+    };
+
+    Ok(GitRepositoryState {
+        branch: current_branch(&workspace_path),
+        head_sha: head_sha(&workspace_path),
+        short_head_sha: short_head_sha(&workspace_path),
+        dirty: working_tree_dirty(&workspace_path),
+    })
+}
+
 fn checkout_git_branch_blocking(
     workspace_path: Option<String>,
     branch_name: String,
@@ -213,13 +259,7 @@ fn check_git_remote_status_blocking(
     };
 
     if let Err(message) = run_git(&workspace_path, &["fetch", "--prune"]) {
-        return Ok(GitRemoteStatus {
-            status: "fetch_failed".to_string(),
-            upstream: None,
-            ahead: 0,
-            behind: 0,
-            message: Some(message),
-        });
+        return Ok(remote_status("fetch_failed", None, 0, 0, Some(message)));
     }
 
     let upstream = match run_git(
@@ -228,13 +268,7 @@ fn check_git_remote_status_blocking(
     ) {
         Ok(upstream) => upstream,
         Err(message) => {
-            return Ok(GitRemoteStatus {
-                status: "no_upstream".to_string(),
-                upstream: None,
-                ahead: 0,
-                behind: 0,
-                message: Some(message),
-            });
+            return Ok(remote_status("no_upstream", None, 0, 0, Some(message)));
         }
     };
 
@@ -245,13 +279,60 @@ fn check_git_remote_status_blocking(
     let (ahead, behind) = parse_ahead_behind(&counts)
         .ok_or_else(|| format!("Could not parse remote status: {counts}"))?;
 
-    Ok(GitRemoteStatus {
-        status: remote_status_from_counts(ahead, behind),
-        upstream: Some(upstream),
+    Ok(remote_status(
+        &remote_status_from_counts(ahead, behind),
+        Some(upstream),
         ahead,
         behind,
-        message: None,
-    })
+        None,
+    ))
+}
+
+#[tauri::command]
+pub async fn pull_git_remote_updates(
+    workspace_path: Option<String>,
+) -> Result<GitRemoteStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || pull_git_remote_updates_blocking(workspace_path))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+fn pull_git_remote_updates_blocking(
+    workspace_path: Option<String>,
+) -> Result<GitRemoteStatus, String> {
+    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+        return Err("Select a Git workspace first.".to_string());
+    };
+
+    if working_tree_dirty(&workspace_path) {
+        return Ok(remote_status(
+            "dirty",
+            None,
+            0,
+            0,
+            Some("Commit or stash local changes before pulling.".to_string()),
+        ));
+    }
+
+    let status = check_git_remote_status_blocking(Some(workspace_path.clone()))?;
+    match status.status.as_str() {
+        "behind" => {
+            if let Err(message) = run_git(&workspace_path, &["pull", "--ff-only"]) {
+                return Ok(remote_status(
+                    "pull_failed",
+                    status.upstream,
+                    status.ahead,
+                    status.behind,
+                    Some(message),
+                ));
+            }
+
+            check_git_remote_status_blocking(Some(workspace_path))
+        }
+        "up_to_date" => Ok(status),
+        "ahead" | "diverged" | "no_upstream" | "fetch_failed" => Ok(status),
+        _ => Ok(status),
+    }
 }
 
 #[cfg(test)]
@@ -315,5 +396,22 @@ mod tests {
         assert_eq!(remote_status_from_counts(0, 2), "behind");
         assert_eq!(remote_status_from_counts(2, 0), "ahead");
         assert_eq!(remote_status_from_counts(2, 3), "diverged");
+    }
+
+    #[test]
+    fn remote_status_helper_keeps_counts_and_message() {
+        let status = remote_status(
+            "dirty",
+            Some("origin/main".to_string()),
+            1,
+            2,
+            Some("msg".to_string()),
+        );
+
+        assert_eq!(status.status, "dirty");
+        assert_eq!(status.upstream.as_deref(), Some("origin/main"));
+        assert_eq!(status.ahead, 1);
+        assert_eq!(status.behind, 2);
+        assert_eq!(status.message.as_deref(), Some("msg"));
     }
 }
