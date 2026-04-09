@@ -101,7 +101,12 @@ describe("OverviewPage branch controls", () => {
     useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
     api.getGitBranches.mockResolvedValue([
       { name: "main", label: "main", kind: "local", current: true },
-      { name: "origin/feature-a", label: "origin/feature-a (remote)", kind: "remote", current: false },
+      {
+        name: "origin/feature-a",
+        label: "origin/feature-a (remote)",
+        kind: "remote",
+        current: false,
+      },
     ]);
     api.checkoutGitBranch.mockImplementation(() => new Promise(() => undefined));
 
@@ -113,7 +118,9 @@ describe("OverviewPage branch controls", () => {
 
     expect(await screen.findByText("Switching branch")).toBeInTheDocument();
     expect(screen.getByText("origin/feature-a")).toBeInTheDocument();
-    expect(screen.getByText("Checking out the branch and refreshing analysis.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Checking out the branch and refreshing analysis.")
+    ).toBeInTheDocument();
   });
 });
 
@@ -122,6 +129,8 @@ describe("ActivityPage", () => {
     renderWithClient(<ActivityPage />);
 
     expect(screen.getAllByText("Not analyzed").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Select a repository to see analysis results.").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Select a repository to see analysis results.").length
+    ).toBeGreaterThan(0);
   });
 });

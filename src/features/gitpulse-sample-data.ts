@@ -6,7 +6,13 @@ export const hotspotRows = [
 ];
 
 export const contributorRows = [
-  { name: "Core maintainer", commits: 128, share: "62%", recentKey: "status.active", risk: "watch" },
+  {
+    name: "Core maintainer",
+    commits: 128,
+    share: "62%",
+    recentKey: "status.active",
+    risk: "watch",
+  },
   { name: "Frontend", commits: 44, share: "21%", recentKey: "status.active", risk: "healthy" },
   { name: "Analysis", commits: 25, share: "12%", recentKey: "status.quiet", risk: "watch" },
   { name: "Docs", commits: 10, share: "5%", recentKey: "status.quiet", risk: "healthy" },

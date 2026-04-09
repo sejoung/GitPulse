@@ -6,11 +6,13 @@ type CardProps = HTMLAttributes<HTMLElement> & {
   dashed?: boolean;
 };
 
-export function Card({ as: Component = "section", dashed = false, className, ...props }: CardProps) {
+export function Card({
+  as: Component = "section",
+  dashed = false,
+  className,
+  ...props
+}: CardProps) {
   return (
-    <Component
-      className={cn(dashed ? "gp-surface-dashed" : "gp-surface", className)}
-      {...props}
-    />
+    <Component className={cn(dashed ? "gp-surface-dashed" : "gp-surface", className)} {...props} />
   );
 }

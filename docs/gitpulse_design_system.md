@@ -33,45 +33,45 @@ Theme tokens are defined under the `gp` namespace.
 
 ### Background
 
-| Token | Value | Usage |
-|---|---:|---|
-| `bg-gp-bg-primary` | `#0B1220` | Main app background |
-| `bg-gp-bg-secondary` | `#111827` | Cards, sidebar, topbar |
-| `bg-gp-bg-tertiary` | `#1F2937` | Panels, hover states, active states |
+| Token                |     Value | Usage                               |
+| -------------------- | --------: | ----------------------------------- |
+| `bg-gp-bg-primary`   | `#0B1220` | Main app background                 |
+| `bg-gp-bg-secondary` | `#111827` | Cards, sidebar, topbar              |
+| `bg-gp-bg-tertiary`  | `#1F2937` | Panels, hover states, active states |
 
 ### Brand
 
-| Token | Value | Usage |
-|---|---:|---|
-| `text-gp-brand-blue` / `bg-gp-brand-blue` | `#3B82F6` | Primary brand action |
-| `text-gp-brand-cyan` / `bg-gp-brand-cyan` | `#22D3EE` | Signal highlight |
-| `bg-gp-signal` | Blue to cyan gradient | Data highlight, signal emphasis |
+| Token                                     |                 Value | Usage                           |
+| ----------------------------------------- | --------------------: | ------------------------------- |
+| `text-gp-brand-blue` / `bg-gp-brand-blue` |             `#3B82F6` | Primary brand action            |
+| `text-gp-brand-cyan` / `bg-gp-brand-cyan` |             `#22D3EE` | Signal highlight                |
+| `bg-gp-signal`                            | Blue to cyan gradient | Data highlight, signal emphasis |
 
 ### Risk
 
-| Token | Value | Usage |
-|---|---:|---|
-| `text-gp-risk-healthy` | `#22C55E` | Healthy state |
-| `text-gp-risk-watch` | `#EAB308` | Watch state |
-| `text-gp-risk-risky` | `#F97316` | Risky state |
+| Token                   |     Value | Usage          |
+| ----------------------- | --------: | -------------- |
+| `text-gp-risk-healthy`  | `#22C55E` | Healthy state  |
+| `text-gp-risk-watch`    | `#EAB308` | Watch state    |
+| `text-gp-risk-risky`    | `#F97316` | Risky state    |
 | `text-gp-risk-critical` | `#EF4444` | Critical state |
 
 These tokens also work with `bg-*` and `border-*`.
 
 ### Text
 
-| Token | Value | Usage |
-|---|---:|---|
-| `text-gp-text-primary` | `#F9FAFB` | Main text |
-| `text-gp-text-secondary` | `#9CA3AF` | Supporting text |
-| `text-gp-text-muted` | `#6B7280` | Labels and low-emphasis copy |
+| Token                    |     Value | Usage                        |
+| ------------------------ | --------: | ---------------------------- |
+| `text-gp-text-primary`   | `#F9FAFB` | Main text                    |
+| `text-gp-text-secondary` | `#9CA3AF` | Supporting text              |
+| `text-gp-text-muted`     | `#6B7280` | Labels and low-emphasis copy |
 
 ### Border
 
-| Token | Value | Usage |
-|---|---:|---|
-| `border-gp-border` | `#1F2937` | Default surface border |
-| `border-gp-border-divider` | `#374151` | Stronger dividers |
+| Token                      |     Value | Usage                  |
+| -------------------------- | --------: | ---------------------- |
+| `border-gp-border`         | `#1F2937` | Default surface border |
+| `border-gp-border-divider` | `#374151` | Stronger dividers      |
 
 ---
 
@@ -81,42 +81,42 @@ Semantic classes live in `src/styles.css` under `@layer components`.
 
 Use them for repeated UI patterns:
 
-| Class | Usage |
-|---|---|
-| `gp-app` | Full app background and text shell |
-| `gp-sidebar` | Desktop sidebar container |
-| `gp-topbar` | Mobile topbar container |
-| `gp-main` | Main content offset for sidebar |
-| `gp-page` | Page width and padding |
-| `gp-nav-item` | Sidebar navigation item |
-| `gp-nav-item-active` | Active sidebar item |
-| `gp-tabs` | Tabs container |
-| `gp-tab` | Tab item |
-| `gp-tab-active` | Active tab item |
-| `gp-button` | Base button style |
-| `gp-button-primary` | Primary button variant |
-| `gp-button-secondary` | Secondary button variant |
-| `gp-button-ghost` | Ghost button variant |
-| `gp-button-danger` | Destructive action variant |
-| `gp-badge` | Base badge style |
-| `gp-badge-neutral` | Neutral badge tone |
-| `gp-badge-brand` | Brand badge tone |
-| `gp-badge-healthy` | Healthy status badge |
-| `gp-badge-watch` | Watch status badge |
-| `gp-badge-risky` | Risky status badge |
-| `gp-badge-critical` | Critical status badge |
-| `gp-input` | Input field |
-| `gp-table-wrap` | Table outer container |
-| `gp-table` | Table base style |
-| `gp-surface` | Standard card surface |
-| `gp-surface-dashed` | Empty/placeholder card surface |
-| `gp-panel` | Nested panel surface |
-| `gp-empty-state` | Empty state layout |
-| `gp-kicker` | Small uppercase section label |
-| `gp-heading` | Primary heading color |
-| `gp-text-secondary` | Supporting text |
-| `gp-text-muted` | Muted text |
-| `gp-alert-critical` | Critical inline alert |
+| Class                 | Usage                              |
+| --------------------- | ---------------------------------- |
+| `gp-app`              | Full app background and text shell |
+| `gp-sidebar`          | Desktop sidebar container          |
+| `gp-topbar`           | Mobile topbar container            |
+| `gp-main`             | Main content offset for sidebar    |
+| `gp-page`             | Page width and padding             |
+| `gp-nav-item`         | Sidebar navigation item            |
+| `gp-nav-item-active`  | Active sidebar item                |
+| `gp-tabs`             | Tabs container                     |
+| `gp-tab`              | Tab item                           |
+| `gp-tab-active`       | Active tab item                    |
+| `gp-button`           | Base button style                  |
+| `gp-button-primary`   | Primary button variant             |
+| `gp-button-secondary` | Secondary button variant           |
+| `gp-button-ghost`     | Ghost button variant               |
+| `gp-button-danger`    | Destructive action variant         |
+| `gp-badge`            | Base badge style                   |
+| `gp-badge-neutral`    | Neutral badge tone                 |
+| `gp-badge-brand`      | Brand badge tone                   |
+| `gp-badge-healthy`    | Healthy status badge               |
+| `gp-badge-watch`      | Watch status badge                 |
+| `gp-badge-risky`      | Risky status badge                 |
+| `gp-badge-critical`   | Critical status badge              |
+| `gp-input`            | Input field                        |
+| `gp-table-wrap`       | Table outer container              |
+| `gp-table`            | Table base style                   |
+| `gp-surface`          | Standard card surface              |
+| `gp-surface-dashed`   | Empty/placeholder card surface     |
+| `gp-panel`            | Nested panel surface               |
+| `gp-empty-state`      | Empty state layout                 |
+| `gp-kicker`           | Small uppercase section label      |
+| `gp-heading`          | Primary heading color              |
+| `gp-text-secondary`   | Supporting text                    |
+| `gp-text-muted`       | Muted text                         |
+| `gp-alert-critical`   | Critical inline alert              |
 
 ---
 
@@ -124,11 +124,11 @@ Use them for repeated UI patterns:
 
 ### Layout Components
 
-| Component | Path | Purpose |
-|---|---|---|
-| `AppShell` | `src/components/layout/AppShell.tsx` | Root app frame |
-| `Sidebar` | `src/components/layout/Sidebar.tsx` | Desktop navigation |
-| `Topbar` | `src/components/layout/Topbar.tsx` | Mobile top navigation |
+| Component  | Path                                 | Purpose               |
+| ---------- | ------------------------------------ | --------------------- |
+| `AppShell` | `src/components/layout/AppShell.tsx` | Root app frame        |
+| `Sidebar`  | `src/components/layout/Sidebar.tsx`  | Desktop navigation    |
+| `Topbar`   | `src/components/layout/Topbar.tsx`   | Mobile top navigation |
 
 Import from:
 
@@ -138,18 +138,18 @@ import { AppShell, Sidebar, Topbar } from "../../components/layout";
 
 ### UI Components
 
-| Component | Path | Purpose |
-|---|---|---|
-| `Button` | `src/components/ui/Button.tsx` | Standard actions |
-| `Badge` | `src/components/ui/Badge.tsx` | Status and signal labels |
-| `Card` | `src/components/ui/Card.tsx` | Base surface container |
-| `StatCard` | `src/components/ui/StatCard.tsx` | Metric summary card |
-| `Table` | `src/components/ui/Table.tsx` | Typed data table |
-| `Tabs` | `src/components/ui/Tabs.tsx` | Tab navigation |
-| `Input` | `src/components/ui/Input.tsx` | Text input |
-| `EmptyState` | `src/components/ui/EmptyState.tsx` | Empty content state |
+| Component     | Path                                | Purpose                             |
+| ------------- | ----------------------------------- | ----------------------------------- |
+| `Button`      | `src/components/ui/Button.tsx`      | Standard actions                    |
+| `Badge`       | `src/components/ui/Badge.tsx`       | Status and signal labels            |
+| `Card`        | `src/components/ui/Card.tsx`        | Base surface container              |
+| `StatCard`    | `src/components/ui/StatCard.tsx`    | Metric summary card                 |
+| `Table`       | `src/components/ui/Table.tsx`       | Typed data table                    |
+| `Tabs`        | `src/components/ui/Tabs.tsx`        | Tab navigation                      |
+| `Input`       | `src/components/ui/Input.tsx`       | Text input                          |
+| `EmptyState`  | `src/components/ui/EmptyState.tsx`  | Empty content state                 |
 | `DetailPanel` | `src/components/ui/DetailPanel.tsx` | Detail section with header and body |
-| `PageHeader` | `src/components/ui/PageHeader.tsx` | Page title, description, actions |
+| `PageHeader`  | `src/components/ui/PageHeader.tsx`  | Page title, description, actions    |
 
 Import from:
 
@@ -170,10 +170,10 @@ import {
 
 ### Chart Components
 
-| Component | Path | Purpose |
-|---|---|---|
-| `ChartCard` | `src/components/charts/ChartCard.tsx` | Chart container with title and empty state |
-| `EmptyChart` | `src/components/charts/EmptyChart.tsx` | Backward-compatible empty chart wrapper |
+| Component    | Path                                   | Purpose                                    |
+| ------------ | -------------------------------------- | ------------------------------------------ |
+| `ChartCard`  | `src/components/charts/ChartCard.tsx`  | Chart container with title and empty state |
+| `EmptyChart` | `src/components/charts/EmptyChart.tsx` | Backward-compatible empty chart wrapper    |
 
 Import from:
 

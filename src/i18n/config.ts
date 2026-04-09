@@ -44,7 +44,9 @@ export const resources = {
 } as const;
 
 const savedLanguage =
-  typeof window === "undefined" ? undefined : window.localStorage.getItem(languageStorageKey) ?? undefined;
+  typeof window === "undefined"
+    ? undefined
+    : (window.localStorage.getItem(languageStorageKey) ?? undefined);
 
 i18n.use(initReactI18next).init({
   resources,
@@ -52,7 +54,16 @@ i18n.use(initReactI18next).init({
   fallbackLng: "en",
   supportedLngs: ["ko", "en"],
   defaultNS,
-  ns: ["common", "workspace", "overview", "hotspots", "ownership", "activity", "deliveryRisk", "settings"],
+  ns: [
+    "common",
+    "workspace",
+    "overview",
+    "hotspots",
+    "ownership",
+    "activity",
+    "deliveryRisk",
+    "settings",
+  ],
   interpolation: {
     escapeValue: false,
   },

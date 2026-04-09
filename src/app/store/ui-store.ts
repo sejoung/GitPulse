@@ -83,7 +83,9 @@ function emergencyPatternsFromKeywords(keywords?: string): EmergencyPattern[] {
 
   return patterns.map((pattern) => ({
     pattern,
-    signal: defaultEmergencyPatterns.find((item) => item.pattern === pattern)?.signal ?? `${pattern} signal`,
+    signal:
+      defaultEmergencyPatterns.find((item) => item.pattern === pattern)?.signal ??
+      `${pattern} signal`,
   }));
 }
 
@@ -108,14 +110,22 @@ export const useUiStore = create<UiState>()(
       setEmergencyPattern: (index, pattern) =>
         set((state) => ({
           emergencyPatterns: state.emergencyPatterns.map((item, itemIndex) =>
-            itemIndex === index ? pattern : item,
+            itemIndex === index ? pattern : item
           ),
         })),
     }),
     {
       name: "gitpulse.ui",
       version: 3,
-      partialize: ({ workspacePath, selectedBranch, analysisPeriod, excludedPaths, defaultBranch, bugKeywords, emergencyPatterns }) => ({
+      partialize: ({
+        workspacePath,
+        selectedBranch,
+        analysisPeriod,
+        excludedPaths,
+        defaultBranch,
+        bugKeywords,
+        emergencyPatterns,
+      }) => ({
         workspacePath,
         selectedBranch,
         analysisPeriod,
@@ -134,9 +144,10 @@ export const useUiStore = create<UiState>()(
           excludedPaths: state.excludedPaths ?? "dist/, node_modules/, target/",
           defaultBranch: state.defaultBranch ?? "main",
           bugKeywords: state.bugKeywords ?? "fix, bug, broken",
-          emergencyPatterns: state.emergencyPatterns ?? emergencyPatternsFromKeywords(state.emergencyKeywords),
+          emergencyPatterns:
+            state.emergencyPatterns ?? emergencyPatternsFromKeywords(state.emergencyKeywords),
         };
       },
-    },
-  ),
+    }
+  )
 );

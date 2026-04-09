@@ -9,7 +9,11 @@ export function DeliveryRiskPage() {
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
-  const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(workspacePath, selectedBranch, emergencyPatterns);
+  const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(
+    workspacePath,
+    selectedBranch,
+    emergencyPatterns
+  );
   const hasWorkspace = Boolean(workspacePath);
   const hasData = deliveryRows.length > 0;
   const summaryRows = hasData
@@ -17,12 +21,20 @@ export function DeliveryRiskPage() {
     : emergencyPatterns
         .filter((item) => item.pattern.trim())
         .slice(0, 3)
-        .map((item): Pick<EmergencyPattern, "pattern"> & { event: string; count: number; risk: "healthy" } => ({
-          pattern: item.pattern,
-          event: item.pattern,
-          count: 0,
-          risk: "healthy",
-        }));
+        .map(
+          (
+            item
+          ): Pick<EmergencyPattern, "pattern"> & {
+            event: string;
+            count: number;
+            risk: "healthy";
+          } => ({
+            pattern: item.pattern,
+            event: item.pattern,
+            count: 0,
+            risk: "healthy",
+          })
+        );
   const deliverySignal = deliveryRows.some((row) => row.risk === "risky")
     ? "risky"
     : deliveryRows.some((row) => row.risk === "watch")
@@ -35,7 +47,11 @@ export function DeliveryRiskPage() {
         kicker={t("kicker")}
         title={t("title")}
         description={t("description")}
-        actions={<Badge tone={hasWorkspace && hasData ? deliverySignal : "neutral"}>{hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}</Badge>}
+        actions={
+          <Badge tone={hasWorkspace && hasData ? deliverySignal : "neutral"}>
+            {hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
+          </Badge>
+        }
       />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -43,23 +59,44 @@ export function DeliveryRiskPage() {
           <StatCard
             key={row.event}
             label={row.event}
-            value={!hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(row.count)}
+            value={
+              !hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(row.count)
+            }
             detail={t("common:time.lastYear")}
             tone={hasWorkspace && hasData ? row.risk : "neutral"}
           />
         ))}
-        <StatCard label={t("stats.signal")} value={!hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : hasData ? t(`common:status.${deliverySignal}`) : t("common:empty.deliveryRisk")} detail={t("stats.deliveryRisk")} tone={hasWorkspace && hasData ? deliverySignal : "neutral"} />
+        <StatCard
+          label={t("stats.signal")}
+          value={
+            !hasWorkspace
+              ? t("common:status.notAnalyzed")
+              : isLoading
+                ? "..."
+                : hasData
+                  ? t(`common:status.${deliverySignal}`)
+                  : t("common:empty.deliveryRisk")
+          }
+          detail={t("stats.deliveryRisk")}
+          tone={hasWorkspace && hasData ? deliverySignal : "neutral"}
+        />
       </section>
 
-      <DetailPanel
-        title={t("patterns.title")}
-        description={t("patterns.description")}
-      >
+      <DetailPanel title={t("patterns.title")} description={t("patterns.description")}>
         <Table
           columns={[
             { key: "event", header: t("common:table.pattern"), render: (row) => row.event },
-            { key: "count", header: t("common:table.count"), align: "right", render: (row) => row.count },
-            { key: "signal", header: t("common:table.signal"), render: (row) => row.signal || t(`common:${row.signalKey}`) },
+            {
+              key: "count",
+              header: t("common:table.count"),
+              align: "right",
+              render: (row) => row.count,
+            },
+            {
+              key: "signal",
+              header: t("common:table.signal"),
+              render: (row) => row.signal || t(`common:${row.signalKey}`),
+            },
             {
               key: "risk",
               header: t("common:table.risk"),
@@ -73,7 +110,9 @@ export function DeliveryRiskPage() {
           ]}
           rows={deliveryRows}
           getRowKey={(row) => row.event}
-          emptyText={hasWorkspace ? t("common:empty.deliveryRisk") : t("common:empty.selectWorkspace")}
+          emptyText={
+            hasWorkspace ? t("common:empty.deliveryRisk") : t("common:empty.selectWorkspace")
+          }
         />
       </DetailPanel>
     </div>

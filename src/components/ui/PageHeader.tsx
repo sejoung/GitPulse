@@ -15,7 +15,9 @@ export function PageHeader({ kicker, title, description, actions }: PageHeaderPr
         <h1 className="gp-heading text-3xl font-semibold">{title}</h1>
         {description ? <p className="gp-text-secondary max-w-2xl">{description}</p> : null}
       </div>
-      {actions ? <div className="flex max-w-full flex-wrap items-center gap-2 lg:justify-end">{actions}</div> : null}
+      {actions ? (
+        <div className="flex max-w-full flex-wrap items-center gap-2 lg:justify-end">{actions}</div>
+      ) : null}
     </header>
   );
 }

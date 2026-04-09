@@ -1,9 +1,11 @@
 # GitPulse Project Structure (Tauri + React)
 
 ## Overview
+
 This document defines the recommended project structure for GitPulse.
 
 GitPulse is structured around:
+
 - UI (React)
 - Domain logic (TypeScript)
 - Bridge (Tauri commands)
@@ -92,10 +94,12 @@ React UI
 ## Backend Principles
 
 ### Git Layer
+
 - Executes git commands
 - Parses raw output
 
 ### Analysis Layer
+
 - Converts raw data into insights
 - Calculates metrics and risks
 
@@ -104,10 +108,12 @@ React UI
 ## Core Modules
 
 ### Commands
+
 - workspace management
 - analysis execution
 
 ### Git
+
 - churn
 - contributors
 - activity
@@ -115,6 +121,7 @@ React UI
 - emergency events
 
 ### Analysis
+
 - hotspot analyzer
 - ownership analyzer
 - activity analyzer
@@ -126,6 +133,7 @@ React UI
 ## API Design
 
 Good:
+
 ```
 get_overview_analysis()
 get_hotspots_analysis()
@@ -133,6 +141,7 @@ get_ownership_analysis()
 ```
 
 Bad:
+
 ```
 get_git_log()
 get_git_status()
@@ -150,6 +159,7 @@ get_git_status()
 ## Cache Strategy
 
 Key:
+
 ```
 workspace + branch + period + HEAD_SHA
 ```

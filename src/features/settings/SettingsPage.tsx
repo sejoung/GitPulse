@@ -44,7 +44,13 @@ export function SettingsPage() {
   const settingsRows = [
     {
       key: t("defaults.analysisWindow"),
-      value: <Tabs items={translatedAnalysisWindowItems} value={analysisPeriod} onChange={setAnalysisPeriod} />,
+      value: (
+        <Tabs
+          items={translatedAnalysisWindowItems}
+          value={analysisPeriod}
+          onChange={setAnalysisPeriod}
+        />
+      ),
     },
     {
       key: t("defaults.bugKeywords"),
@@ -65,16 +71,23 @@ export function SettingsPage() {
       value: (
         <div className="space-y-3">
           {emergencyPatterns.map((item, index) => (
-            <div key={index} className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]">
+            <div
+              key={index}
+              className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]"
+            >
               <Input
                 value={item.pattern}
-                onChange={(event) => setEmergencyPattern(index, { ...item, pattern: event.target.value })}
+                onChange={(event) =>
+                  setEmergencyPattern(index, { ...item, pattern: event.target.value })
+                }
                 placeholder="revert, revert:, reverted"
                 aria-label={t("defaults.emergencyPattern")}
               />
               <Input
                 value={item.signal}
-                onChange={(event) => setEmergencyPattern(index, { ...item, signal: event.target.value })}
+                onChange={(event) =>
+                  setEmergencyPattern(index, { ...item, signal: event.target.value })
+                }
                 placeholder="Watch release pressure"
                 aria-label={t("defaults.emergencySignal")}
               />
@@ -139,7 +152,11 @@ export function SettingsPage() {
       >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <p className="gp-text-secondary text-sm">{t("language.current")}</p>
-          <Tabs items={translatedLanguageItems} value={currentLanguage} onChange={handleLanguageChange} />
+          <Tabs
+            items={translatedLanguageItems}
+            value={currentLanguage}
+            onChange={handleLanguageChange}
+          />
         </div>
       </DetailPanel>
 

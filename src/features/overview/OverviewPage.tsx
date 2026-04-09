@@ -2,7 +2,17 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
-import { Badge, Button, DetailPanel, Input, PageHeader, Select, StatCard, Table, Tabs } from "../../components/ui";
+import {
+  Badge,
+  Button,
+  DetailPanel,
+  Input,
+  PageHeader,
+  Select,
+  StatCard,
+  Table,
+  Tabs,
+} from "../../components/ui";
 import { formatCount } from "../../lib/format";
 import { useOverviewAnalysis } from "./useOverviewAnalysis";
 import { useActivityAnalysis } from "../activity/useActivityAnalysis";
@@ -31,9 +41,26 @@ export function OverviewPage() {
   const checkoutBranch = useCheckoutGitBranch(workspacePath);
   const currentBranch = branches.find((branch) => branch.current)?.name ?? "";
   const activeBranch = selectedBranch || currentBranch;
-  const { data, isLoading, isError } = useOverviewAnalysis(workspacePath, activeBranch, analysisPeriod, excludedPaths, bugKeywords, emergencyPatterns);
-  const { data: hotspotRows = [] } = useHotspotsAnalysis(workspacePath, activeBranch, analysisPeriod, excludedPaths, bugKeywords);
-  const { data: activityRows = [] } = useActivityAnalysis(workspacePath, activeBranch, analysisPeriod);
+  const { data, isLoading, isError } = useOverviewAnalysis(
+    workspacePath,
+    activeBranch,
+    analysisPeriod,
+    excludedPaths,
+    bugKeywords,
+    emergencyPatterns
+  );
+  const { data: hotspotRows = [] } = useHotspotsAnalysis(
+    workspacePath,
+    activeBranch,
+    analysisPeriod,
+    excludedPaths,
+    bugKeywords
+  );
+  const { data: activityRows = [] } = useActivityAnalysis(
+    workspacePath,
+    activeBranch,
+    analysisPeriod
+  );
   const translatedPeriodTabs = periodTabs.map((item) => ({
     id: item.id,
     label: t(item.labelKey),
@@ -58,7 +85,9 @@ export function OverviewPage() {
             <h2 className="gp-heading mt-2 text-lg font-semibold">
               {String(checkoutBranch.variables ?? activeBranch)}
             </h2>
-            <p className="gp-text-secondary mt-2 text-sm">{t("workspaceDetails.switchingBranchDescription")}</p>
+            <p className="gp-text-secondary mt-2 text-sm">
+              {t("workspaceDetails.switchingBranchDescription")}
+            </p>
           </div>
         </div>
       ) : null}
@@ -69,42 +98,59 @@ export function OverviewPage() {
         description={t("description")}
         actions={
           <>
-            <Badge tone={hasWorkspace ? "healthy" : "neutral"} className="max-w-full truncate lg:max-w-md">
+            <Badge
+              tone={hasWorkspace ? "healthy" : "neutral"}
+              className="max-w-full truncate lg:max-w-md"
+            >
               {hasWorkspace ? workspacePath : t("common:status.notSelected")}
             </Badge>
             <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
-              {hasWorkspace ? t("common:actions.changeWorkspace") : t("common:actions.selectWorkspace")}
+              {hasWorkspace
+                ? t("common:actions.changeWorkspace")
+                : t("common:actions.selectWorkspace")}
             </Button>
           </>
         }
       />
 
-      {isError ? (
-        <p className="gp-alert-critical">{t("error")}</p>
-      ) : null}
+      {isError ? <p className="gp-alert-critical">{t("error")}</p> : null}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t("stats.repository")}
-          value={isLoading ? "..." : workspacePath || data?.repositoryName || t("common:status.notSelected")}
+          value={
+            isLoading
+              ? "..."
+              : workspacePath || data?.repositoryName || t("common:status.notSelected")
+          }
           detail={t("common:time.currentWorkspace")}
           valueSize="md"
         />
         <StatCard
           label={t("stats.commits")}
-          value={!hasWorkspace ? initialValue : isLoading ? "..." : formatCount(data?.totalCommits ?? 0)}
+          value={
+            !hasWorkspace ? initialValue : isLoading ? "..." : formatCount(data?.totalCommits ?? 0)
+          }
           detail={t("stats.analyzedHistory")}
           tone={hasWorkspace ? "brand" : "neutral"}
         />
         <StatCard
           label={t("stats.hotspots")}
-          value={!hasWorkspace ? initialValue : isLoading ? "..." : formatCount(data?.hotspotCount ?? 0)}
+          value={
+            !hasWorkspace ? initialValue : isLoading ? "..." : formatCount(data?.hotspotCount ?? 0)
+          }
           detail={t("stats.highChangeFiles")}
           tone={hasWorkspace ? "watch" : "neutral"}
         />
         <StatCard
           label={t("stats.risk")}
-          value={!hasWorkspace ? initialValue : isLoading ? "..." : data?.deliveryRiskLevel ?? t("common:status.low")}
+          value={
+            !hasWorkspace
+              ? initialValue
+              : isLoading
+                ? "..."
+                : (data?.deliveryRiskLevel ?? t("common:status.low"))
+          }
           detail={t("stats.deliverySignal")}
           tone={hasWorkspace ? "healthy" : "neutral"}
         />
@@ -113,13 +159,21 @@ export function OverviewPage() {
       <DetailPanel
         title={t("workspaceDetails.title")}
         description={t("workspaceDetails.description")}
-        actions={<Tabs items={translatedPeriodTabs} value={analysisPeriod} onChange={setAnalysisPeriod} />}
+        actions={
+          <Tabs items={translatedPeriodTabs} value={analysisPeriod} onChange={setAnalysisPeriod} />
+        }
       >
         <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_minmax(180px,240px)_auto]">
-          <Input readOnly value={workspacePath || t("common:status.notSelected")} aria-label={t("stats.repository")} />
+          <Input
+            readOnly
+            value={workspacePath || t("common:status.notSelected")}
+            aria-label={t("stats.repository")}
+          />
           <Select
             value={activeBranch}
-            disabled={!hasWorkspace || isBranchLoading || checkoutBranch.isPending || branches.length === 0}
+            disabled={
+              !hasWorkspace || isBranchLoading || checkoutBranch.isPending || branches.length === 0
+            }
             aria-label={t("workspaceDetails.branch")}
             onChange={(event) => checkoutBranch.mutate(event.target.value)}
           >
@@ -133,7 +187,9 @@ export function OverviewPage() {
             ))}
           </Select>
           <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
-            {hasWorkspace ? t("common:actions.changeWorkspace") : t("common:actions.selectWorkspace")}
+            {hasWorkspace
+              ? t("common:actions.changeWorkspace")
+              : t("common:actions.selectWorkspace")}
           </Button>
         </div>
         {checkoutBranch.isError ? (
@@ -142,13 +198,20 @@ export function OverviewPage() {
         <Table
           columns={[
             { key: "path", header: t("common:table.file"), render: (row) => row.path },
-            { key: "changes", header: t("common:table.changes"), align: "right", render: (row) => row.changes },
+            {
+              key: "changes",
+              header: t("common:table.changes"),
+              align: "right",
+              render: (row) => row.changes,
+            },
             {
               key: "risk",
               header: t("common:table.risk"),
               align: "right",
               render: (row) => (
-                <Badge tone={row.risk === "risky" ? "risky" : row.risk === "watch" ? "watch" : "healthy"}>
+                <Badge
+                  tone={row.risk === "risky" ? "risky" : row.risk === "watch" ? "watch" : "healthy"}
+                >
                   {t(`common:status.${row.risk}`)}
                 </Badge>
               ),
@@ -160,7 +223,10 @@ export function OverviewPage() {
         />
       </DetailPanel>
 
-      <ChartCard title={t("chart.activityTrend")} emptyText={hasWorkspace ? t("common:empty.activity") : initialEmptyText}>
+      <ChartCard
+        title={t("chart.activityTrend")}
+        emptyText={hasWorkspace ? t("common:empty.activity") : initialEmptyText}
+      >
         {activityRows.length > 0 ? (
           <div className="flex h-56 gap-3">
             {activityRows.map((row) => (
@@ -168,7 +234,9 @@ export function OverviewPage() {
                 <div className="flex h-48 w-full items-end">
                   <div
                     className="w-full rounded-t-md bg-gp-brand-cyan"
-                    style={{ height: `${row.commits === 0 ? 0 : Math.max(12, (row.commits / maxActivityCommits) * 100)}%` }}
+                    style={{
+                      height: `${row.commits === 0 ? 0 : Math.max(12, (row.commits / maxActivityCommits) * 100)}%`,
+                    }}
                   />
                 </div>
                 <span className="gp-text-muted text-xs">{row.month.slice(5)}</span>

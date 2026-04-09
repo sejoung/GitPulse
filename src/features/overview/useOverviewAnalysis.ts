@@ -9,12 +9,20 @@ export function useOverviewAnalysis(
   period: AnalysisPeriod,
   excludedPaths: string,
   bugKeywords: string,
-  emergencyPatterns: EmergencyPattern[],
+  emergencyPatterns: EmergencyPattern[]
 ) {
   const emergencyPatternKey = JSON.stringify(emergencyPatterns);
 
   return useQuery({
-    queryKey: queryKeys.overview(workspacePath, branch, period, excludedPaths, bugKeywords, emergencyPatternKey),
-    queryFn: () => getOverviewAnalysis({ workspacePath, period, excludedPaths, bugKeywords, emergencyPatterns }),
+    queryKey: queryKeys.overview(
+      workspacePath,
+      branch,
+      period,
+      excludedPaths,
+      bugKeywords,
+      emergencyPatternKey
+    ),
+    queryFn: () =>
+      getOverviewAnalysis({ workspacePath, period, excludedPaths, bugKeywords, emergencyPatterns }),
   });
 }

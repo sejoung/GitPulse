@@ -21,7 +21,13 @@ function isTauriRuntime() {
   return "__TAURI_INTERNALS__" in window;
 }
 
-export function getOverviewAnalysis({ workspacePath, period = "1y", excludedPaths, bugKeywords, emergencyPatterns }: AnalysisParams) {
+export function getOverviewAnalysis({
+  workspacePath,
+  period = "1y",
+  excludedPaths,
+  bugKeywords,
+  emergencyPatterns,
+}: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<OverviewAnalysis>({
       repositoryName: workspacePath || "No workspace selected",
@@ -32,15 +38,31 @@ export function getOverviewAnalysis({ workspacePath, period = "1y", excludedPath
     });
   }
 
-  return invoke<OverviewAnalysis>("get_overview_analysis", { workspacePath, period, excludedPaths, bugKeywords, emergencyPatterns });
+  return invoke<OverviewAnalysis>("get_overview_analysis", {
+    workspacePath,
+    period,
+    excludedPaths,
+    bugKeywords,
+    emergencyPatterns,
+  });
 }
 
-export function getHotspotsAnalysis({ workspacePath, period = "1y", excludedPaths, bugKeywords }: AnalysisParams) {
+export function getHotspotsAnalysis({
+  workspacePath,
+  period = "1y",
+  excludedPaths,
+  bugKeywords,
+}: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<HotspotFile[]>([]);
   }
 
-  return invoke<HotspotFile[]>("get_hotspots_analysis", { workspacePath, period, excludedPaths, bugKeywords });
+  return invoke<HotspotFile[]>("get_hotspots_analysis", {
+    workspacePath,
+    period,
+    excludedPaths,
+    bugKeywords,
+  });
 }
 
 export function getOwnershipAnalysis(workspacePath: string) {
@@ -59,12 +81,18 @@ export function getActivityAnalysis(workspacePath: string, period: AnalysisPerio
   return invoke<ActivityPoint[]>("get_activity_analysis", { workspacePath, period });
 }
 
-export function getDeliveryRiskAnalysis(workspacePath: string, emergencyPatterns?: EmergencyPattern[]) {
+export function getDeliveryRiskAnalysis(
+  workspacePath: string,
+  emergencyPatterns?: EmergencyPattern[]
+) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<DeliveryEvent[]>([]);
   }
 
-  return invoke<DeliveryEvent[]>("get_delivery_risk_analysis", { workspacePath, emergencyPatterns });
+  return invoke<DeliveryEvent[]>("get_delivery_risk_analysis", {
+    workspacePath,
+    emergencyPatterns,
+  });
 }
 
 export function getGitBranches(workspacePath: string) {
