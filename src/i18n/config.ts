@@ -48,7 +48,7 @@ const savedLanguage =
     ? undefined
     : (window.localStorage.getItem(languageStorageKey) ?? undefined);
 
-i18n.use(initReactI18next).init({
+void i18n.use(initReactI18next).init({
   resources,
   lng: savedLanguage ?? "en",
   fallbackLng: "en",

@@ -5,7 +5,7 @@ import { AppRouter } from "./app/router/AppRouter";
 import "./i18n/config";
 import "./styles.css";
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AppProviders>
       <AppRouter />

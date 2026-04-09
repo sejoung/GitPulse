@@ -5,7 +5,10 @@ import "../../src/i18n/config";
 import i18n from "../../src/i18n/config";
 import { useUiStore } from "../../src/app/store/ui-store";
 import { ActivityPage } from "../../src/features/activity/ActivityPage";
+import { DeliveryRiskPage } from "../../src/features/delivery-risk/DeliveryRiskPage";
+import { HotspotsPage } from "../../src/features/hotspots/HotspotsPage";
 import { OverviewPage } from "../../src/features/overview/OverviewPage";
+import { OwnershipPage } from "../../src/features/ownership/OwnershipPage";
 import { SettingsPage } from "../../src/features/settings/SettingsPage";
 import { renderWithClient } from "./support/render";
 
@@ -40,6 +43,7 @@ function resetStore() {
       { pattern: "emergency", signal: "Emergency response" },
       { pattern: "rollback", signal: "Rollback pattern" },
     ],
+    rememberLastRepository: true,
   });
 }
 
@@ -102,6 +106,23 @@ describe("SettingsPage", () => {
       signal: "Rollback activity",
     });
     expect(screen.getByText(/Use commas for aliases/)).toBeInTheDocument();
+  });
+
+  it("clears the remembered repository when repository memory is turned off", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({
+      workspacePath: "/Users/beni/career-ops",
+      selectedBranch: "main",
+      rememberLastRepository: true,
+    });
+
+    renderWithClient(<SettingsPage />);
+
+    await user.click(screen.getByRole("tab", { name: "Off" }));
+
+    expect(useUiStore.getState().rememberLastRepository).toBe(false);
+    expect(useUiStore.getState().workspacePath).toBe("");
+    expect(useUiStore.getState().selectedBranch).toBe("");
   });
 });
 
@@ -210,5 +231,47 @@ describe("ActivityPage", () => {
     expect(
       screen.getAllByText("Select a repository to see analysis results.").length
     ).toBeGreaterThan(0);
+  });
+});
+
+describe("analysis pages initial states", () => {
+  it("keeps hotspots, ownership, and delivery risk in a pre-analysis state before workspace selection", () => {
+    const { unmount: unmountHotspots } = renderWithClient(<HotspotsPage />);
+    expect(screen.getAllByText("Not analyzed").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Select a repository to see analysis results.").length
+    ).toBeGreaterThan(0);
+    unmountHotspots();
+
+    const { unmount: unmountOwnership } = renderWithClient(<OwnershipPage />);
+    expect(screen.getAllByText("Not analyzed").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Select a repository to see analysis results.").length
+    ).toBeGreaterThan(0);
+    unmountOwnership();
+
+    renderWithClient(<DeliveryRiskPage />);
+    expect(screen.getAllByText("Not analyzed").length).toBeGreaterThan(0);
+    expect(screen.getByText("Select a repository to see analysis results.")).toBeInTheDocument();
+  });
+});
+
+describe("DeliveryRiskPage", () => {
+  it("renders risky delivery events with the risky badge tone", async () => {
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getDeliveryRiskAnalysis.mockResolvedValue([
+      {
+        event: "hotfix",
+        count: 7,
+        signal: "Release pressure",
+        signalKey: "signals.watchReleasePressure",
+        risk: "risky",
+      },
+    ]);
+
+    renderWithClient(<DeliveryRiskPage />);
+
+    const riskyTexts = await screen.findAllByText("risky");
+    expect(riskyTexts.some((element) => element.classList.contains("gp-badge-risky"))).toBe(true);
   });
 });

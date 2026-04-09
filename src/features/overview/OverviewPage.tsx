@@ -81,7 +81,7 @@ export function OverviewPage() {
   } = useCheckGitRemoteStatus(workspacePath);
   const remoteStatus = pullRemoteUpdates.data ?? checkedRemoteStatus;
   const currentBranch = branches.find((branch) => branch.current)?.name ?? "";
-  const activeBranch = selectedBranch || currentBranch || repositoryState?.branch || "";
+  const activeBranch = selectedBranch || currentBranch || (repositoryState?.branch ?? "");
   const { data, isLoading, isError } = useOverviewAnalysis(
     workspacePath,
     activeBranch,
@@ -122,7 +122,7 @@ export function OverviewPage() {
       ? t("workspaceDetails.remoteStatus.noUpstreamDescription")
       : remoteStatus?.status === "dirty"
         ? t("workspaceDetails.remoteStatus.dirtyDescription")
-        : remoteStatus?.message || t("workspaceDetails.remoteStatus.description");
+        : (remoteStatus?.message ?? t("workspaceDetails.remoteStatus.description"));
   const lastAnalyzedAt = data
     ? new Intl.DateTimeFormat(undefined, {
         dateStyle: "medium",
@@ -225,7 +225,7 @@ export function OverviewPage() {
           value={
             isLoading
               ? "..."
-              : workspacePath || data?.repositoryName || t("common:status.notSelected")
+              : workspacePath || (data?.repositoryName ?? t("common:status.notSelected"))
           }
           detail={t("common:time.currentWorkspace")}
           valueSize="md"

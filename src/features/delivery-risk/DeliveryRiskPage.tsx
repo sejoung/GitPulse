@@ -109,7 +109,9 @@ export function DeliveryRiskPage() {
               header: t("common:table.risk"),
               align: "right",
               render: (row) => (
-                <Badge tone={row.risk === "watch" ? "watch" : "healthy"}>
+                <Badge
+                  tone={row.risk === "risky" ? "risky" : row.risk === "watch" ? "watch" : "healthy"}
+                >
                   {t(`common:status.${row.risk}`)}
                 </Badge>
               ),
@@ -157,7 +159,16 @@ export function DeliveryRiskPage() {
             </div>
             <div className="gp-panel min-w-0 p-3">
               <p className="gp-kicker">{t("common:table.risk")}</p>
-              <Badge tone={selectedPattern.risk === "watch" ? "watch" : "healthy"} className="mt-2">
+              <Badge
+                tone={
+                  selectedPattern.risk === "risky"
+                    ? "risky"
+                    : selectedPattern.risk === "watch"
+                      ? "watch"
+                      : "healthy"
+                }
+                className="mt-2"
+              >
                 {t(`common:status.${selectedPattern.risk}`)}
               </Badge>
             </div>

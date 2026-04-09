@@ -18,3 +18,15 @@ serde_json = "1"
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
+
+[lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
+unwrap_used = "deny"
+
+[lints.rust]
+rust_2018_idioms = { level = "deny", priority = -1 }
+unsafe_code = "forbid"
+unused_lifetimes = "deny"
+unused_qualifications = "deny"

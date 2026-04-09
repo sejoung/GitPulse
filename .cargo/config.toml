@@ -1,0 +1,4 @@
+[alias]
+gp-check = "check --manifest-path src-tauri/Cargo.toml"
+gp-lint = "clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings"
+gp-test = "test --manifest-path src-tauri/Cargo.toml"

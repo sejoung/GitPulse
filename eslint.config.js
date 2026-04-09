@@ -6,16 +6,28 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "src-tauri/target"],
+    ignores: [
+      "coverage",
+      "dist",
+      "eslint.config.js",
+      "lint-staged.config.js",
+      "postcss.config.js",
+      "src-tauri/target",
+    ],
   },
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
         ...globals.browser,
+      },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: {
@@ -24,6 +36,14 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      "@typescript-eslint/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
+      "@typescript-eslint/consistent-type-definitions": "off",
+      "@typescript-eslint/no-floating-promises": "error",
+      "@typescript-eslint/no-import-type-side-effects": "error",
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        { checksVoidReturn: { attributes: false } },
+      ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
     },
   },
@@ -33,6 +53,12 @@ export default tseslint.config(
       globals: {
         ...globals.vitest,
       },
+    },
+  },
+  {
+    files: ["vite.config.ts"],
+    rules: {
+      "@typescript-eslint/no-unsafe-call": "off",
     },
   }
 );
