@@ -190,6 +190,15 @@ fn pattern_aliases(pattern: &str) -> Vec<String> {
         .collect()
 }
 
+fn count_pattern_aliases(output: &str, pattern: &str) -> u32 {
+    let aliases = pattern_aliases(pattern);
+
+    output
+        .lines()
+        .filter(|line| aliases.iter().any(|pattern| line.contains(pattern)))
+        .count() as u32
+}
+
 fn count_commits(workspace_path: &str, period: Option<&str>) -> u32 {
     let mut args = vec!["rev-list", "--count", "HEAD"];
     let since;
@@ -417,10 +426,7 @@ pub fn build_delivery_risk_analysis(
         .iter()
         .map(|event| {
             let aliases = pattern_aliases(&event.pattern);
-            let count = aliases
-                .iter()
-                .map(|pattern| lower_output.matches(pattern).count() as u32)
-                .sum();
+            let count = count_pattern_aliases(&lower_output, &event.pattern);
             let risk = if count >= 6 {
                 "risky"
             } else if count >= 2 {
@@ -482,5 +488,76 @@ pub fn build_overview_analysis(
         hotspot_count: hotspots.len() as u32,
         contributor_count: ownership.len() as u32,
         delivery_risk_level: delivery_risk_level.to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn period_helpers_map_analysis_windows() {
+        assert_eq!(since_arg(Some("3m")), Some("3 months ago"));
+        assert_eq!(since_arg(Some("6m")), Some("6 months ago"));
+        assert_eq!(since_arg(Some("1y")), Some("1 year ago"));
+        assert_eq!(month_window(Some("3m")), 3);
+        assert_eq!(month_window(Some("6m")), 6);
+        assert_eq!(month_window(Some("1y")), 12);
+    }
+
+    #[test]
+    fn shift_month_handles_year_boundaries() {
+        assert_eq!(shift_month(2026, 1, -1), "2025-12");
+        assert_eq!(shift_month(2026, 12, 1), "2027-01");
+        assert_eq!(shift_month(2026, 4, -11), "2025-05");
+    }
+
+    #[test]
+    fn excluded_path_matches_directory_prefixes_only() {
+        let excluded_paths = split_csv(Some("dist/, node_modules, target/"));
+
+        assert!(is_excluded_path("dist/main.js", &excluded_paths));
+        assert!(is_excluded_path(
+            "node_modules/react/index.js",
+            &excluded_paths
+        ));
+        assert!(is_excluded_path("target", &excluded_paths));
+        assert!(!is_excluded_path("src/dist/main.js", &excluded_paths));
+        assert!(!is_excluded_path("dist-file.js", &excluded_paths));
+    }
+
+    #[test]
+    fn keyword_pattern_escapes_regex_metacharacters() {
+        assert_eq!(
+            keyword_pattern(Some("fix+, bug?"), &["fallback"]),
+            "fix\\+|bug\\?"
+        );
+        assert_eq!(keyword_pattern(Some(""), &["fix", "bug"]), "fix|bug");
+    }
+
+    #[test]
+    fn emergency_patterns_fallback_when_all_rows_are_blank() {
+        let patterns = normalized_emergency_patterns(Some(&[EmergencyPatternConfig {
+            pattern: "  ".to_string(),
+            signal: "Ignored".to_string(),
+        }]));
+
+        assert_eq!(patterns.len(), 4);
+        assert_eq!(patterns[0].pattern, "revert");
+    }
+
+    #[test]
+    fn emergency_pattern_aliases_share_one_count() {
+        let output = "revert: first change\nthis commit reverted the api\nhotfix release";
+
+        assert_eq!(count_pattern_aliases(output, "revert, reverted"), 2);
+        assert_eq!(count_pattern_aliases(output, "hotfix"), 1);
+    }
+
+    #[test]
+    fn parse_month_rejects_invalid_months() {
+        assert_eq!(parse_month("2026-04"), Some((2026, 4)));
+        assert_eq!(parse_month("2026-13"), None);
+        assert_eq!(parse_month("not-a-month"), None);
     }
 }

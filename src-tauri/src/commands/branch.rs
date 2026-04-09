@@ -66,22 +66,7 @@ fn local_name_from_remote(branch_name: &str) -> Option<&str> {
         .map(|(_, local_name)| local_name)
 }
 
-#[tauri::command]
-pub fn list_git_branches(workspace_path: Option<String>) -> Vec<GitBranch> {
-    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
-        return Vec::new();
-    };
-    let current_branch = current_branch(&workspace_path);
-    let output = run_git(
-        &workspace_path,
-        &[
-            "for-each-ref",
-            "--format=%(refname)|%(refname:short)",
-            "refs/heads",
-            "refs/remotes",
-        ],
-    )
-    .unwrap_or_default();
+fn branches_from_ref_output(output: &str, current_branch: Option<&str>) -> Vec<GitBranch> {
     let local_names: HashSet<String> = output
         .lines()
         .filter_map(|line| {
@@ -123,10 +108,29 @@ pub fn list_git_branches(workspace_path: Option<String>) -> Vec<GitBranch> {
                     name.to_string()
                 },
                 kind: if is_remote { "remote" } else { "local" }.to_string(),
-                current: current_branch.as_deref() == Some(local_name),
+                current: current_branch == Some(local_name),
             })
         })
         .collect()
+}
+
+#[tauri::command]
+pub fn list_git_branches(workspace_path: Option<String>) -> Vec<GitBranch> {
+    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+        return Vec::new();
+    };
+    let current_branch = current_branch(&workspace_path);
+    let output = run_git(
+        &workspace_path,
+        &[
+            "for-each-ref",
+            "--format=%(refname)|%(refname:short)",
+            "refs/heads",
+            "refs/remotes",
+        ],
+    )
+    .unwrap_or_default();
+    branches_from_ref_output(&output, current_branch.as_deref())
 }
 
 #[tauri::command]
@@ -172,4 +176,53 @@ fn checkout_git_branch_blocking(
     }
 
     Err(format!("Branch not found: {branch_name}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn branch_list_excludes_remote_head_pointer() {
+        let branches = branches_from_ref_output(
+            "refs/heads/main|main\nrefs/remotes/origin/HEAD|origin\nrefs/remotes/origin/main|origin/main",
+            Some("main"),
+        );
+
+        assert_eq!(branches.len(), 1);
+        assert_eq!(branches[0].name, "main");
+        assert!(branches[0].current);
+    }
+
+    #[test]
+    fn branch_list_keeps_remote_branch_without_local_tracking_branch() {
+        let branches = branches_from_ref_output(
+            "refs/heads/main|main\nrefs/remotes/origin/feature-a|origin/feature-a",
+            Some("main"),
+        );
+
+        assert_eq!(branches.len(), 2);
+        assert_eq!(branches[1].name, "origin/feature-a");
+        assert_eq!(branches[1].label, "origin/feature-a (remote)");
+        assert_eq!(branches[1].kind, "remote");
+    }
+
+    #[test]
+    fn branch_list_handles_local_branch_names_with_slashes() {
+        let branches = branches_from_ref_output(
+            "refs/heads/feature/a|feature/a\nrefs/remotes/origin/feature/a|origin/feature/a",
+            Some("feature/a"),
+        );
+
+        assert_eq!(branches.len(), 1);
+        assert_eq!(branches[0].name, "feature/a");
+        assert_eq!(branches[0].kind, "local");
+        assert!(branches[0].current);
+    }
+
+    #[test]
+    fn remote_head_pointer_is_not_treated_as_checkoutable_remote_branch() {
+        assert!(!remote_branch_exists("/not/a/repo", "origin"));
+        assert!(!remote_branch_exists("/not/a/repo", "origin/HEAD"));
+    }
 }
