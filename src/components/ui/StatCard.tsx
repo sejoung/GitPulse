@@ -1,12 +1,15 @@
 import { Card } from "./Card";
+import { cn } from "../../lib/cn";
 
 type StatTone = "neutral" | "brand" | "healthy" | "watch" | "risky" | "critical";
+type StatValueSize = "md" | "lg";
 
 type StatCardProps = {
   label: string;
   value: string;
   detail: string;
   tone?: StatTone;
+  valueSize?: StatValueSize;
 };
 
 const toneClass: Record<StatTone, string> = {
@@ -18,11 +21,16 @@ const toneClass: Record<StatTone, string> = {
   critical: "text-gp-risk-critical",
 };
 
-export function StatCard({ label, value, detail, tone = "neutral" }: StatCardProps) {
+const valueSizeClass: Record<StatValueSize, string> = {
+  md: "text-base leading-6 break-words",
+  lg: "text-3xl leading-tight",
+};
+
+export function StatCard({ label, value, detail, tone = "neutral", valueSize = "lg" }: StatCardProps) {
   return (
     <Card as="article" className="p-4">
       <p className="gp-text-muted text-sm font-medium">{label}</p>
-      <p className={`mt-2 text-3xl font-semibold ${toneClass[tone]}`}>{value}</p>
+      <p className={cn("mt-2 font-semibold", toneClass[tone], valueSizeClass[valueSize])}>{value}</p>
       <p className="gp-text-secondary mt-2 text-sm">{detail}</p>
     </Card>
   );

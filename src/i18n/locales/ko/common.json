@@ -1,7 +1,6 @@
 {
   "appName": "GitPulse",
   "nav": {
-    "workspace": "Workspace",
     "overview": "Overview",
     "hotspots": "Hotspots",
     "ownership": "Ownership",
@@ -11,6 +10,7 @@
   },
   "actions": {
     "selectWorkspace": "저장소 선택",
+    "changeWorkspace": "저장소 변경",
     "browse": "찾아보기"
   },
   "status": {
@@ -21,6 +21,8 @@
     "critical": "critical",
     "low": "low",
     "steady": "steady",
+    "ready": "준비됨",
+    "notAnalyzed": "분석 전",
     "active": "활동 중",
     "quiet": "조용함"
   },
@@ -44,7 +46,11 @@
   },
   "empty": {
     "chart": "Git 이력 신호가 여기에 표시됩니다.",
-    "hotspots": "아직 hotspot 데이터가 없습니다."
+    "selectWorkspace": "저장소를 선택하면 분석 결과가 표시됩니다.",
+    "hotspots": "아직 hotspot 데이터가 없습니다.",
+    "activity": "아직 활동 데이터가 없습니다.",
+    "ownership": "아직 contributor 데이터가 없습니다.",
+    "deliveryRisk": "아직 delivery risk 데이터가 없습니다."
   },
   "time": {
     "lastYear": "최근 1년",

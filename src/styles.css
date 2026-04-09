@@ -46,7 +46,7 @@
   }
 
   .gp-nav-item {
-    @apply w-full rounded-md px-3 py-2 text-left text-sm font-medium text-gp-text-secondary hover:bg-gp-bg-tertiary hover:text-gp-text-primary;
+    @apply w-full cursor-pointer rounded-md px-3 py-2 text-left text-sm font-medium text-gp-text-secondary hover:bg-gp-bg-tertiary hover:text-gp-text-primary;
   }
 
   .gp-nav-item-active {
@@ -58,7 +58,7 @@
   }
 
   .gp-tab {
-    @apply rounded-md px-3 py-1.5 text-sm font-medium text-gp-text-secondary hover:bg-gp-bg-tertiary hover:text-gp-text-primary;
+    @apply cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium text-gp-text-secondary hover:bg-gp-bg-tertiary hover:text-gp-text-primary;
   }
 
   .gp-tab-active {
@@ -66,7 +66,7 @@
   }
 
   .gp-button {
-    @apply inline-flex items-center justify-center rounded-md border font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex cursor-pointer items-center justify-center rounded-md border font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .gp-button-primary {
@@ -118,11 +118,11 @@
   }
 
   .gp-table-wrap {
-    @apply overflow-hidden rounded-lg border border-gp-border bg-gp-bg-secondary;
+    @apply overflow-x-auto rounded-lg border border-gp-border bg-gp-bg-secondary;
   }
 
   .gp-table {
-    @apply w-full border-collapse text-sm;
+    @apply w-full min-w-[640px] border-collapse text-sm;
   }
 
   .gp-table th {

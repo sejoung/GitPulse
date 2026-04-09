@@ -5,15 +5,7 @@
   "current": {
     "title": "Current workspace",
     "description": "Local repository used for Git CLI based analysis.",
-    "value": "No workspace selected"
-  },
-  "questions": {
-    "title": "Analysis questions",
-    "description": "Questions GitPulse checks first in a repository.",
-    "hotspots": "What changes most often?",
-    "ownership": "Who built this code?",
-    "bugs": "Where do bugs concentrate?",
-    "activity": "Is the project accelerating or stalling?",
-    "delivery": "How often is the team in emergency response?"
+    "value": "No workspace selected",
+    "prompt": "Enter a local repository path to analyze."
   }
 }

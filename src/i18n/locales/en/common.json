@@ -1,7 +1,6 @@
 {
   "appName": "GitPulse",
   "nav": {
-    "workspace": "Workspace",
     "overview": "Overview",
     "hotspots": "Hotspots",
     "ownership": "Ownership",
@@ -11,6 +10,7 @@
   },
   "actions": {
     "selectWorkspace": "Select workspace",
+    "changeWorkspace": "Change workspace",
     "browse": "Browse"
   },
   "status": {
@@ -21,6 +21,8 @@
     "critical": "critical",
     "low": "low",
     "steady": "steady",
+    "ready": "Ready",
+    "notAnalyzed": "Not analyzed",
     "active": "Active",
     "quiet": "Quiet"
   },
@@ -44,7 +46,11 @@
   },
   "empty": {
     "chart": "Git history signals will appear here.",
-    "hotspots": "No hotspot data yet."
+    "selectWorkspace": "Select a repository to see analysis results.",
+    "hotspots": "No hotspot data yet.",
+    "activity": "No activity data yet.",
+    "ownership": "No contributor data yet.",
+    "deliveryRisk": "No delivery risk data yet."
   },
   "time": {
     "lastYear": "Last year",

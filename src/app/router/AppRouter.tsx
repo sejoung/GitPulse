@@ -6,14 +6,11 @@ import { HotspotsPage } from "../../features/hotspots/HotspotsPage";
 import { OverviewPage } from "../../features/overview/OverviewPage";
 import { OwnershipPage } from "../../features/ownership/OwnershipPage";
 import { SettingsPage } from "../../features/settings/SettingsPage";
-import { WorkspacePage } from "../../features/workspace/WorkspacePage";
 
 function ActivePage() {
   const activeItem = useUiStore((state) => state.activeItem);
 
   switch (activeItem) {
-    case "workspace":
-      return <WorkspacePage />;
     case "hotspots":
       return <HotspotsPage />;
     case "ownership":

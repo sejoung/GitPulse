@@ -48,7 +48,7 @@ const savedLanguage =
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: savedLanguage ?? "ko",
+  lng: savedLanguage ?? "en",
   fallbackLng: "en",
   supportedLngs: ["ko", "en"],
   defaultNS,

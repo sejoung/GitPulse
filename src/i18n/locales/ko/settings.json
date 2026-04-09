@@ -20,6 +20,11 @@
     "title": "Signal defaults",
     "description": "초기 Git 분석에 사용하는 기본 기준입니다.",
     "analysisWindow": "Analysis window",
+    "analysisWindows": {
+      "1y": "1년",
+      "6m": "6개월",
+      "3m": "3개월"
+    },
     "bugKeywords": "Bug keywords",
     "emergencyKeywords": "Emergency keywords",
     "cacheKey": "Cache key"

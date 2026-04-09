@@ -5,15 +5,7 @@
   "current": {
     "title": "Current workspace",
     "description": "Git CLI 기반 분석을 실행할 로컬 저장소입니다.",
-    "value": "선택된 저장소가 없습니다."
-  },
-  "questions": {
-    "title": "Analysis questions",
-    "description": "GitPulse가 저장소에서 먼저 확인하는 질문입니다.",
-    "hotspots": "무엇이 가장 자주 변경되는가",
-    "ownership": "누가 이 코드를 만들었는가",
-    "bugs": "버그는 어디에 집중되는가",
-    "activity": "프로젝트가 가속 중인가",
-    "delivery": "팀이 얼마나 자주 긴급 대응 중인가"
+    "value": "선택된 저장소가 없습니다.",
+    "prompt": "분석할 로컬 저장소 경로를 입력하세요."
   }
 }

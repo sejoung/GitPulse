@@ -27,26 +27,3 @@ export const deliveryRows = [
   { event: "rollback", count: 0, signalKey: "signals.noRollbackPattern", risk: "healthy" },
   { event: "emergency", count: 0, signalKey: "signals.noEmergencyPattern", risk: "healthy" },
 ];
-
-export const commandRows = [
-  {
-    questionKey: "questions.hotspots",
-    command: "git log --format=format: --name-only --since=\"1 year ago\"",
-  },
-  {
-    questionKey: "questions.ownership",
-    command: "git shortlog -sn --no-merges",
-  },
-  {
-    questionKey: "questions.bugs",
-    command: "git log -i -E --grep=\"fix|bug|broken\" --name-only --format=''",
-  },
-  {
-    questionKey: "questions.activity",
-    command: "git log --format='%ad' --date=format:'%Y-%m'",
-  },
-  {
-    questionKey: "questions.delivery",
-    command: "git log --oneline --since=\"1 year ago\" | grep -iE 'revert|hotfix|emergency|rollback'",
-  },
-];

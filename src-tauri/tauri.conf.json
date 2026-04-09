@@ -15,8 +15,8 @@
         "title": "GitPulse",
         "width": 1200,
         "height": 760,
-        "minWidth": 960,
-        "minHeight": 640
+        "minWidth": 1080,
+        "minHeight": 680
       }
     ],
     "security": {

@@ -20,6 +20,11 @@
     "title": "Signal defaults",
     "description": "Default criteria used for initial Git analysis.",
     "analysisWindow": "Analysis window",
+    "analysisWindows": {
+      "1y": "1 year",
+      "6m": "6 months",
+      "3m": "3 months"
+    },
     "bugKeywords": "Bug keywords",
     "emergencyKeywords": "Emergency keywords",
     "cacheKey": "Cache key"

@@ -1,24 +1,38 @@
 import { useTranslation } from "react-i18next";
+import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
-import { Badge, Button, DetailPanel, PageHeader, StatCard, Table, Tabs } from "../../components/ui";
+import { Badge, Button, DetailPanel, Input, PageHeader, StatCard, Table, Tabs } from "../../components/ui";
 import { formatCount } from "../../lib/format";
 import { useOverviewAnalysis } from "./useOverviewAnalysis";
+import { useActivityAnalysis } from "../activity/useActivityAnalysis";
+import { useHotspotsAnalysis } from "../hotspots/useHotspotsAnalysis";
+import { useWorkspacePrompt } from "../workspace/useWorkspacePrompt";
 
 const periodTabs = [
-  { id: "30d", label: "30d" },
-  { id: "90d", label: "90d" },
-  { id: "all", labelKey: "common:time.all" },
+  { id: "1y", labelKey: "settings:defaults.analysisWindows.1y" },
+  { id: "6m", labelKey: "settings:defaults.analysisWindows.6m" },
+  { id: "3m", labelKey: "settings:defaults.analysisWindows.3m" },
 ] as const;
 
-const hotspotRows: Array<{ path: string; changes: number; risk: string }> = [];
-
 export function OverviewPage() {
-  const { t } = useTranslation(["overview", "common"]);
-  const { data, isLoading, isError } = useOverviewAnalysis();
+  const { t } = useTranslation(["overview", "common", "settings"]);
+  const workspacePath = useUiStore((state) => state.workspacePath);
+  const analysisPeriod = useUiStore((state) => state.analysisPeriod);
+  const bugKeywords = useUiStore((state) => state.bugKeywords);
+  const emergencyKeywords = useUiStore((state) => state.emergencyKeywords);
+  const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
+  const selectWorkspace = useWorkspacePrompt();
+  const { data, isLoading, isError } = useOverviewAnalysis(workspacePath, analysisPeriod, bugKeywords, emergencyKeywords);
+  const { data: hotspotRows = [] } = useHotspotsAnalysis(workspacePath, analysisPeriod, bugKeywords);
+  const { data: activityRows = [] } = useActivityAnalysis(workspacePath);
   const translatedPeriodTabs = periodTabs.map((item) => ({
     id: item.id,
-    label: "label" in item ? item.label : t(item.labelKey),
+    label: t(item.labelKey),
   }));
+  const hasWorkspace = Boolean(workspacePath);
+  const maxActivityCommits = Math.max(1, ...activityRows.map((row) => row.commits));
+  const initialValue = t("common:status.notAnalyzed");
+  const initialEmptyText = t("common:empty.selectWorkspace");
 
   return (
     <div className="space-y-6">
@@ -28,8 +42,12 @@ export function OverviewPage() {
         description={t("description")}
         actions={
           <>
-            <Badge tone="brand">{t("badge")}</Badge>
-            <Button variant="secondary">{t("common:actions.selectWorkspace")}</Button>
+            <Badge tone={hasWorkspace ? "healthy" : "neutral"} className="max-w-full truncate lg:max-w-md">
+              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
+            </Badge>
+            <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
+              {hasWorkspace ? t("common:actions.changeWorkspace") : t("common:actions.selectWorkspace")}
+            </Button>
           </>
         }
       />
@@ -38,50 +56,82 @@ export function OverviewPage() {
         <p className="gp-alert-critical">{t("error")}</p>
       ) : null}
 
-      <section className="grid gap-4 md:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t("stats.repository")}
-          value={isLoading ? "..." : data?.repositoryName ?? t("common:status.notSelected")}
+          value={isLoading ? "..." : workspacePath || data?.repositoryName || t("common:status.notSelected")}
           detail={t("common:time.currentWorkspace")}
+          valueSize="md"
         />
         <StatCard
           label={t("stats.commits")}
-          value={isLoading ? "..." : formatCount(data?.totalCommits ?? 0)}
+          value={!hasWorkspace ? initialValue : isLoading ? "..." : formatCount(data?.totalCommits ?? 0)}
           detail={t("stats.analyzedHistory")}
-          tone="brand"
+          tone={hasWorkspace ? "brand" : "neutral"}
         />
         <StatCard
           label={t("stats.hotspots")}
-          value={isLoading ? "..." : formatCount(data?.hotspotCount ?? 0)}
+          value={!hasWorkspace ? initialValue : isLoading ? "..." : formatCount(data?.hotspotCount ?? 0)}
           detail={t("stats.highChangeFiles")}
-          tone="watch"
+          tone={hasWorkspace ? "watch" : "neutral"}
         />
         <StatCard
           label={t("stats.risk")}
-          value={isLoading ? "..." : data?.deliveryRiskLevel ?? t("common:status.low")}
+          value={!hasWorkspace ? initialValue : isLoading ? "..." : data?.deliveryRiskLevel ?? t("common:status.low")}
           detail={t("stats.deliverySignal")}
-          tone="healthy"
+          tone={hasWorkspace ? "healthy" : "neutral"}
         />
       </section>
 
       <DetailPanel
         title={t("workspaceDetails.title")}
         description={t("workspaceDetails.description")}
-        actions={<Tabs items={translatedPeriodTabs} value="30d" onChange={() => undefined} />}
+        actions={<Tabs items={translatedPeriodTabs} value={analysisPeriod} onChange={setAnalysisPeriod} />}
       >
+        <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_auto]">
+          <Input readOnly value={workspacePath || t("common:status.notSelected")} aria-label={t("stats.repository")} />
+          <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
+            {hasWorkspace ? t("common:actions.changeWorkspace") : t("common:actions.selectWorkspace")}
+          </Button>
+        </div>
         <Table
           columns={[
             { key: "path", header: t("common:table.file"), render: (row) => row.path },
             { key: "changes", header: t("common:table.changes"), align: "right", render: (row) => row.changes },
-            { key: "risk", header: t("common:table.risk"), align: "right", render: (row) => row.risk },
+            {
+              key: "risk",
+              header: t("common:table.risk"),
+              align: "right",
+              render: (row) => (
+                <Badge tone={row.risk === "risky" ? "risky" : row.risk === "watch" ? "watch" : "healthy"}>
+                  {t(`common:status.${row.risk}`)}
+                </Badge>
+              ),
+            },
           ]}
-          rows={hotspotRows}
+          rows={hotspotRows.slice(0, 5)}
           getRowKey={(row) => row.path}
-          emptyText={t("common:empty.hotspots")}
+          emptyText={hasWorkspace ? t("common:empty.hotspots") : initialEmptyText}
         />
       </DetailPanel>
 
-      <ChartCard title={t("chart.activityTrend")} emptyText={t("common:empty.chart")} />
+      <ChartCard title={t("chart.activityTrend")} emptyText={hasWorkspace ? t("common:empty.activity") : initialEmptyText}>
+        {activityRows.length > 0 ? (
+          <div className="flex h-56 gap-3">
+            {activityRows.map((row) => (
+              <div key={row.month} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                <div className="flex h-48 w-full items-end">
+                  <div
+                    className="w-full rounded-t-md bg-gp-brand-cyan"
+                    style={{ height: `${row.commits === 0 ? 0 : Math.max(12, (row.commits / maxActivityCommits) * 100)}%` }}
+                  />
+                </div>
+                <span className="gp-text-muted text-xs">{row.month.slice(5)}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </ChartCard>
     </div>
   );
 }

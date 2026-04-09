@@ -11,12 +11,12 @@ type DetailPanelProps = {
 export function DetailPanel({ title, description, actions, children }: DetailPanelProps) {
   return (
     <Card className="p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
           <h2 className="gp-heading text-base font-semibold">{title}</h2>
           {description ? <p className="gp-text-secondary mt-1 text-sm">{description}</p> : null}
         </div>
-        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+        {actions ? <div className="flex max-w-full flex-wrap items-center gap-2 lg:justify-end">{actions}</div> : null}
       </div>
       <div className="mt-5">{children}</div>
     </Card>

@@ -4,7 +4,6 @@ import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
 const navItems = [
-  { id: "workspace", labelKey: "nav.workspace" },
   { id: "overview", labelKey: "nav.overview" },
   { id: "hotspots", labelKey: "nav.hotspots" },
   { id: "ownership", labelKey: "nav.ownership" },

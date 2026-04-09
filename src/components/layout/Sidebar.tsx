@@ -1,6 +1,7 @@
 import { useUiStore } from "../../app/store/ui-store";
 import type { NavigationItem } from "../../app/store/ui-store";
 import { cn } from "../../lib/cn";
+import gitpulseLogoDark from "../../../icons/gitpulse_logo_dark.svg";
 
 export type SidebarItem = {
   id: NavigationItem;
@@ -16,7 +17,7 @@ export function Sidebar({ items }: SidebarProps) {
 
   return (
     <aside className="gp-sidebar">
-      <img src="/icons/gitpulse_logo_dark.svg" alt="GitPulse" className="mb-8 w-44" />
+      <img src={gitpulseLogoDark} alt="GitPulse" className="mb-8 w-44" />
       <nav className="space-y-1">
         {items.map((item) => (
           <button
