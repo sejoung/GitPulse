@@ -15,7 +15,8 @@ pub fn run() {
             commands::analysis::get_activity_analysis,
             commands::analysis::get_delivery_risk_analysis,
             commands::branch::list_git_branches,
-            commands::branch::checkout_git_branch
+            commands::branch::checkout_git_branch,
+            commands::branch::check_git_remote_status
         ])
         .run(tauri::generate_context!())
         .expect("error while running GitPulse");

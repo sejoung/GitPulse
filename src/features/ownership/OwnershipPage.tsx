@@ -33,7 +33,7 @@ export function OwnershipPage() {
         }
       />
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label={t("stats.topContributor")}
           value={

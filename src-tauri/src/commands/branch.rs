@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::process::Command;
 
-use crate::models::overview::GitBranch;
+use crate::models::overview::{GitBranch, GitRemoteStatus};
 
 fn is_git_workspace(workspace_path: &str) -> bool {
     Path::new(workspace_path).exists()
@@ -64,6 +64,24 @@ fn local_name_from_remote(branch_name: &str) -> Option<&str> {
     branch_name
         .split_once('/')
         .map(|(_, local_name)| local_name)
+}
+
+fn parse_ahead_behind(output: &str) -> Option<(u32, u32)> {
+    let mut parts = output.split_whitespace();
+    let ahead = parts.next()?.parse().ok()?;
+    let behind = parts.next()?.parse().ok()?;
+
+    Some((ahead, behind))
+}
+
+fn remote_status_from_counts(ahead: u32, behind: u32) -> String {
+    match (ahead, behind) {
+        (0, 0) => "up_to_date",
+        (0, _) => "behind",
+        (_, 0) => "ahead",
+        _ => "diverged",
+    }
+    .to_string()
 }
 
 fn branches_from_ref_output(output: &str, current_branch: Option<&str>) -> Vec<GitBranch> {
@@ -178,6 +196,64 @@ fn checkout_git_branch_blocking(
     Err(format!("Branch not found: {branch_name}"))
 }
 
+#[tauri::command]
+pub async fn check_git_remote_status(
+    workspace_path: Option<String>,
+) -> Result<GitRemoteStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || check_git_remote_status_blocking(workspace_path))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+fn check_git_remote_status_blocking(
+    workspace_path: Option<String>,
+) -> Result<GitRemoteStatus, String> {
+    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+        return Err("Select a Git workspace first.".to_string());
+    };
+
+    if let Err(message) = run_git(&workspace_path, &["fetch", "--prune"]) {
+        return Ok(GitRemoteStatus {
+            status: "fetch_failed".to_string(),
+            upstream: None,
+            ahead: 0,
+            behind: 0,
+            message: Some(message),
+        });
+    }
+
+    let upstream = match run_git(
+        &workspace_path,
+        &["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"],
+    ) {
+        Ok(upstream) => upstream,
+        Err(message) => {
+            return Ok(GitRemoteStatus {
+                status: "no_upstream".to_string(),
+                upstream: None,
+                ahead: 0,
+                behind: 0,
+                message: Some(message),
+            });
+        }
+    };
+
+    let counts = run_git(
+        &workspace_path,
+        &["rev-list", "--left-right", "--count", "HEAD...@{u}"],
+    )?;
+    let (ahead, behind) = parse_ahead_behind(&counts)
+        .ok_or_else(|| format!("Could not parse remote status: {counts}"))?;
+
+    Ok(GitRemoteStatus {
+        status: remote_status_from_counts(ahead, behind),
+        upstream: Some(upstream),
+        ahead,
+        behind,
+        message: None,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -224,5 +300,20 @@ mod tests {
     fn remote_head_pointer_is_not_treated_as_checkoutable_remote_branch() {
         assert!(!remote_branch_exists("/not/a/repo", "origin"));
         assert!(!remote_branch_exists("/not/a/repo", "origin/HEAD"));
+    }
+
+    #[test]
+    fn parses_ahead_and_behind_counts() {
+        assert_eq!(parse_ahead_behind("2\t3"), Some((2, 3)));
+        assert_eq!(parse_ahead_behind("0 1"), Some((0, 1)));
+        assert_eq!(parse_ahead_behind("not-counts"), None);
+    }
+
+    #[test]
+    fn maps_remote_status_from_counts() {
+        assert_eq!(remote_status_from_counts(0, 0), "up_to_date");
+        assert_eq!(remote_status_from_counts(0, 2), "behind");
+        assert_eq!(remote_status_from_counts(2, 0), "ahead");
+        assert_eq!(remote_status_from_counts(2, 3), "diverged");
     }
 }

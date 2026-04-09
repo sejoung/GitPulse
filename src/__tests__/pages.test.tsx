@@ -10,6 +10,7 @@ import { SettingsPage } from "../features/settings/SettingsPage";
 import { renderWithClient } from "../test/render";
 
 const api = vi.hoisted(() => ({
+  checkGitRemoteStatus: vi.fn(),
   checkoutGitBranch: vi.fn(),
   getActivityAnalysis: vi.fn(),
   getDeliveryRiskAnalysis: vi.fn(),
@@ -57,6 +58,13 @@ beforeEach(async () => {
   api.getOwnershipAnalysis.mockResolvedValue([]);
   api.getDeliveryRiskAnalysis.mockResolvedValue([]);
   api.getGitBranches.mockResolvedValue([]);
+  api.checkGitRemoteStatus.mockResolvedValue({
+    status: "up_to_date",
+    upstream: "origin/main",
+    ahead: 0,
+    behind: 0,
+    message: null,
+  });
   api.checkoutGitBranch.mockResolvedValue("main");
 });
 
@@ -121,6 +129,29 @@ describe("OverviewPage branch controls", () => {
     expect(
       screen.getByText("Checking out the branch and refreshing analysis.")
     ).toBeInTheDocument();
+  });
+
+  it("checks remote status without pulling changes", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getGitBranches.mockResolvedValue([
+      { name: "main", label: "main", kind: "local", current: true },
+    ]);
+    api.checkGitRemoteStatus.mockResolvedValue({
+      status: "behind",
+      upstream: "origin/main",
+      ahead: 0,
+      behind: 2,
+      message: null,
+    });
+
+    renderWithClient(<OverviewPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Check remote" }));
+
+    expect(api.checkGitRemoteStatus).toHaveBeenCalledWith("/repo");
+    expect(await screen.findByText("Behind 2")).toBeInTheDocument();
+    expect(screen.getByText("Tracking origin/main")).toBeInTheDocument();
   });
 });
 

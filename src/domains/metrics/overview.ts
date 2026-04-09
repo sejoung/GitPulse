@@ -40,3 +40,11 @@ export type GitBranch = {
   kind: "local" | "remote";
   current: boolean;
 };
+
+export type GitRemoteStatus = {
+  status: "up_to_date" | "behind" | "ahead" | "diverged" | "no_upstream" | "fetch_failed";
+  upstream: string | null;
+  ahead: number;
+  behind: number;
+  message: string | null;
+};

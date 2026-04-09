@@ -18,13 +18,30 @@ import { useOverviewAnalysis } from "./useOverviewAnalysis";
 import { useActivityAnalysis } from "../activity/useActivityAnalysis";
 import { useHotspotsAnalysis } from "../hotspots/useHotspotsAnalysis";
 import { useWorkspacePrompt } from "../workspace/useWorkspacePrompt";
-import { useCheckoutGitBranch, useGitBranches } from "./useGitBranches";
+import { useCheckoutGitBranch, useCheckGitRemoteStatus, useGitBranches } from "./useGitBranches";
+import type { GitRemoteStatus } from "../../domains/metrics/overview";
 
 const periodTabs = [
   { id: "1y", labelKey: "settings:defaults.analysisWindows.1y" },
   { id: "6m", labelKey: "settings:defaults.analysisWindows.6m" },
   { id: "3m", labelKey: "settings:defaults.analysisWindows.3m" },
 ] as const;
+
+function remoteStatusTone(status?: GitRemoteStatus["status"]) {
+  switch (status) {
+    case "up_to_date":
+      return "healthy";
+    case "behind":
+    case "diverged":
+      return "watch";
+    case "fetch_failed":
+      return "critical";
+    case "ahead":
+      return "brand";
+    default:
+      return "neutral";
+  }
+}
 
 export function OverviewPage() {
   const { t } = useTranslation(["overview", "common", "settings"]);
@@ -39,6 +56,14 @@ export function OverviewPage() {
   const selectWorkspace = useWorkspacePrompt();
   const { data: branches = [], isLoading: isBranchLoading } = useGitBranches(workspacePath);
   const checkoutBranch = useCheckoutGitBranch(workspacePath);
+  const {
+    data: remoteStatus,
+    error: remoteStatusError,
+    isError: isRemoteStatusError,
+    isPending: isRemoteStatusPending,
+    mutate: checkRemoteStatus,
+    reset: resetRemoteStatus,
+  } = useCheckGitRemoteStatus(workspacePath);
   const currentBranch = branches.find((branch) => branch.current)?.name ?? "";
   const activeBranch = selectedBranch || currentBranch;
   const { data, isLoading, isError } = useOverviewAnalysis(
@@ -69,6 +94,17 @@ export function OverviewPage() {
   const maxActivityCommits = Math.max(1, ...activityRows.map((row) => row.commits));
   const initialValue = t("common:status.notAnalyzed");
   const initialEmptyText = t("common:empty.selectWorkspace");
+  const remoteStatusLabel = remoteStatus
+    ? t(`workspaceDetails.remoteStatus.${remoteStatus.status}`, {
+        ahead: remoteStatus.ahead,
+        behind: remoteStatus.behind,
+      })
+    : t("workspaceDetails.remoteStatus.notChecked");
+  const remoteStatusDescription = remoteStatus?.upstream
+    ? t("workspaceDetails.remoteStatus.upstream", { upstream: remoteStatus.upstream })
+    : remoteStatus?.status === "no_upstream"
+      ? t("workspaceDetails.remoteStatus.noUpstreamDescription")
+      : remoteStatus?.message || t("workspaceDetails.remoteStatus.description");
 
   useEffect(() => {
     if (!selectedBranch && currentBranch) {
@@ -76,17 +112,29 @@ export function OverviewPage() {
     }
   }, [currentBranch, selectedBranch, setSelectedBranch]);
 
+  useEffect(() => {
+    resetRemoteStatus();
+  }, [activeBranch, resetRemoteStatus, workspacePath]);
+
   return (
     <div className="space-y-6">
-      {checkoutBranch.isPending ? (
+      {checkoutBranch.isPending || isRemoteStatusPending ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gp-bg-primary/70 px-5 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-lg border border-gp-border bg-gp-bg-secondary p-5 shadow-xl">
-            <p className="gp-kicker">{t("workspaceDetails.switchingBranch")}</p>
+            <p className="gp-kicker">
+              {checkoutBranch.isPending
+                ? t("workspaceDetails.switchingBranch")
+                : t("workspaceDetails.checkingRemote")}
+            </p>
             <h2 className="gp-heading mt-2 text-lg font-semibold">
-              {String(checkoutBranch.variables ?? activeBranch)}
+              {checkoutBranch.isPending
+                ? String(checkoutBranch.variables ?? activeBranch)
+                : (activeBranch ?? t("common:status.notSelected"))}
             </h2>
             <p className="gp-text-secondary mt-2 text-sm">
-              {t("workspaceDetails.switchingBranchDescription")}
+              {checkoutBranch.isPending
+                ? t("workspaceDetails.switchingBranchDescription")
+                : t("workspaceDetails.checkingRemoteDescription")}
             </p>
           </div>
         </div>
@@ -98,10 +146,7 @@ export function OverviewPage() {
         description={t("description")}
         actions={
           <>
-            <Badge
-              tone={hasWorkspace ? "healthy" : "neutral"}
-              className="max-w-full truncate lg:max-w-md"
-            >
+            <Badge tone={hasWorkspace ? "healthy" : "neutral"} className="max-w-full truncate">
               {hasWorkspace ? workspacePath : t("common:status.notSelected")}
             </Badge>
             <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
@@ -115,7 +160,7 @@ export function OverviewPage() {
 
       {isError ? <p className="gp-alert-critical">{t("error")}</p> : null}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label={t("stats.repository")}
           value={
@@ -163,12 +208,21 @@ export function OverviewPage() {
           <Tabs items={translatedPeriodTabs} value={analysisPeriod} onChange={setAnalysisPeriod} />
         }
       >
-        <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_minmax(180px,240px)_auto]">
+        <div className="gp-control-grid mb-4">
           <Input
             readOnly
             value={workspacePath || t("common:status.notSelected")}
             aria-label={t("stats.repository")}
           />
+          <Button
+            variant={hasWorkspace ? "secondary" : "primary"}
+            className="gp-control-action"
+            onClick={selectWorkspace}
+          >
+            {hasWorkspace
+              ? t("common:actions.changeWorkspace")
+              : t("common:actions.selectWorkspace")}
+          </Button>
           <Select
             value={activeBranch}
             disabled={
@@ -186,15 +240,32 @@ export function OverviewPage() {
               </option>
             ))}
           </Select>
-          <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
-            {hasWorkspace
-              ? t("common:actions.changeWorkspace")
-              : t("common:actions.selectWorkspace")}
+          <Button
+            variant="secondary"
+            className="gp-control-action"
+            disabled={!hasWorkspace || isRemoteStatusPending}
+            onClick={() => checkRemoteStatus()}
+          >
+            {isRemoteStatusPending
+              ? t("workspaceDetails.checkingRemote")
+              : t("workspaceDetails.checkRemote")}
           </Button>
         </div>
         {checkoutBranch.isError ? (
           <p className="gp-alert-critical mb-4">{String(checkoutBranch.error)}</p>
         ) : null}
+        {isRemoteStatusError ? (
+          <p className="gp-alert-critical mb-4">{String(remoteStatusError)}</p>
+        ) : null}
+        <div className="gp-status-row mb-4">
+          <div className="min-w-0">
+            <p className="gp-kicker">{t("workspaceDetails.remoteStatus.title")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">{remoteStatusDescription}</p>
+          </div>
+          <Badge tone={remoteStatusTone(remoteStatus?.status)} className="w-fit">
+            {remoteStatusLabel}
+          </Badge>
+        </div>
         <Table
           columns={[
             { key: "path", header: t("common:table.file"), render: (row) => row.path },

@@ -1,7 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUiStore } from "../../app/store/ui-store";
 import { queryKeys } from "../../services/cache/query-keys";
-import { checkoutGitBranch, getGitBranches } from "../../services/tauri/analysis-api";
+import {
+  checkoutGitBranch,
+  checkGitRemoteStatus,
+  getGitBranches,
+} from "../../services/tauri/analysis-api";
 
 export function useGitBranches(workspacePath: string) {
   return useQuery({
@@ -25,6 +29,17 @@ export function useCheckoutGitBranch(workspacePath: string) {
       void queryClient.invalidateQueries({ queryKey: ["ownership"] });
       void queryClient.invalidateQueries({ queryKey: ["activity"] });
       void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
+    },
+  });
+}
+
+export function useCheckGitRemoteStatus(workspacePath: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => checkGitRemoteStatus(workspacePath),
+    onSuccess: (remoteStatus) => {
+      queryClient.setQueryData(queryKeys.remoteStatus(workspacePath), remoteStatus);
     },
   });
 }

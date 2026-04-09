@@ -88,6 +88,11 @@ Use them for repeated UI patterns:
 | `gp-topbar`           | Mobile topbar container            |
 | `gp-main`             | Main content offset for sidebar    |
 | `gp-page`             | Page width and padding             |
+| `gp-content-header`   | Responsive page/detail header row  |
+| `gp-header-actions`   | Responsive header action group     |
+| `gp-control-grid`     | Responsive analysis control row    |
+| `gp-control-action`   | Responsive action in control grids |
+| `gp-status-row`       | Responsive inline status panel     |
 | `gp-nav-item`         | Sidebar navigation item            |
 | `gp-nav-item-active`  | Active sidebar item                |
 | `gp-tabs`             | Tabs container                     |
@@ -199,7 +204,7 @@ import { ChartCard } from "../../components/charts";
 ### Stat Cards
 
 ```tsx
-<section className="grid gap-4 md:grid-cols-4">
+<section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
   <StatCard label="Commits" value="128" detail="Analyzed history" tone="brand" />
   <StatCard label="Hotspots" value="7" detail="High-change files" tone="watch" />
   <StatCard label="Risk" value="low" detail="Delivery signal" tone="healthy" />
@@ -249,6 +254,7 @@ import { ChartCard } from "../../components/charts";
 - Prefer components from `src/components/ui`, `src/components/layout`, and `src/components/charts`.
 - Use Tailwind layout utilities for spacing and grids.
 - Use `gp-*` semantic classes for repeated UI patterns.
+- Treat the Tauri minimum window width as a desktop dashboard constraint: keep dense 3-4 column content grids at `xl` so the sidebar does not compress cards at the minimum window size.
 - Use direct `bg-gp-*`, `text-gp-*`, and `border-gp-*` tokens only when a semantic class does not exist yet.
 - Do not introduce a new color without adding it to the GitPulse color system first.
 - Use risk tones only for actual health, warning, risk, or critical signals.

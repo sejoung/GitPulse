@@ -18,8 +18,25 @@
     "description": "Analysis controls for the current repository.",
     "branch": "Branch",
     "noBranches": "No branches",
+    "checkRemote": "Check remote",
+    "checkingRemote": "Checking remote",
+    "checkingRemoteDescription": "Fetching remote refs and comparing the current branch with upstream.",
     "switchingBranch": "Switching branch",
-    "switchingBranchDescription": "Checking out the branch and refreshing analysis."
+    "switchingBranchDescription": "Checking out the branch and refreshing analysis.",
+    "remoteStatus": {
+      "title": "Remote status",
+      "description": "Run a remote check to see whether this branch is current.",
+      "notChecked": "Not checked",
+      "upToDate": "Up to date",
+      "up_to_date": "Up to date",
+      "behind": "Behind {{behind}}",
+      "ahead": "Ahead {{ahead}}",
+      "diverged": "Ahead {{ahead}} / behind {{behind}}",
+      "no_upstream": "No upstream",
+      "noUpstreamDescription": "This branch does not have a remote tracking branch yet.",
+      "fetch_failed": "Fetch failed",
+      "upstream": "Tracking {{upstream}}"
+    }
   },
   "chart": {
     "activityTrend": "Activity trend"

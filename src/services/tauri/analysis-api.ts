@@ -3,6 +3,7 @@ import type {
   ActivityPoint,
   DeliveryEvent,
   GitBranch,
+  GitRemoteStatus,
   HotspotFile,
   OverviewAnalysis,
   OwnershipContributor,
@@ -109,4 +110,18 @@ export function checkoutGitBranch(workspacePath: string, branchName: string) {
   }
 
   return invoke<string>("checkout_git_branch", { workspacePath, branchName });
+}
+
+export function checkGitRemoteStatus(workspacePath: string) {
+  if (!isTauriRuntime() || !workspacePath) {
+    return Promise.resolve<GitRemoteStatus>({
+      status: workspacePath ? "up_to_date" : "no_upstream",
+      upstream: null,
+      ahead: 0,
+      behind: 0,
+      message: null,
+    });
+  }
+
+  return invoke<GitRemoteStatus>("check_git_remote_status", { workspacePath });
 }

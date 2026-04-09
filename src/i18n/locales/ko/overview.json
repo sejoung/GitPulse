@@ -18,8 +18,25 @@
     "description": "현재 저장소의 분석 기준입니다.",
     "branch": "브랜치",
     "noBranches": "브랜치 없음",
+    "checkRemote": "원격 확인",
+    "checkingRemote": "원격 확인 중",
+    "checkingRemoteDescription": "원격 ref를 fetch하고 현재 브랜치를 upstream과 비교하고 있습니다.",
     "switchingBranch": "브랜치 변경 중",
-    "switchingBranchDescription": "브랜치를 checkout하고 분석을 갱신하고 있습니다."
+    "switchingBranchDescription": "브랜치를 checkout하고 분석을 갱신하고 있습니다.",
+    "remoteStatus": {
+      "title": "원격 상태",
+      "description": "원격 확인을 실행하면 현재 브랜치가 최신인지 알 수 있습니다.",
+      "notChecked": "확인 전",
+      "upToDate": "최신",
+      "up_to_date": "최신",
+      "behind": "{{behind}}개 뒤처짐",
+      "ahead": "{{ahead}}개 앞섬",
+      "diverged": "{{ahead}}개 앞섬 / {{behind}}개 뒤처짐",
+      "no_upstream": "upstream 없음",
+      "noUpstreamDescription": "현재 브랜치에 연결된 원격 추적 브랜치가 없습니다.",
+      "fetch_failed": "fetch 실패",
+      "upstream": "{{upstream}} 추적 중"
+    }
   },
   "chart": {
     "activityTrend": "Activity trend"
