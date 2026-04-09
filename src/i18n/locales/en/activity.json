@@ -1,0 +1,21 @@
+{
+  "kicker": "Activity Trend",
+  "title": "Is the project accelerating or stalling?",
+  "description": "Monthly commit rhythm shows team momentum and release patterns.",
+  "badge": "Monthly rhythm",
+  "stats": {
+    "currentMonth": "Current month",
+    "trend": "Trend",
+    "signal": "Signal",
+    "comparedWithPreviousMonth": "Compared with previous month",
+    "noDeclinePattern": "No decline pattern"
+  },
+  "chart": {
+    "title": "Monthly commit trend",
+    "description": "A steady rhythm is a healthy project signal."
+  },
+  "table": {
+    "title": "Monthly commits",
+    "description": "Monthly activity extracted from Git history."
+  }
+}

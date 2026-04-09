@@ -1,0 +1,22 @@
+{
+  "kicker": "Team & Ownership",
+  "title": "누가 이 코드를 만들었는가",
+  "description": "기여 집중도와 최근 활동 여부는 지식 편중과 유지보수 공백의 신호가 됩니다.",
+  "badge": "Bus factor watch",
+  "stats": {
+    "topContributor": "Top contributor",
+    "activeContributors": "Active contributors",
+    "knowledgeRisk": "Knowledge risk",
+    "aboveWatchThreshold": "watch 기준 초과",
+    "recentActivity": "최근 활동",
+    "ownershipConcentration": "소유권 집중"
+  },
+  "table": {
+    "title": "Contributor distribution",
+    "description": "커밋 수 기준 기여 분포입니다."
+  },
+  "chart": {
+    "title": "Ownership concentration",
+    "description": "상위 기여자 비율이 높을수록 지식 편중 신호가 강합니다."
+  }
+}

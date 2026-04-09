@@ -1,0 +1,21 @@
+{
+  "kicker": "Code Hotspots",
+  "title": "Files that change most often",
+  "description": "High-risk signals appear where change frequency overlaps with bug-related commits.",
+  "badge": "Churn + bug overlap",
+  "stats": {
+    "topChurnFiles": "Top churn files",
+    "bugOverlap": "Bug overlap",
+    "highestSignal": "Highest signal",
+    "highChangeAndFixHeavy": "High-change and fix-heavy",
+    "potentialMaintenanceLoad": "Potential maintenance load"
+  },
+  "ranking": {
+    "title": "Hotspot ranking",
+    "description": "Files that change often and break often are candidates to inspect first."
+  },
+  "chart": {
+    "title": "Change frequency",
+    "description": "File-level change frequency over the last year."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "kicker": "Team & Ownership",
+  "title": "Who built this code?",
+  "description": "Contribution concentration and recent activity reveal ownership and maintenance gaps.",
+  "badge": "Bus factor watch",
+  "stats": {
+    "topContributor": "Top contributor",
+    "activeContributors": "Active contributors",
+    "knowledgeRisk": "Knowledge risk",
+    "aboveWatchThreshold": "Above watch threshold",
+    "recentActivity": "Recent activity",
+    "ownershipConcentration": "Ownership concentration"
+  },
+  "table": {
+    "title": "Contributor distribution",
+    "description": "Contribution distribution by commit count."
+  },
+  "chart": {
+    "title": "Ownership concentration",
+    "description": "Higher top-contributor share means a stronger knowledge concentration signal."
+  }
+}

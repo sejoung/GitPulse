@@ -1,0 +1,27 @@
+{
+  "kicker": "Settings",
+  "title": "Analysis settings",
+  "description": "GitPulse separates data collection from interpretation when calculating signals.",
+  "badge": "Local only",
+  "filters": {
+    "title": "Repository filters",
+    "description": "Paths or patterns excluded from analysis.",
+    "excludedPaths": "Excluded paths",
+    "defaultBranch": "Default branch"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Choose the language used in the app.",
+    "current": "Current language",
+    "ko": "한국어",
+    "en": "English"
+  },
+  "defaults": {
+    "title": "Signal defaults",
+    "description": "Default criteria used for initial Git analysis.",
+    "analysisWindow": "Analysis window",
+    "bugKeywords": "Bug keywords",
+    "emergencyKeywords": "Emergency keywords",
+    "cacheKey": "Cache key"
+  }
+}

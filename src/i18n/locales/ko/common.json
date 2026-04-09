@@ -1,0 +1,60 @@
+{
+  "appName": "GitPulse",
+  "nav": {
+    "workspace": "Workspace",
+    "overview": "Overview",
+    "hotspots": "Hotspots",
+    "ownership": "Ownership",
+    "activity": "Activity",
+    "deliveryRisk": "Delivery Risk",
+    "settings": "Settings"
+  },
+  "actions": {
+    "selectWorkspace": "저장소 선택",
+    "browse": "찾아보기"
+  },
+  "status": {
+    "notSelected": "선택 안 됨",
+    "healthy": "healthy",
+    "watch": "watch",
+    "risky": "risky",
+    "critical": "critical",
+    "low": "low",
+    "steady": "steady",
+    "active": "활동 중",
+    "quiet": "조용함"
+  },
+  "table": {
+    "file": "File",
+    "changes": "Changes",
+    "fixCommits": "Fix commits",
+    "signal": "Signal",
+    "risk": "Risk",
+    "question": "Question",
+    "signalSource": "Signal source",
+    "contributor": "Contributor",
+    "commits": "Commits",
+    "share": "Share",
+    "recent": "Recent",
+    "month": "Month",
+    "pattern": "Pattern",
+    "count": "Count",
+    "setting": "Setting",
+    "value": "Value"
+  },
+  "empty": {
+    "chart": "Git 이력 신호가 여기에 표시됩니다.",
+    "hotspots": "아직 hotspot 데이터가 없습니다."
+  },
+  "time": {
+    "lastYear": "최근 1년",
+    "currentWorkspace": "현재 workspace",
+    "all": "전체"
+  },
+  "signals": {
+    "normalRecovery": "정상 복구",
+    "watchReleasePressure": "릴리스 압박 관찰",
+    "noRollbackPattern": "rollback 패턴 없음",
+    "noEmergencyPattern": "emergency 패턴 없음"
+  }
+}

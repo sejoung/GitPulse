@@ -1,0 +1,60 @@
+{
+  "appName": "GitPulse",
+  "nav": {
+    "workspace": "Workspace",
+    "overview": "Overview",
+    "hotspots": "Hotspots",
+    "ownership": "Ownership",
+    "activity": "Activity",
+    "deliveryRisk": "Delivery Risk",
+    "settings": "Settings"
+  },
+  "actions": {
+    "selectWorkspace": "Select workspace",
+    "browse": "Browse"
+  },
+  "status": {
+    "notSelected": "Not selected",
+    "healthy": "healthy",
+    "watch": "watch",
+    "risky": "risky",
+    "critical": "critical",
+    "low": "low",
+    "steady": "steady",
+    "active": "Active",
+    "quiet": "Quiet"
+  },
+  "table": {
+    "file": "File",
+    "changes": "Changes",
+    "fixCommits": "Fix commits",
+    "signal": "Signal",
+    "risk": "Risk",
+    "question": "Question",
+    "signalSource": "Signal source",
+    "contributor": "Contributor",
+    "commits": "Commits",
+    "share": "Share",
+    "recent": "Recent",
+    "month": "Month",
+    "pattern": "Pattern",
+    "count": "Count",
+    "setting": "Setting",
+    "value": "Value"
+  },
+  "empty": {
+    "chart": "Git history signals will appear here.",
+    "hotspots": "No hotspot data yet."
+  },
+  "time": {
+    "lastYear": "Last year",
+    "currentWorkspace": "Current workspace",
+    "all": "All"
+  },
+  "signals": {
+    "normalRecovery": "Normal recovery",
+    "watchReleasePressure": "Watch release pressure",
+    "noRollbackPattern": "No rollback pattern",
+    "noEmergencyPattern": "No emergency pattern"
+  }
+}

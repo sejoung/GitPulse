@@ -1,0 +1,17 @@
+{
+  "kicker": "Delivery Risk",
+  "title": "How often is the team in emergency response?",
+  "description": "Revert, hotfix, and rollback patterns signal delivery stability and process trust.",
+  "badge": "Low pressure",
+  "stats": {
+    "hotfix": "Hotfix",
+    "revert": "Revert",
+    "rollback": "Rollback",
+    "signal": "Signal",
+    "deliveryRisk": "Delivery risk"
+  },
+  "patterns": {
+    "title": "Emergency patterns",
+    "description": "Emergency response every two weeks is a signal to inspect deeper delivery issues."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "kicker": "GitPulse",
+  "title": "코드 뒤에 숨은 신호",
+  "description": "Git 히스토리에서 변화, 소유권, 활동 흐름, 배포 안정성의 신호를 읽습니다.",
+  "badge": "Overview",
+  "error": "Overview 분석을 불러오지 못했습니다.",
+  "stats": {
+    "repository": "Repository",
+    "commits": "Commits",
+    "hotspots": "Hotspots",
+    "risk": "Risk",
+    "analyzedHistory": "분석된 이력",
+    "highChangeFiles": "변경 빈도가 높은 파일",
+    "deliverySignal": "배포 신호"
+  },
+  "workspaceDetails": {
+    "title": "Workspace details",
+    "description": "현재 저장소의 분석 기준입니다."
+  },
+  "chart": {
+    "activityTrend": "Activity trend"
+  }
+}

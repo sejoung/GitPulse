@@ -1,0 +1,23 @@
+{
+  "kicker": "GitPulse",
+  "title": "Signals behind your code",
+  "description": "Read change, ownership, activity, and delivery stability signals from Git history.",
+  "badge": "Overview",
+  "error": "Overview analysis could not be loaded.",
+  "stats": {
+    "repository": "Repository",
+    "commits": "Commits",
+    "hotspots": "Hotspots",
+    "risk": "Risk",
+    "analyzedHistory": "Analyzed history",
+    "highChangeFiles": "High-change files",
+    "deliverySignal": "Delivery signal"
+  },
+  "workspaceDetails": {
+    "title": "Workspace details",
+    "description": "Analysis controls for the current repository."
+  },
+  "chart": {
+    "activityTrend": "Activity trend"
+  }
+}

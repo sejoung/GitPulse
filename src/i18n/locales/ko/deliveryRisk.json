@@ -1,0 +1,17 @@
+{
+  "kicker": "Delivery Risk",
+  "title": "팀이 얼마나 자주 긴급 대응 중인가",
+  "description": "revert, hotfix, rollback 패턴은 배포 안정성과 프로세스 신뢰도의 신호입니다.",
+  "badge": "Low pressure",
+  "stats": {
+    "hotfix": "Hotfix",
+    "revert": "Revert",
+    "rollback": "Rollback",
+    "signal": "Signal",
+    "deliveryRisk": "배포 위험"
+  },
+  "patterns": {
+    "title": "Emergency patterns",
+    "description": "2주마다 반복되는 긴급 대응은 더 깊은 배포 문제를 의심할 신호입니다."
+  }
+}
