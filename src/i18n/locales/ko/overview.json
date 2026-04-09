@@ -17,7 +17,9 @@
     "title": "Workspace details",
     "description": "현재 저장소의 분석 기준입니다.",
     "branch": "브랜치",
-    "noBranches": "브랜치 없음"
+    "noBranches": "브랜치 없음",
+    "switchingBranch": "브랜치 변경 중",
+    "switchingBranchDescription": "브랜치를 checkout하고 분석을 갱신하고 있습니다."
   },
   "chart": {
     "activityTrend": "Activity trend"

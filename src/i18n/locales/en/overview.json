@@ -17,7 +17,9 @@
     "title": "Workspace details",
     "description": "Analysis controls for the current repository.",
     "branch": "Branch",
-    "noBranches": "No branches"
+    "noBranches": "No branches",
+    "switchingBranch": "Switching branch",
+    "switchingBranchDescription": "Checking out the branch and refreshing analysis."
   },
   "chart": {
     "activityTrend": "Activity trend"

@@ -51,6 +51,18 @@ export function OverviewPage() {
 
   return (
     <div className="space-y-6">
+      {checkoutBranch.isPending ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gp-bg-primary/70 px-5 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-lg border border-gp-border bg-gp-bg-secondary p-5 shadow-xl">
+            <p className="gp-kicker">{t("workspaceDetails.switchingBranch")}</p>
+            <h2 className="gp-heading mt-2 text-lg font-semibold">
+              {String(checkoutBranch.variables ?? activeBranch)}
+            </h2>
+            <p className="gp-text-secondary mt-2 text-sm">{t("workspaceDetails.switchingBranchDescription")}</p>
+          </div>
+        </div>
+      ) : null}
+
       <PageHeader
         kicker={t("kicker")}
         title={t("title")}

@@ -19,7 +19,12 @@ export function useCheckoutGitBranch(workspacePath: string) {
     mutationFn: (branchName: string) => checkoutGitBranch(workspacePath, branchName),
     onSuccess: (branchName) => {
       setSelectedBranch(branchName);
-      void queryClient.invalidateQueries();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.branches(workspacePath) });
+      void queryClient.invalidateQueries({ queryKey: ["overview"] });
+      void queryClient.invalidateQueries({ queryKey: ["hotspots"] });
+      void queryClient.invalidateQueries({ queryKey: ["ownership"] });
+      void queryClient.invalidateQueries({ queryKey: ["activity"] });
+      void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
     },
   });
 }

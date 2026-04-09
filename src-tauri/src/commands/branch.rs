@@ -130,7 +130,18 @@ pub fn list_git_branches(workspace_path: Option<String>) -> Vec<GitBranch> {
 }
 
 #[tauri::command]
-pub fn checkout_git_branch(
+pub async fn checkout_git_branch(
+    workspace_path: Option<String>,
+    branch_name: String,
+) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        checkout_git_branch_blocking(workspace_path, branch_name)
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+fn checkout_git_branch_blocking(
     workspace_path: Option<String>,
     branch_name: String,
 ) -> Result<String, String> {
