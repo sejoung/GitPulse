@@ -29,6 +29,7 @@ export type ActivityPoint = {
 export type DeliveryEvent = {
   event: string;
   count: number;
+  signal: string;
   signalKey: string;
   risk: "healthy" | "watch" | "risky";
 };

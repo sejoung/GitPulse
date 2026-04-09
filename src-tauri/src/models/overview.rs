@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -41,6 +41,14 @@ pub struct ActivityPoint {
 pub struct DeliveryEvent {
     pub event: String,
     pub count: u32,
+    pub signal: String,
     pub signal_key: String,
     pub risk: String,
+}
+
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmergencyPatternConfig {
+    pub pattern: String,
+    pub signal: String,
 }

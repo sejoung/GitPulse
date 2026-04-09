@@ -7,7 +7,8 @@ import { useActivityAnalysis } from "./useActivityAnalysis";
 export function ActivityPage() {
   const { t } = useTranslation(["activity", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
-  const { data: activityRows = [], isLoading } = useActivityAnalysis(workspacePath);
+  const analysisPeriod = useUiStore((state) => state.analysisPeriod);
+  const { data: activityRows = [], isLoading } = useActivityAnalysis(workspacePath, analysisPeriod);
   const hasWorkspace = Boolean(workspacePath);
   const hasData = activityRows.some((row) => row.commits > 0);
   const maxCommits = Math.max(1, ...activityRows.map((row) => row.commits));

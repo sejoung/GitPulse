@@ -1,3 +1,4 @@
+import type { EmergencyPattern } from "../../app/store/ui-store";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { Badge, DetailPanel, PageHeader, StatCard, Table } from "../../components/ui";
@@ -6,11 +7,21 @@ import { useDeliveryRiskAnalysis } from "./useDeliveryRiskAnalysis";
 export function DeliveryRiskPage() {
   const { t } = useTranslation(["deliveryRisk", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
-  const emergencyKeywords = useUiStore((state) => state.emergencyKeywords);
-  const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(workspacePath, emergencyKeywords);
+  const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(workspacePath, emergencyPatterns);
   const hasWorkspace = Boolean(workspacePath);
   const hasData = deliveryRows.length > 0;
-  const eventCount = (event: string) => deliveryRows.find((row) => row.event === event)?.count ?? 0;
+  const summaryRows = hasData
+    ? deliveryRows.slice(0, 3)
+    : emergencyPatterns
+        .filter((item) => item.pattern.trim())
+        .slice(0, 3)
+        .map((item): Pick<EmergencyPattern, "pattern"> & { event: string; count: number; risk: "healthy" } => ({
+          pattern: item.pattern,
+          event: item.pattern,
+          count: 0,
+          risk: "healthy",
+        }));
   const deliverySignal = deliveryRows.some((row) => row.risk === "risky")
     ? "risky"
     : deliveryRows.some((row) => row.risk === "watch")
@@ -27,9 +38,15 @@ export function DeliveryRiskPage() {
       />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("stats.hotfix")} value={!hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(eventCount("hotfix"))} detail={t("common:time.lastYear")} tone={hasWorkspace && hasData ? (eventCount("hotfix") >= 2 ? "watch" : "healthy") : "neutral"} />
-        <StatCard label={t("stats.revert")} value={!hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(eventCount("revert"))} detail={t("common:time.lastYear")} tone={hasWorkspace && hasData ? (eventCount("revert") >= 2 ? "watch" : "healthy") : "neutral"} />
-        <StatCard label={t("stats.rollback")} value={!hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(eventCount("rollback"))} detail={t("common:time.lastYear")} tone={hasWorkspace && hasData ? (eventCount("rollback") >= 2 ? "watch" : "healthy") : "neutral"} />
+        {summaryRows.map((row) => (
+          <StatCard
+            key={row.event}
+            label={row.event}
+            value={!hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(row.count)}
+            detail={t("common:time.lastYear")}
+            tone={hasWorkspace && hasData ? row.risk : "neutral"}
+          />
+        ))}
         <StatCard label={t("stats.signal")} value={!hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : hasData ? t(`common:status.${deliverySignal}`) : t("common:empty.deliveryRisk")} detail={t("stats.deliveryRisk")} tone={hasWorkspace && hasData ? deliverySignal : "neutral"} />
       </section>
 
@@ -41,7 +58,7 @@ export function DeliveryRiskPage() {
           columns={[
             { key: "event", header: t("common:table.pattern"), render: (row) => row.event },
             { key: "count", header: t("common:table.count"), align: "right", render: (row) => row.count },
-            { key: "signal", header: t("common:table.signal"), render: (row) => t(`common:${row.signalKey}`) },
+            { key: "signal", header: t("common:table.signal"), render: (row) => row.signal || t(`common:${row.signalKey}`) },
             {
               key: "risk",
               header: t("common:table.risk"),

@@ -26,7 +26,11 @@
       "3m": "3 months"
     },
     "bugKeywords": "Bug keywords",
-    "emergencyKeywords": "Emergency keywords",
+    "bugKeywordsHelp": "Comma-separated. Used to count fix overlap in Hotspots.",
+    "emergencyPatterns": "Emergency patterns",
+    "emergencyPattern": "Emergency pattern",
+    "emergencySignal": "Emergency signal",
+    "emergencyPatternsHelp": "Use commas for aliases in one row, for example: revert, reverted. The row signal is shared by every alias.",
     "cacheKey": "Cache key"
   }
 }

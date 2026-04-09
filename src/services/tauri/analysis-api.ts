@@ -6,20 +6,20 @@ import type {
   OverviewAnalysis,
   OwnershipContributor,
 } from "../../domains/metrics/overview";
-import type { AnalysisPeriod } from "../../app/store/ui-store";
+import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
 
 type AnalysisParams = {
   workspacePath: string;
   period?: AnalysisPeriod;
   bugKeywords?: string;
-  emergencyKeywords?: string;
+  emergencyPatterns?: EmergencyPattern[];
 };
 
 function isTauriRuntime() {
   return "__TAURI_INTERNALS__" in window;
 }
 
-export function getOverviewAnalysis({ workspacePath, period = "1y", bugKeywords, emergencyKeywords }: AnalysisParams) {
+export function getOverviewAnalysis({ workspacePath, period = "1y", bugKeywords, emergencyPatterns }: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<OverviewAnalysis>({
       repositoryName: workspacePath || "No workspace selected",
@@ -30,7 +30,7 @@ export function getOverviewAnalysis({ workspacePath, period = "1y", bugKeywords,
     });
   }
 
-  return invoke<OverviewAnalysis>("get_overview_analysis", { workspacePath, period, bugKeywords, emergencyKeywords });
+  return invoke<OverviewAnalysis>("get_overview_analysis", { workspacePath, period, bugKeywords, emergencyPatterns });
 }
 
 export function getHotspotsAnalysis({ workspacePath, period = "1y", bugKeywords }: AnalysisParams) {
@@ -49,18 +49,18 @@ export function getOwnershipAnalysis(workspacePath: string) {
   return invoke<OwnershipContributor[]>("get_ownership_analysis", { workspacePath });
 }
 
-export function getActivityAnalysis(workspacePath: string) {
+export function getActivityAnalysis(workspacePath: string, period: AnalysisPeriod = "1y") {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<ActivityPoint[]>([]);
   }
 
-  return invoke<ActivityPoint[]>("get_activity_analysis", { workspacePath });
+  return invoke<ActivityPoint[]>("get_activity_analysis", { workspacePath, period });
 }
 
-export function getDeliveryRiskAnalysis(workspacePath: string, emergencyKeywords?: string) {
+export function getDeliveryRiskAnalysis(workspacePath: string, emergencyPatterns?: EmergencyPattern[]) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<DeliveryEvent[]>([]);
   }
 
-  return invoke<DeliveryEvent[]>("get_delivery_risk_analysis", { workspacePath, emergencyKeywords });
+  return invoke<DeliveryEvent[]>("get_delivery_risk_analysis", { workspacePath, emergencyPatterns });
 }

@@ -26,12 +26,12 @@ export function SettingsPage() {
   const defaultBranch = useUiStore((state) => state.defaultBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
   const bugKeywords = useUiStore((state) => state.bugKeywords);
-  const emergencyKeywords = useUiStore((state) => state.emergencyKeywords);
+  const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
   const setExcludedPaths = useUiStore((state) => state.setExcludedPaths);
   const setDefaultBranch = useUiStore((state) => state.setDefaultBranch);
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
   const setBugKeywords = useUiStore((state) => state.setBugKeywords);
-  const setEmergencyKeywords = useUiStore((state) => state.setEmergencyKeywords);
+  const setEmergencyPattern = useUiStore((state) => state.setEmergencyPattern);
   const currentLanguage = toSupportedLanguage(i18n.resolvedLanguage ?? i18n.language);
   const translatedAnalysisWindowItems = analysisWindowItems.map((item) => ({
     id: item.id,
@@ -49,23 +49,39 @@ export function SettingsPage() {
     {
       key: t("defaults.bugKeywords"),
       value: (
-        <Input
-          value={bugKeywords}
-          onChange={(event) => setBugKeywords(event.target.value)}
-          placeholder="fix, bug, broken"
-          aria-label={t("defaults.bugKeywords")}
-        />
+        <div className="space-y-2">
+          <Input
+            value={bugKeywords}
+            onChange={(event) => setBugKeywords(event.target.value)}
+            placeholder="fix, bug, broken"
+            aria-label={t("defaults.bugKeywords")}
+          />
+          <p className="gp-text-muted text-xs">{t("defaults.bugKeywordsHelp")}</p>
+        </div>
       ),
     },
     {
-      key: t("defaults.emergencyKeywords"),
+      key: t("defaults.emergencyPatterns"),
       value: (
-        <Input
-          value={emergencyKeywords}
-          onChange={(event) => setEmergencyKeywords(event.target.value)}
-          placeholder="revert, hotfix, emergency, rollback"
-          aria-label={t("defaults.emergencyKeywords")}
-        />
+        <div className="space-y-3">
+          {emergencyPatterns.map((item, index) => (
+            <div key={index} className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]">
+              <Input
+                value={item.pattern}
+                onChange={(event) => setEmergencyPattern(index, { ...item, pattern: event.target.value })}
+                placeholder="revert, revert:, reverted"
+                aria-label={t("defaults.emergencyPattern")}
+              />
+              <Input
+                value={item.signal}
+                onChange={(event) => setEmergencyPattern(index, { ...item, signal: event.target.value })}
+                placeholder="Watch release pressure"
+                aria-label={t("defaults.emergencySignal")}
+              />
+            </div>
+          ))}
+          <p className="gp-text-muted text-xs">{t("defaults.emergencyPatternsHelp")}</p>
+        </div>
       ),
     },
     { key: t("defaults.cacheKey"), value: "workspace + branch + period + HEAD_SHA" },

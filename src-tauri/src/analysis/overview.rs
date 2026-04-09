@@ -3,7 +3,8 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::models::overview::{
-    ActivityPoint, DeliveryEvent, HotspotFile, OverviewAnalysis, OwnershipContributor,
+    ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotFile, OverviewAnalysis,
+    OwnershipContributor,
 };
 
 fn is_git_workspace(workspace_path: &str) -> bool {
@@ -36,6 +37,14 @@ fn since_arg(period: Option<&str>) -> Option<&'static str> {
         Some("6m") | Some("90d") => Some("6 months ago"),
         Some("1y") | Some("all") => Some("1 year ago"),
         _ => None,
+    }
+}
+
+fn month_window(period: Option<&str>) -> i32 {
+    match period {
+        Some("3m") | Some("30d") => 3,
+        Some("6m") | Some("90d") => 6,
+        _ => 12,
     }
 }
 
@@ -103,6 +112,63 @@ fn keyword_pattern(keywords: Option<&str>, fallback: &[&str]) -> String {
         .map(|keyword| escape_git_regex(keyword))
         .collect::<Vec<_>>()
         .join("|")
+}
+
+fn default_emergency_patterns() -> Vec<EmergencyPatternConfig> {
+    vec![
+        EmergencyPatternConfig {
+            pattern: "revert".to_string(),
+            signal: "Normal recovery".to_string(),
+        },
+        EmergencyPatternConfig {
+            pattern: "hotfix".to_string(),
+            signal: "Watch release pressure".to_string(),
+        },
+        EmergencyPatternConfig {
+            pattern: "emergency".to_string(),
+            signal: "Emergency response".to_string(),
+        },
+        EmergencyPatternConfig {
+            pattern: "rollback".to_string(),
+            signal: "Rollback pattern".to_string(),
+        },
+    ]
+}
+
+fn normalized_emergency_patterns(
+    emergency_patterns: Option<&[EmergencyPatternConfig]>,
+) -> Vec<EmergencyPatternConfig> {
+    let patterns: Vec<EmergencyPatternConfig> = emergency_patterns
+        .unwrap_or(&[])
+        .iter()
+        .filter_map(|item| {
+            let pattern = item.pattern.trim();
+
+            if pattern.is_empty() {
+                None
+            } else {
+                Some(EmergencyPatternConfig {
+                    pattern: pattern.to_string(),
+                    signal: item.signal.trim().to_string(),
+                })
+            }
+        })
+        .collect();
+
+    if patterns.is_empty() {
+        default_emergency_patterns()
+    } else {
+        patterns
+    }
+}
+
+fn pattern_aliases(pattern: &str) -> Vec<String> {
+    pattern
+        .split(',')
+        .map(str::trim)
+        .filter(|pattern| !pattern.is_empty())
+        .map(|pattern| pattern.to_lowercase())
+        .collect()
 }
 
 fn count_commits(workspace_path: &str, period: Option<&str>) -> u32 {
@@ -261,14 +327,19 @@ pub fn build_ownership_analysis(workspace_path: Option<&str>) -> Vec<OwnershipCo
         .collect()
 }
 
-pub fn build_activity_analysis(workspace_path: Option<&str>) -> Vec<ActivityPoint> {
+pub fn build_activity_analysis(
+    workspace_path: Option<&str>,
+    period: Option<&str>,
+) -> Vec<ActivityPoint> {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return Vec::new();
     };
 
+    let since = since_arg(period).unwrap_or("1 year ago");
+    let since = format!("--since={since}");
     let Some(output) = run_git(
         workspace_path,
-        &["log", "--format=%ad", "--date=format:%Y-%m"],
+        &["log", "--format=%ad", "--date=format:%Y-%m", &since],
     ) else {
         return Vec::new();
     };
@@ -290,7 +361,9 @@ pub fn build_activity_analysis(workspace_path: Option<&str>) -> Vec<ActivityPoin
         return Vec::new();
     };
 
-    (-11..=0)
+    let month_window = month_window(period);
+
+    (1 - month_window..=0)
         .map(|offset| {
             let month = shift_month(latest_year, latest_month, offset);
             let commits = by_month.get(&month).copied().unwrap_or(0);
@@ -302,7 +375,7 @@ pub fn build_activity_analysis(workspace_path: Option<&str>) -> Vec<ActivityPoin
 
 pub fn build_delivery_risk_analysis(
     workspace_path: Option<&str>,
-    emergency_keywords: Option<&str>,
+    emergency_patterns: Option<&[EmergencyPatternConfig]>,
 ) -> Vec<DeliveryEvent> {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return Vec::new();
@@ -312,16 +385,16 @@ pub fn build_delivery_risk_analysis(
         return Vec::new();
     };
     let lower_output = output.to_lowercase();
-    let patterns = split_keywords(
-        emergency_keywords,
-        &["revert", "hotfix", "emergency", "rollback"],
-    );
+    let patterns = normalized_emergency_patterns(emergency_patterns);
 
     patterns
         .iter()
         .map(|event| {
-            let normalized_event = event.to_lowercase();
-            let count = lower_output.matches(&normalized_event).count() as u32;
+            let aliases = pattern_aliases(&event.pattern);
+            let count = aliases
+                .iter()
+                .map(|pattern| lower_output.matches(pattern).count() as u32)
+                .sum();
             let risk = if count >= 6 {
                 "risky"
             } else if count >= 2 {
@@ -329,7 +402,8 @@ pub fn build_delivery_risk_analysis(
             } else {
                 "healthy"
             };
-            let signal_key = match (normalized_event.as_str(), count) {
+            let primary_pattern = aliases.first().map(String::as_str).unwrap_or("");
+            let signal_key = match (primary_pattern, count) {
                 ("rollback", 0) => "signals.noRollbackPattern",
                 ("emergency", 0) => "signals.noEmergencyPattern",
                 ("hotfix", count) if count >= 2 => "signals.watchReleasePressure",
@@ -337,8 +411,9 @@ pub fn build_delivery_risk_analysis(
             };
 
             DeliveryEvent {
-                event: event.clone(),
+                event: event.pattern.clone(),
                 count,
+                signal: event.signal.clone(),
                 signal_key: signal_key.to_string(),
                 risk: risk.to_string(),
             }
@@ -350,7 +425,7 @@ pub fn build_overview_analysis(
     workspace_path: Option<&str>,
     period: Option<&str>,
     bug_keywords: Option<&str>,
-    emergency_keywords: Option<&str>,
+    emergency_patterns: Option<&[EmergencyPatternConfig]>,
 ) -> OverviewAnalysis {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return OverviewAnalysis {
@@ -364,7 +439,7 @@ pub fn build_overview_analysis(
 
     let hotspots = build_hotspots_analysis(Some(workspace_path), period, bug_keywords);
     let ownership = build_ownership_analysis(Some(workspace_path));
-    let delivery = build_delivery_risk_analysis(Some(workspace_path), emergency_keywords);
+    let delivery = build_delivery_risk_analysis(Some(workspace_path), emergency_patterns);
     let delivery_risk_level = if delivery.iter().any(|row| row.risk == "risky") {
         "high"
     } else if delivery.iter().any(|row| row.risk == "watch") {

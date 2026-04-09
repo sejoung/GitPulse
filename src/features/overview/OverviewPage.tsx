@@ -19,12 +19,12 @@ export function OverviewPage() {
   const workspacePath = useUiStore((state) => state.workspacePath);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
   const bugKeywords = useUiStore((state) => state.bugKeywords);
-  const emergencyKeywords = useUiStore((state) => state.emergencyKeywords);
+  const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
   const selectWorkspace = useWorkspacePrompt();
-  const { data, isLoading, isError } = useOverviewAnalysis(workspacePath, analysisPeriod, bugKeywords, emergencyKeywords);
+  const { data, isLoading, isError } = useOverviewAnalysis(workspacePath, analysisPeriod, bugKeywords, emergencyPatterns);
   const { data: hotspotRows = [] } = useHotspotsAnalysis(workspacePath, analysisPeriod, bugKeywords);
-  const { data: activityRows = [] } = useActivityAnalysis(workspacePath);
+  const { data: activityRows = [] } = useActivityAnalysis(workspacePath, analysisPeriod);
   const translatedPeriodTabs = periodTabs.map((item) => ({
     id: item.id,
     label: t(item.labelKey),
