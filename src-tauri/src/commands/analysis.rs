@@ -11,12 +11,14 @@ use crate::models::overview::{
 pub fn get_overview_analysis(
     workspace_path: Option<String>,
     period: Option<String>,
+    excluded_paths: Option<String>,
     bug_keywords: Option<String>,
     emergency_patterns: Option<Vec<EmergencyPatternConfig>>,
 ) -> OverviewAnalysis {
     build_overview_analysis(
         workspace_path.as_deref(),
         period.as_deref(),
+        excluded_paths.as_deref(),
         bug_keywords.as_deref(),
         emergency_patterns.as_deref(),
     )
@@ -26,11 +28,13 @@ pub fn get_overview_analysis(
 pub fn get_hotspots_analysis(
     workspace_path: Option<String>,
     period: Option<String>,
+    excluded_paths: Option<String>,
     bug_keywords: Option<String>,
 ) -> Vec<HotspotFile> {
     build_hotspots_analysis(
         workspace_path.as_deref(),
         period.as_deref(),
+        excluded_paths.as_deref(),
         bug_keywords.as_deref(),
     )
 }

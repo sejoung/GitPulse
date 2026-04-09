@@ -11,6 +11,7 @@ import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store"
 type AnalysisParams = {
   workspacePath: string;
   period?: AnalysisPeriod;
+  excludedPaths?: string;
   bugKeywords?: string;
   emergencyPatterns?: EmergencyPattern[];
 };
@@ -19,7 +20,7 @@ function isTauriRuntime() {
   return "__TAURI_INTERNALS__" in window;
 }
 
-export function getOverviewAnalysis({ workspacePath, period = "1y", bugKeywords, emergencyPatterns }: AnalysisParams) {
+export function getOverviewAnalysis({ workspacePath, period = "1y", excludedPaths, bugKeywords, emergencyPatterns }: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<OverviewAnalysis>({
       repositoryName: workspacePath || "No workspace selected",
@@ -30,15 +31,15 @@ export function getOverviewAnalysis({ workspacePath, period = "1y", bugKeywords,
     });
   }
 
-  return invoke<OverviewAnalysis>("get_overview_analysis", { workspacePath, period, bugKeywords, emergencyPatterns });
+  return invoke<OverviewAnalysis>("get_overview_analysis", { workspacePath, period, excludedPaths, bugKeywords, emergencyPatterns });
 }
 
-export function getHotspotsAnalysis({ workspacePath, period = "1y", bugKeywords }: AnalysisParams) {
+export function getHotspotsAnalysis({ workspacePath, period = "1y", excludedPaths, bugKeywords }: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<HotspotFile[]>([]);
   }
 
-  return invoke<HotspotFile[]>("get_hotspots_analysis", { workspacePath, period, bugKeywords });
+  return invoke<HotspotFile[]>("get_hotspots_analysis", { workspacePath, period, excludedPaths, bugKeywords });
 }
 
 export function getOwnershipAnalysis(workspacePath: string) {

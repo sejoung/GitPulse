@@ -103,18 +103,32 @@ export function SettingsPage() {
 
       <DetailPanel title={t("filters.title")} description={t("filters.description")}>
         <div className="grid gap-4 lg:grid-cols-2">
-          <Input
-            value={excludedPaths}
-            onChange={(event) => setExcludedPaths(event.target.value)}
-            placeholder="dist/, node_modules/, target/"
-            aria-label={t("filters.excludedPaths")}
-          />
-          <Input
-            value={defaultBranch}
-            onChange={(event) => setDefaultBranch(event.target.value)}
-            placeholder="main"
-            aria-label={t("filters.defaultBranch")}
-          />
+          <div className="space-y-2">
+            <label className="gp-text-secondary text-sm font-medium" htmlFor="excluded-paths">
+              {t("filters.excludedPaths")}
+            </label>
+            <Input
+              id="excluded-paths"
+              value={excludedPaths}
+              onChange={(event) => setExcludedPaths(event.target.value)}
+              placeholder="dist/, node_modules/, target/"
+              aria-label={t("filters.excludedPaths")}
+            />
+            <p className="gp-text-muted text-xs">{t("filters.excludedPathsHelp")}</p>
+          </div>
+          <div className="space-y-2">
+            <label className="gp-text-secondary text-sm font-medium" htmlFor="default-branch">
+              {t("filters.defaultBranch")}
+            </label>
+            <Input
+              id="default-branch"
+              value={defaultBranch}
+              onChange={(event) => setDefaultBranch(event.target.value)}
+              placeholder="main"
+              aria-label={t("filters.defaultBranch")}
+            />
+            <p className="gp-text-muted text-xs">{t("filters.defaultBranchHelp")}</p>
+          </div>
         </div>
       </DetailPanel>
 

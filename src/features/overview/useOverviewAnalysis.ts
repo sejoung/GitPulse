@@ -6,13 +6,14 @@ import { getOverviewAnalysis } from "../../services/tauri/analysis-api";
 export function useOverviewAnalysis(
   workspacePath: string,
   period: AnalysisPeriod,
+  excludedPaths: string,
   bugKeywords: string,
   emergencyPatterns: EmergencyPattern[],
 ) {
   const emergencyPatternKey = JSON.stringify(emergencyPatterns);
 
   return useQuery({
-    queryKey: queryKeys.overview(workspacePath, period, bugKeywords, emergencyPatternKey),
-    queryFn: () => getOverviewAnalysis({ workspacePath, period, bugKeywords, emergencyPatterns }),
+    queryKey: queryKeys.overview(workspacePath, period, excludedPaths, bugKeywords, emergencyPatternKey),
+    queryFn: () => getOverviewAnalysis({ workspacePath, period, excludedPaths, bugKeywords, emergencyPatterns }),
   });
 }

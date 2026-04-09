@@ -114,6 +114,25 @@ fn keyword_pattern(keywords: Option<&str>, fallback: &[&str]) -> String {
         .join("|")
 }
 
+fn split_csv(value: Option<&str>) -> Vec<String> {
+    value
+        .unwrap_or("")
+        .split(',')
+        .map(str::trim)
+        .filter(|item| !item.is_empty())
+        .map(ToString::to_string)
+        .collect()
+}
+
+fn is_excluded_path(path: &str, excluded_paths: &[String]) -> bool {
+    excluded_paths.iter().any(|excluded_path| {
+        let normalized = excluded_path.trim_end_matches('/');
+
+        !normalized.is_empty()
+            && (path == normalized || path.starts_with(&format!("{normalized}/")))
+    })
+}
+
 fn default_emergency_patterns() -> Vec<EmergencyPatternConfig> {
     vec![
         EmergencyPatternConfig {
@@ -188,6 +207,7 @@ fn count_commits(workspace_path: &str, period: Option<&str>) -> u32 {
 fn collect_file_counts(
     workspace_path: &str,
     period: Option<&str>,
+    excluded_paths: &[String],
     grep: Option<&str>,
 ) -> HashMap<String, u32> {
     let mut args = vec!["log", "--format=format:", "--name-only"];
@@ -216,6 +236,9 @@ fn collect_file_counts(
         if path.is_empty() {
             continue;
         }
+        if is_excluded_path(path, excluded_paths) {
+            continue;
+        }
 
         *counts.entry(path.to_string()).or_insert(0) += 1;
     }
@@ -226,15 +249,18 @@ fn collect_file_counts(
 pub fn build_hotspots_analysis(
     workspace_path: Option<&str>,
     period: Option<&str>,
+    excluded_paths: Option<&str>,
     bug_keywords: Option<&str>,
 ) -> Vec<HotspotFile> {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return Vec::new();
     };
 
-    let change_counts = collect_file_counts(workspace_path, period, None);
+    let excluded_paths = split_csv(excluded_paths);
+    let change_counts = collect_file_counts(workspace_path, period, &excluded_paths, None);
     let bug_pattern = keyword_pattern(bug_keywords, &["fix", "bug", "broken"]);
-    let fix_counts = collect_file_counts(workspace_path, period, Some(&bug_pattern));
+    let fix_counts =
+        collect_file_counts(workspace_path, period, &excluded_paths, Some(&bug_pattern));
     let mut rows: Vec<HotspotFile> = change_counts
         .into_iter()
         .map(|(path, changes)| {
@@ -424,6 +450,7 @@ pub fn build_delivery_risk_analysis(
 pub fn build_overview_analysis(
     workspace_path: Option<&str>,
     period: Option<&str>,
+    excluded_paths: Option<&str>,
     bug_keywords: Option<&str>,
     emergency_patterns: Option<&[EmergencyPatternConfig]>,
 ) -> OverviewAnalysis {
@@ -437,7 +464,8 @@ pub fn build_overview_analysis(
         };
     };
 
-    let hotspots = build_hotspots_analysis(Some(workspace_path), period, bug_keywords);
+    let hotspots =
+        build_hotspots_analysis(Some(workspace_path), period, excluded_paths, bug_keywords);
     let ownership = build_ownership_analysis(Some(workspace_path));
     let delivery = build_delivery_risk_analysis(Some(workspace_path), emergency_patterns);
     let delivery_risk_level = if delivery.iter().any(|row| row.risk == "risky") {

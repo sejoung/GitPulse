@@ -4,10 +4,12 @@
   "description": "GitPulse는 수집과 해석을 분리해서 신호를 계산합니다.",
   "badge": "Local only",
   "filters": {
-    "title": "Repository filters",
-    "description": "분석에서 제외할 경로나 패턴입니다.",
+    "title": "Repository scope",
+    "description": "GitPulse가 Git 이력을 읽을 때 어떤 저장소 범위를 기준으로 볼지 정합니다.",
     "excludedPaths": "제외할 경로",
-    "defaultBranch": "기본 브랜치"
+    "excludedPathsHelp": "변경 파일 순위에서 제외할 경로를 쉼표로 입력합니다. 예: dist/, node_modules/, target/.",
+    "defaultBranch": "기본 브랜치",
+    "defaultBranchHelp": "향후 브랜치 기준 분석에서 우선 사용할 브랜치 이름입니다. 현재 분석은 선택한 저장소의 HEAD를 기준으로 읽습니다."
   },
   "language": {
     "title": "Language",

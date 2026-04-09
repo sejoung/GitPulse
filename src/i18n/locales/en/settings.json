@@ -4,10 +4,12 @@
   "description": "GitPulse separates data collection from interpretation when calculating signals.",
   "badge": "Local only",
   "filters": {
-    "title": "Repository filters",
-    "description": "Paths or patterns excluded from analysis.",
+    "title": "Repository scope",
+    "description": "Controls which repository content GitPulse should consider when reading Git history.",
     "excludedPaths": "Excluded paths",
-    "defaultBranch": "Default branch"
+    "excludedPathsHelp": "Comma-separated paths to ignore when ranking changed files, for example: dist/, node_modules/, target/.",
+    "defaultBranch": "Default branch",
+    "defaultBranchHelp": "Used as the preferred branch label for future branch-aware analysis. Current analysis reads the selected repository HEAD."
   },
   "language": {
     "title": "Language",
