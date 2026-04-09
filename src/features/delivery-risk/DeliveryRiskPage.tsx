@@ -7,8 +7,9 @@ import { useDeliveryRiskAnalysis } from "./useDeliveryRiskAnalysis";
 export function DeliveryRiskPage() {
   const { t } = useTranslation(["deliveryRisk", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
+  const selectedBranch = useUiStore((state) => state.selectedBranch);
   const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
-  const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(workspacePath, emergencyPatterns);
+  const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(workspacePath, selectedBranch, emergencyPatterns);
   const hasWorkspace = Boolean(workspacePath);
   const hasData = deliveryRows.length > 0;
   const summaryRows = hasData

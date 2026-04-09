@@ -7,7 +7,8 @@ import { useOwnershipAnalysis } from "./useOwnershipAnalysis";
 export function OwnershipPage() {
   const { t } = useTranslation(["ownership", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
-  const { data: contributorRows = [], isLoading } = useOwnershipAnalysis(workspacePath);
+  const selectedBranch = useUiStore((state) => state.selectedBranch);
+  const { data: contributorRows = [], isLoading } = useOwnershipAnalysis(workspacePath, selectedBranch);
   const hasWorkspace = Boolean(workspacePath);
   const hasData = contributorRows.length > 0;
   const topContributor = contributorRows[0]?.share ?? "0%";

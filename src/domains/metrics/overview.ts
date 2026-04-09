@@ -33,3 +33,10 @@ export type DeliveryEvent = {
   signalKey: string;
   risk: "healthy" | "watch" | "risky";
 };
+
+export type GitBranch = {
+  name: string;
+  label: string;
+  kind: "local" | "remote";
+  current: boolean;
+};

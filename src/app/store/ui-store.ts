@@ -17,6 +17,7 @@ export type NavigationItem =
 type UiState = {
   activeItem: NavigationItem;
   workspacePath: string;
+  selectedBranch: string;
   analysisPeriod: AnalysisPeriod;
   excludedPaths: string;
   defaultBranch: string;
@@ -24,6 +25,7 @@ type UiState = {
   emergencyPatterns: EmergencyPattern[];
   setActiveItem: (item: NavigationItem) => void;
   setWorkspacePath: (path: string) => void;
+  setSelectedBranch: (branch: string) => void;
   setAnalysisPeriod: (period: UiState["analysisPeriod"]) => void;
   setExcludedPaths: (paths: string) => void;
   setDefaultBranch: (branch: string) => void;
@@ -33,6 +35,7 @@ type UiState = {
 
 type PersistedUiSettings = {
   workspacePath: string;
+  selectedBranch: string;
   analysisPeriod: AnalysisPeriod;
   excludedPaths: string;
   defaultBranch: string;
@@ -89,6 +92,7 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       activeItem: "overview",
       workspacePath: "",
+      selectedBranch: "",
       analysisPeriod: "1y",
       excludedPaths: "dist/, node_modules/, target/",
       defaultBranch: "main",
@@ -96,6 +100,7 @@ export const useUiStore = create<UiState>()(
       emergencyPatterns: defaultEmergencyPatterns,
       setActiveItem: (activeItem) => set({ activeItem }),
       setWorkspacePath: (workspacePath) => set({ workspacePath }),
+      setSelectedBranch: (selectedBranch) => set({ selectedBranch }),
       setAnalysisPeriod: (analysisPeriod) => set({ analysisPeriod }),
       setExcludedPaths: (excludedPaths) => set({ excludedPaths }),
       setDefaultBranch: (defaultBranch) => set({ defaultBranch }),
@@ -110,8 +115,9 @@ export const useUiStore = create<UiState>()(
     {
       name: "gitpulse.ui",
       version: 3,
-      partialize: ({ workspacePath, analysisPeriod, excludedPaths, defaultBranch, bugKeywords, emergencyPatterns }) => ({
+      partialize: ({ workspacePath, selectedBranch, analysisPeriod, excludedPaths, defaultBranch, bugKeywords, emergencyPatterns }) => ({
         workspacePath,
+        selectedBranch,
         analysisPeriod,
         excludedPaths,
         defaultBranch,
@@ -123,6 +129,7 @@ export const useUiStore = create<UiState>()(
 
         return {
           workspacePath: state.workspacePath ?? "",
+          selectedBranch: state.selectedBranch ?? "",
           analysisPeriod: normalizeAnalysisPeriod(state.analysisPeriod),
           excludedPaths: state.excludedPaths ?? "dist/, node_modules/, target/",
           defaultBranch: state.defaultBranch ?? "main",

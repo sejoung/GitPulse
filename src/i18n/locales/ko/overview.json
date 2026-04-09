@@ -15,7 +15,9 @@
   },
   "workspaceDetails": {
     "title": "Workspace details",
-    "description": "현재 저장소의 분석 기준입니다."
+    "description": "현재 저장소의 분석 기준입니다.",
+    "branch": "브랜치",
+    "noBranches": "브랜치 없음"
   },
   "chart": {
     "activityTrend": "Activity trend"

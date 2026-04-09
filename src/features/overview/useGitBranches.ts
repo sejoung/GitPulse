@@ -1,0 +1,25 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useUiStore } from "../../app/store/ui-store";
+import { queryKeys } from "../../services/cache/query-keys";
+import { checkoutGitBranch, getGitBranches } from "../../services/tauri/analysis-api";
+
+export function useGitBranches(workspacePath: string) {
+  return useQuery({
+    queryKey: queryKeys.branches(workspacePath),
+    queryFn: () => getGitBranches(workspacePath),
+    enabled: Boolean(workspacePath),
+  });
+}
+
+export function useCheckoutGitBranch(workspacePath: string) {
+  const queryClient = useQueryClient();
+  const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
+
+  return useMutation({
+    mutationFn: (branchName: string) => checkoutGitBranch(workspacePath, branchName),
+    onSuccess: (branchName) => {
+      setSelectedBranch(branchName);
+      void queryClient.invalidateQueries();
+    },
+  });
+}

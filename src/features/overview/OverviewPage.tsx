@@ -1,12 +1,14 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
-import { Badge, Button, DetailPanel, Input, PageHeader, StatCard, Table, Tabs } from "../../components/ui";
+import { Badge, Button, DetailPanel, Input, PageHeader, Select, StatCard, Table, Tabs } from "../../components/ui";
 import { formatCount } from "../../lib/format";
 import { useOverviewAnalysis } from "./useOverviewAnalysis";
 import { useActivityAnalysis } from "../activity/useActivityAnalysis";
 import { useHotspotsAnalysis } from "../hotspots/useHotspotsAnalysis";
 import { useWorkspacePrompt } from "../workspace/useWorkspacePrompt";
+import { useCheckoutGitBranch, useGitBranches } from "./useGitBranches";
 
 const periodTabs = [
   { id: "1y", labelKey: "settings:defaults.analysisWindows.1y" },
@@ -17,15 +19,21 @@ const periodTabs = [
 export function OverviewPage() {
   const { t } = useTranslation(["overview", "common", "settings"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
+  const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
   const excludedPaths = useUiStore((state) => state.excludedPaths);
   const bugKeywords = useUiStore((state) => state.bugKeywords);
   const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
+  const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
   const selectWorkspace = useWorkspacePrompt();
-  const { data, isLoading, isError } = useOverviewAnalysis(workspacePath, analysisPeriod, excludedPaths, bugKeywords, emergencyPatterns);
-  const { data: hotspotRows = [] } = useHotspotsAnalysis(workspacePath, analysisPeriod, excludedPaths, bugKeywords);
-  const { data: activityRows = [] } = useActivityAnalysis(workspacePath, analysisPeriod);
+  const { data: branches = [], isLoading: isBranchLoading } = useGitBranches(workspacePath);
+  const checkoutBranch = useCheckoutGitBranch(workspacePath);
+  const currentBranch = branches.find((branch) => branch.current)?.name ?? "";
+  const activeBranch = selectedBranch || currentBranch;
+  const { data, isLoading, isError } = useOverviewAnalysis(workspacePath, activeBranch, analysisPeriod, excludedPaths, bugKeywords, emergencyPatterns);
+  const { data: hotspotRows = [] } = useHotspotsAnalysis(workspacePath, activeBranch, analysisPeriod, excludedPaths, bugKeywords);
+  const { data: activityRows = [] } = useActivityAnalysis(workspacePath, activeBranch, analysisPeriod);
   const translatedPeriodTabs = periodTabs.map((item) => ({
     id: item.id,
     label: t(item.labelKey),
@@ -34,6 +42,12 @@ export function OverviewPage() {
   const maxActivityCommits = Math.max(1, ...activityRows.map((row) => row.commits));
   const initialValue = t("common:status.notAnalyzed");
   const initialEmptyText = t("common:empty.selectWorkspace");
+
+  useEffect(() => {
+    if (!selectedBranch && currentBranch) {
+      setSelectedBranch(currentBranch);
+    }
+  }, [currentBranch, selectedBranch, setSelectedBranch]);
 
   return (
     <div className="space-y-6">
@@ -89,12 +103,30 @@ export function OverviewPage() {
         description={t("workspaceDetails.description")}
         actions={<Tabs items={translatedPeriodTabs} value={analysisPeriod} onChange={setAnalysisPeriod} />}
       >
-        <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_auto]">
+        <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_minmax(180px,240px)_auto]">
           <Input readOnly value={workspacePath || t("common:status.notSelected")} aria-label={t("stats.repository")} />
+          <Select
+            value={activeBranch}
+            disabled={!hasWorkspace || isBranchLoading || checkoutBranch.isPending || branches.length === 0}
+            aria-label={t("workspaceDetails.branch")}
+            onChange={(event) => checkoutBranch.mutate(event.target.value)}
+          >
+            <option value="" disabled>
+              {hasWorkspace ? t("workspaceDetails.noBranches") : t("common:status.notSelected")}
+            </option>
+            {branches.map((branch) => (
+              <option key={`${branch.kind}:${branch.name}`} value={branch.name}>
+                {branch.label}
+              </option>
+            ))}
+          </Select>
           <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
             {hasWorkspace ? t("common:actions.changeWorkspace") : t("common:actions.selectWorkspace")}
           </Button>
         </div>
+        {checkoutBranch.isError ? (
+          <p className="gp-alert-critical mb-4">{String(checkoutBranch.error)}</p>
+        ) : null}
         <Table
           columns={[
             { key: "path", header: t("common:table.file"), render: (row) => row.path },

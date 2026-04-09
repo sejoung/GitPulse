@@ -15,7 +15,9 @@
   },
   "workspaceDetails": {
     "title": "Workspace details",
-    "description": "Analysis controls for the current repository."
+    "description": "Analysis controls for the current repository.",
+    "branch": "Branch",
+    "noBranches": "No branches"
   },
   "chart": {
     "activityTrend": "Activity trend"

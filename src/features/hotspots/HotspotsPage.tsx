@@ -7,10 +7,11 @@ import { useHotspotsAnalysis } from "./useHotspotsAnalysis";
 export function HotspotsPage() {
   const { t } = useTranslation(["hotspots", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
+  const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
   const excludedPaths = useUiStore((state) => state.excludedPaths);
   const bugKeywords = useUiStore((state) => state.bugKeywords);
-  const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(workspacePath, analysisPeriod, excludedPaths, bugKeywords);
+  const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(workspacePath, selectedBranch, analysisPeriod, excludedPaths, bugKeywords);
   const hasWorkspace = Boolean(workspacePath);
   const hasData = hotspotRows.length > 0;
   const bugOverlap = hotspotRows.filter((row) => row.fixes > 0).length;

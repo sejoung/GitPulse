@@ -5,6 +5,7 @@ export { DetailPanel } from "./DetailPanel";
 export { EmptyState } from "./EmptyState";
 export { Input } from "./Input";
 export { PageHeader } from "./PageHeader";
+export { Select } from "./Select";
 export { StatCard } from "./StatCard";
 export { Table } from "./Table";
 export { Tabs } from "./Tabs";

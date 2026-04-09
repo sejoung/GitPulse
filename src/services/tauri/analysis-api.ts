@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   ActivityPoint,
   DeliveryEvent,
+  GitBranch,
   HotspotFile,
   OverviewAnalysis,
   OwnershipContributor,
@@ -64,4 +65,20 @@ export function getDeliveryRiskAnalysis(workspacePath: string, emergencyPatterns
   }
 
   return invoke<DeliveryEvent[]>("get_delivery_risk_analysis", { workspacePath, emergencyPatterns });
+}
+
+export function getGitBranches(workspacePath: string) {
+  if (!isTauriRuntime() || !workspacePath) {
+    return Promise.resolve<GitBranch[]>([]);
+  }
+
+  return invoke<GitBranch[]>("list_git_branches", { workspacePath });
+}
+
+export function checkoutGitBranch(workspacePath: string, branchName: string) {
+  if (!isTauriRuntime() || !workspacePath) {
+    return Promise.resolve(branchName);
+  }
+
+  return invoke<string>("checkout_git_branch", { workspacePath, branchName });
 }

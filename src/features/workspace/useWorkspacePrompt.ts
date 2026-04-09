@@ -6,6 +6,7 @@ export function useWorkspacePrompt() {
   const { t } = useTranslation("workspace");
   const workspacePath = useUiStore((state) => state.workspacePath);
   const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);
+  const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
 
   return async function selectWorkspace() {
     if ("__TAURI_INTERNALS__" in window) {
@@ -17,6 +18,7 @@ export function useWorkspacePrompt() {
 
       if (typeof selectedPath === "string") {
         setWorkspacePath(selectedPath);
+        setSelectedBranch("");
       }
 
       return;
@@ -28,5 +30,6 @@ export function useWorkspacePrompt() {
       return;
     }
     setWorkspacePath(nextPath.trim());
+    setSelectedBranch("");
   };
 }

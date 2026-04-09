@@ -52,3 +52,12 @@ pub struct EmergencyPatternConfig {
     pub pattern: String,
     pub signal: String,
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitBranch {
+    pub name: String,
+    pub label: String,
+    pub kind: String,
+    pub current: bool,
+}
