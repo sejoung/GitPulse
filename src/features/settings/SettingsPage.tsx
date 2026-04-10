@@ -35,8 +35,8 @@ const analysisWindowItems = [
 ] as const;
 
 const languageItems = [
-  { id: "ko", labelKey: "language.ko" },
   { id: "en", labelKey: "language.en" },
+  { id: "ko", labelKey: "language.ko" },
 ] as const;
 
 function toSupportedLanguage(language: string): AppLanguage {
@@ -116,63 +116,18 @@ export function SettingsPage() {
   const previewScopeKey = currentRepositoryOverride
     ? "preview.scope.repositoryOverride"
     : "preview.scope.globalDefaults";
-  const settingsRows = [
-    {
-      key: t("defaults.analysisWindow"),
-      value: (
-        <Tabs
-          items={translatedAnalysisWindowItems}
-          value={analysisPeriod}
-          onChange={setAnalysisPeriod}
-        />
-      ),
-    },
-    {
-      key: t("defaults.bugKeywords"),
-      value: (
-        <div className="space-y-2">
-          <Input
-            value={bugKeywords}
-            onChange={(event) => setBugKeywords(event.target.value)}
-            placeholder="fix, bug, broken"
-            aria-label={t("defaults.bugKeywords")}
-          />
-          <p className="gp-text-muted text-xs">{t("defaults.bugKeywordsHelp")}</p>
-        </div>
-      ),
-    },
-    {
-      key: t("defaults.emergencyPatterns"),
-      value: (
-        <div className="space-y-3">
-          {emergencyPatterns.map((item, index) => (
-            <div
-              key={index}
-              className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]"
-            >
-              <Input
-                value={item.pattern}
-                onChange={(event) =>
-                  setEmergencyPattern(index, { ...item, pattern: event.target.value })
-                }
-                placeholder="revert, revert:, reverted"
-                aria-label={t("defaults.emergencyPattern")}
-              />
-              <Input
-                value={item.signal}
-                onChange={(event) =>
-                  setEmergencyPattern(index, { ...item, signal: event.target.value })
-                }
-                placeholder="Watch release pressure"
-                aria-label={t("defaults.emergencySignal")}
-              />
-            </div>
-          ))}
-          <p className="gp-text-muted text-xs">{t("defaults.emergencyPatternsHelp")}</p>
-        </div>
-      ),
-    },
-    { key: t("defaults.cacheKey"), value: "workspace + branch + period + HEAD_SHA" },
+  const persistedItems = [
+    t("cache.persistedItems.language"),
+    t("cache.persistedItems.workspace"),
+    t("cache.persistedItems.branch"),
+    t("cache.persistedItems.analysisDefaults"),
+    t("cache.persistedItems.repositoryOverrides"),
+    t("cache.persistedItems.analysisHistory"),
+  ];
+  const volatileItems = [
+    t("cache.volatileItems.activePage"),
+    t("cache.volatileItems.loadingState"),
+    t("cache.volatileItems.toastMessage"),
   ];
 
   function handleLanguageChange(nextLanguage: AppLanguage) {
@@ -300,6 +255,131 @@ export function SettingsPage() {
         actions={<Badge tone="neutral">{t("badge")}</Badge>}
       />
 
+      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="gp-panel min-w-0 p-4">
+          <p className="gp-kicker">{t("preview.currentRepository")}</p>
+          <p className="gp-text-secondary mt-1 break-words text-sm">
+            {workspacePath || t("repositoryOverrides.empty")}
+          </p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="gp-panel min-w-0 p-4">
+            <p className="gp-kicker">{t("language.current")}</p>
+            <div className="mt-2">
+              <Badge tone="brand">{t(`language.${currentLanguage}`)}</Badge>
+            </div>
+          </div>
+          <div className="gp-panel min-w-0 p-4">
+            <p className="gp-kicker">{t("repositoryMemory.current")}</p>
+            <div className="mt-2">
+              <Badge tone={rememberLastRepository ? "brand" : "neutral"}>
+                {rememberLastRepository ? t("repositoryMemory.on") : t("repositoryMemory.off")}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <DetailPanel
+        title={t("language.title")}
+        description={t("language.description")}
+        actions={<Badge tone="brand">{t(`language.${currentLanguage}`)}</Badge>}
+      >
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <p className="gp-text-secondary text-sm">{t("language.current")}</p>
+          <Tabs
+            items={translatedLanguageItems}
+            value={currentLanguage}
+            onChange={handleLanguageChange}
+          />
+        </div>
+      </DetailPanel>
+
+      <DetailPanel
+        title={t("repositoryMemory.title")}
+        description={t("repositoryMemory.description")}
+      >
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <p className="gp-text-secondary text-sm">{t("repositoryMemory.current")}</p>
+          <Tabs
+            items={[
+              { id: "on", label: t("repositoryMemory.on") },
+              { id: "off", label: t("repositoryMemory.off") },
+            ]}
+            value={rememberLastRepository ? "on" : "off"}
+            onChange={(value) => handleRememberLastRepository(value === "on")}
+          />
+        </div>
+      </DetailPanel>
+
+      <DetailPanel title={t("defaults.title")} description={t("defaults.description")}>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
+          <div className="space-y-4">
+            <div className="gp-panel min-w-0 p-4">
+              <p className="gp-kicker">{t("defaults.analysisWindow")}</p>
+              <div className="mt-3">
+                <Tabs
+                  items={translatedAnalysisWindowItems}
+                  value={analysisPeriod}
+                  onChange={setAnalysisPeriod}
+                />
+              </div>
+            </div>
+            <div className="gp-panel min-w-0 p-4">
+              <p className="gp-kicker">{t("defaults.cacheKey")}</p>
+              <p className="gp-text-secondary mt-2 break-words text-sm">
+                workspace + branch + period + HEAD_SHA
+              </p>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="gp-panel min-w-0 p-4">
+              <label className="gp-text-secondary text-sm font-medium" htmlFor="bug-keywords">
+                {t("defaults.bugKeywords")}
+              </label>
+              <Input
+                id="bug-keywords"
+                className="mt-3"
+                value={bugKeywords}
+                onChange={(event) => setBugKeywords(event.target.value)}
+                placeholder="fix, bug, broken"
+                aria-label={t("defaults.bugKeywords")}
+              />
+              <p className="gp-text-muted mt-2 text-xs">{t("defaults.bugKeywordsHelp")}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-4">
+              <p className="gp-kicker">{t("defaults.emergencyPatterns")}</p>
+              <div className="mt-3 space-y-3">
+                {emergencyPatterns.map((item, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]"
+                  >
+                    <Input
+                      value={item.pattern}
+                      onChange={(event) =>
+                        setEmergencyPattern(index, { ...item, pattern: event.target.value })
+                      }
+                      placeholder="revert, revert:, reverted"
+                      aria-label={t("defaults.emergencyPattern")}
+                    />
+                    <Input
+                      value={item.signal}
+                      onChange={(event) =>
+                        setEmergencyPattern(index, { ...item, signal: event.target.value })
+                      }
+                      placeholder="Watch release pressure"
+                      aria-label={t("defaults.emergencySignal")}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="gp-text-muted mt-3 text-xs">{t("defaults.emergencyPatternsHelp")}</p>
+            </div>
+          </div>
+        </div>
+      </DetailPanel>
+
       <DetailPanel title={t("filters.title")} description={t("filters.description")}>
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
@@ -366,16 +446,16 @@ export function SettingsPage() {
       >
         {workspacePath ? (
           <div className="space-y-4">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("repositoryOverrides.currentRepository")}</p>
-              <p className="gp-text-secondary mt-1 break-words text-sm">{workspacePath}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Badge tone={currentRepositoryOverride ? "brand" : "neutral"}>
-                  {currentRepositoryOverride
-                    ? t("repositoryOverrides.overrideActive")
-                    : t("repositoryOverrides.inheritingDefaults")}
-                </Badge>
+            <div className="gp-status-row">
+              <div className="min-w-0">
+                <p className="gp-kicker">{t("repositoryOverrides.currentRepository")}</p>
+                <p className="gp-text-secondary mt-1 break-words text-sm">{workspacePath}</p>
               </div>
+              <Badge tone={currentRepositoryOverride ? "brand" : "neutral"} className="w-fit">
+                {currentRepositoryOverride
+                  ? t("repositoryOverrides.overrideActive")
+                  : t("repositoryOverrides.inheritingDefaults")}
+              </Badge>
             </div>
 
             {currentRepositoryOverride ? (
@@ -489,23 +569,6 @@ export function SettingsPage() {
         ) : (
           <p className="gp-text-secondary text-sm">{t("repositoryOverrides.empty")}</p>
         )}
-      </DetailPanel>
-
-      <DetailPanel
-        title={t("repositoryMemory.title")}
-        description={t("repositoryMemory.description")}
-      >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p className="gp-text-secondary text-sm">{t("repositoryMemory.current")}</p>
-          <Tabs
-            items={[
-              { id: "on", label: t("repositoryMemory.on") },
-              { id: "off", label: t("repositoryMemory.off") },
-            ]}
-            value={rememberLastRepository ? "on" : "off"}
-            onChange={(value) => handleRememberLastRepository(value === "on")}
-          />
-        </div>
       </DetailPanel>
 
       <DetailPanel title={t("preview.title")} description={t("preview.description")}>
@@ -656,32 +719,6 @@ export function SettingsPage() {
       </DetailPanel>
 
       <DetailPanel
-        title={t("language.title")}
-        description={t("language.description")}
-        actions={<Badge tone="brand">{t(`language.${currentLanguage}`)}</Badge>}
-      >
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <p className="gp-text-secondary text-sm">{t("language.current")}</p>
-          <Tabs
-            items={translatedLanguageItems}
-            value={currentLanguage}
-            onChange={handleLanguageChange}
-          />
-        </div>
-      </DetailPanel>
-
-      <DetailPanel title={t("defaults.title")} description={t("defaults.description")}>
-        <Table
-          columns={[
-            { key: "key", header: t("common:table.setting"), render: (row) => row.key },
-            { key: "value", header: t("common:table.value"), render: (row) => row.value },
-          ]}
-          rows={settingsRows}
-          getRowKey={(row) => row.key}
-        />
-      </DetailPanel>
-
-      <DetailPanel
         title={t("cache.title")}
         description={t("cache.description")}
         actions={
@@ -750,14 +787,7 @@ export function SettingsPage() {
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("cache.persistedTitle")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {[
-                t("cache.persistedItems.language"),
-                t("cache.persistedItems.workspace"),
-                t("cache.persistedItems.branch"),
-                t("cache.persistedItems.analysisDefaults"),
-                t("cache.persistedItems.repositoryOverrides"),
-                t("cache.persistedItems.analysisHistory"),
-              ].map((item) => (
+              {persistedItems.map((item) => (
                 <Badge key={item} tone="neutral">
                   {item}
                 </Badge>
@@ -767,11 +797,7 @@ export function SettingsPage() {
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("cache.volatileTitle")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {[
-                t("cache.volatileItems.activePage"),
-                t("cache.volatileItems.loadingState"),
-                t("cache.volatileItems.toastMessage"),
-              ].map((item) => (
+              {volatileItems.map((item) => (
                 <Badge key={item} tone="neutral">
                   {item}
                 </Badge>
