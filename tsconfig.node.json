@@ -10,5 +10,10 @@
     "types": ["node"],
     "strict": true
   },
-  "include": ["tailwind.config.ts", "vite.config.ts", "playwright.config.ts"]
+  "include": [
+    "tailwind.config.ts",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "playwright.smoke.config.ts"
+  ]
 }

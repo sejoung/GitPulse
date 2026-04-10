@@ -4,12 +4,18 @@ const isCi = Boolean(process.env.CI);
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
+  workers: isCi ? 2 : undefined,
   forbidOnly: isCi,
   retries: isCi ? 2 : 0,
-  reporter: "list",
+  reporter: isCi ? "list" : "dot",
+  expect: {
+    timeout: 3_000,
+  },
   use: {
     baseURL: "http://127.0.0.1:1420",
     trace: "on-first-retry",
+    actionTimeout: 5_000,
+    navigationTimeout: 10_000,
   },
   webServer: {
     command: "npm run dev:vite",

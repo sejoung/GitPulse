@@ -4,7 +4,12 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
-const nodeConfigFiles = ["tailwind.config.ts", "vite.config.ts", "playwright.config.ts"];
+const nodeConfigFiles = [
+  "tailwind.config.ts",
+  "vite.config.ts",
+  "playwright.config.ts",
+  "playwright.smoke.config.ts",
+];
 
 export default tseslint.config(
   {
