@@ -3,6 +3,7 @@ const isCi = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  testIgnore: ["**/readme-screenshots.spec.ts"],
   fullyParallel: true,
   workers: isCi ? 2 : undefined,
   forbidOnly: isCi,

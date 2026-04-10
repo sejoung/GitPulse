@@ -13,6 +13,20 @@
   activity flow, and delivery pressure from an existing Git repository.
 </p>
 
+## Screenshots
+
+### Overview
+
+![GitPulse overview](docs/assets/overview.png)
+
+### Hotspots
+
+![GitPulse hotspots](docs/assets/hotspots.png)
+
+### Settings
+
+![GitPulse settings](docs/assets/settings.png)
+
 ## What GitPulse does
 
 GitPulse is not a Git GUI for commits and pushes.

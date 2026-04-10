@@ -21,6 +21,7 @@
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test -c playwright.smoke.config.ts",
     "test:e2e:headed": "playwright test --headed",
+    "capture:readme": "playwright test -c playwright.screenshots.config.ts",
     "test:rust": "cargo gp-test",
     "test:rust:filter": "cargo test --manifest-path src-tauri/Cargo.toml",
     "preview": "vite preview",

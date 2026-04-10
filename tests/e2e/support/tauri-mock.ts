@@ -6,6 +6,7 @@ export type TauriMockPayload = {
     analysisRuns: unknown[];
   };
   overview?: Record<string, unknown>;
+  activity?: Record<string, unknown>[];
   hotspots?: Record<string, unknown>[];
   hotspotCommits?: Record<string, unknown>[];
   ownership?: Record<string, unknown>[];
@@ -42,6 +43,14 @@ const defaultPayload: Required<TauriMockPayload> = {
   hotspots: [
     { path: "src/App.tsx", changes: 18, fixes: 4, risk: "risky" },
     { path: "src/lib/report.ts", changes: 9, fixes: 1, risk: "watch" },
+  ],
+  activity: [
+    { month: "2026-01", commits: 8 },
+    { month: "2026-02", commits: 12 },
+    { month: "2026-03", commits: 15 },
+    { month: "2026-04", commits: 18 },
+    { month: "2026-05", commits: 14 },
+    { month: "2026-06", commits: 20 },
   ],
   hotspotCommits: [
     {
@@ -143,6 +152,8 @@ export async function seedTauriMocks(page: Page, overrides: TauriMockPayload = {
               return mockPayload.overview;
             case "get_hotspots_analysis":
               return mockPayload.hotspots;
+            case "get_activity_analysis":
+              return mockPayload.activity;
             case "get_hotspot_commit_details":
               return mockPayload.hotspotCommits;
             case "get_ownership_analysis":

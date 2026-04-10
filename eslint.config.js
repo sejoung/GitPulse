@@ -9,6 +9,7 @@ const nodeConfigFiles = [
   "vite.config.ts",
   "playwright.config.ts",
   "playwright.smoke.config.ts",
+  "playwright.screenshots.config.ts",
 ];
 
 export default tseslint.config(
