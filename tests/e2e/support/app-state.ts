@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-type PartialUiState = {
+export type PartialUiState = {
   activeItem?: "overview" | "hotspots" | "ownership" | "activity" | "delivery-risk" | "settings";
   language?: "en" | "ko";
   developerMode?: boolean;

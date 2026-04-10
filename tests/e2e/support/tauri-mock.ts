@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-type TauriMockPayload = {
+export type TauriMockPayload = {
   loadLocalDatabase?: {
     settings: Record<string, unknown> | null;
     analysisRuns: unknown[];

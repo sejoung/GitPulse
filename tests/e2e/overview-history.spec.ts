@@ -1,8 +1,7 @@
-import { expect, test } from "@playwright/test";
-import { seedAppState } from "./support/app-state";
+import { expect, test } from "./support/fixtures";
 
-test("switches between overview history and export tools", async ({ page }) => {
-  await seedAppState(page, {
+test.use({
+  uiState: {
     activeItem: "overview",
     workspacePath: "/mock/repository",
     selectedBranch: "main",
@@ -32,19 +31,19 @@ test("switches between overview history and export tools", async ({ page }) => {
         deliveryRiskLevel: "low",
       },
     ],
-  });
+  },
+});
 
-  await page.goto("/");
+test("switches between overview history and export tools", async ({ appPage }) => {
+  await expect(appPage.getByRole("heading", { name: "Analysis history" })).toBeVisible();
+  await expect(appPage.getByText("Latest HEAD")).toBeVisible();
+  await expect(appPage.getByText("Snapshot compare")).toBeVisible();
+  await expect(appPage.getByText("Commit delta vs baseline")).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "Analysis history" })).toBeVisible();
-  await expect(page.getByText("Latest HEAD")).toBeVisible();
-  await expect(page.getByText("Snapshot compare")).toBeVisible();
-  await expect(page.getByText("Commit delta vs baseline")).toBeVisible();
+  await appPage.getByRole("tab", { name: "Analysis report export" }).click();
 
-  await page.getByRole("tab", { name: "Analysis report export" }).click();
-
-  await expect(page.getByRole("heading", { name: "Analysis report export" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Export Markdown" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Export JSON" })).toBeVisible();
-  await expect(page.getByText("Current snapshot only", { exact: true })).toBeVisible();
+  await expect(appPage.getByRole("heading", { name: "Analysis report export" })).toBeVisible();
+  await expect(appPage.getByRole("button", { name: "Export Markdown" })).toBeVisible();
+  await expect(appPage.getByRole("button", { name: "Export JSON" })).toBeVisible();
+  await expect(appPage.getByText("Current snapshot only", { exact: true })).toBeVisible();
 });

@@ -1,14 +1,14 @@
-import { expect, test } from "@playwright/test";
-import { seedAppState } from "./support/app-state";
+import { expect, test } from "./support/fixtures";
 
-test("shows the error fallback for an unhandled promise rejection", async ({ page }) => {
-  await seedAppState(page, {
+test.use({
+  uiState: {
     activeItem: "overview",
     developerMode: true,
-  });
+  },
+});
 
-  await page.goto("/");
-  await page.evaluate(() => {
+test("shows the error fallback for an unhandled promise rejection", async ({ appPage }) => {
+  await appPage.evaluate(() => {
     window.dispatchEvent(
       new PromiseRejectionEvent("unhandledrejection", {
         promise: Promise.reject(new Error("E2E rejection")),
@@ -18,9 +18,9 @@ test("shows the error fallback for an unhandled promise rejection", async ({ pag
   });
 
   await expect(
-    page.getByRole("heading", { name: "GitPulse hit an unexpected error" })
+    appPage.getByRole("heading", { name: "GitPulse hit an unexpected error" })
   ).toBeVisible();
-  await expect(page.locator("p", { hasText: "E2E rejection" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Show log file" })).toBeVisible();
-  await expect(page.getByText("Error stack")).toBeVisible();
+  await expect(appPage.locator("p", { hasText: "E2E rejection" })).toBeVisible();
+  await expect(appPage.getByRole("button", { name: "Show log file" })).toBeVisible();
+  await expect(appPage.getByText("Error stack")).toBeVisible();
 });

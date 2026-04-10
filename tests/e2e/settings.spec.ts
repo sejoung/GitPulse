@@ -1,30 +1,29 @@
-import { expect, test } from "@playwright/test";
-import { seedAppState } from "./support/app-state";
+import { expect, test } from "./support/fixtures";
 
-test("switches settings groups and enables developer mode", async ({ page }) => {
-  await seedAppState(page, {
+test.use({
+  uiState: {
     activeItem: "settings",
     workspacePath: "/mock/repository",
-  });
+  },
+});
 
-  await page.goto("/");
+test("switches settings groups and enables developer mode", async ({ appPage }) => {
+  await expect(appPage.getByRole("heading", { name: "Analysis settings" })).toBeVisible();
+  await expect(appPage.getByRole("tab", { name: "General", selected: true })).toBeVisible();
 
-  await expect(page.getByRole("heading", { name: "Analysis settings" })).toBeVisible();
-  await expect(page.getByRole("tab", { name: "General", selected: true })).toBeVisible();
+  await appPage.getByRole("tab", { name: "Advanced" }).click();
 
-  await page.getByRole("tab", { name: "Advanced" }).click();
-
-  await expect(page.getByRole("heading", { name: "Developer mode" })).toBeVisible();
+  await expect(appPage.getByRole("heading", { name: "Developer mode" })).toBeVisible();
   await expect(
-    page.getByText("Turn on Developer mode to view recent log lines here.")
+    appPage.getByText("Turn on Developer mode to view recent log lines here.")
   ).toBeVisible();
 
-  await page.getByRole("tab", { name: "On" }).last().click();
+  await appPage.getByRole("tab", { name: "On" }).last().click();
 
-  await expect(page.getByRole("button", { name: "Copy debug summary" })).toBeVisible();
+  await expect(appPage.getByRole("button", { name: "Copy debug summary" })).toBeVisible();
 
-  await page.getByRole("tab", { name: "Repository" }).click();
+  await appPage.getByRole("tab", { name: "Repository" }).click();
 
-  await expect(page.getByRole("heading", { name: "Repository override" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Enable override" })).toBeVisible();
+  await expect(appPage.getByRole("heading", { name: "Repository override" })).toBeVisible();
+  await expect(appPage.getByRole("button", { name: "Enable override" })).toBeVisible();
 });
