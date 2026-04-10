@@ -214,6 +214,13 @@ describe("OverviewPage branch controls", () => {
     expect(api.checkGitRemoteStatus).toHaveBeenCalledWith("/repo");
     expect(await screen.findByText("Behind 2")).toBeInTheDocument();
     expect(screen.getByText("Tracking origin/main")).toBeInTheDocument();
+    expect(screen.getByText("Analysis freshness")).toBeInTheDocument();
+    expect(screen.getByText("Stale by 2")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "This analysis is based on a local HEAD that is 2 commits behind origin/main."
+      )
+    ).toBeInTheDocument();
   });
 
   it("shows analysis basis and can pull after a behind remote check", async () => {

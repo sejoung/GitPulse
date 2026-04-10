@@ -69,5 +69,30 @@
     "recordedAt": "기록 시각",
     "noPreviousRun": "이전 기록 없음",
     "empty": "아직 저장된 분석 히스토리가 없습니다."
+  },
+  "freshness": {
+    "title": "분석 최신성",
+    "status": {
+      "notChecked": "검증 전",
+      "up_to_date": "최신 검증됨",
+      "behind": "{{behind}}개 뒤처짐",
+      "ahead": "로컬이 앞섬",
+      "diverged": "분기됨",
+      "no_upstream": "upstream 없음",
+      "fetch_failed": "검증 실패",
+      "dirty": "로컬 변경 있음",
+      "pull_failed": "pull 실패"
+    },
+    "description": {
+      "notChecked": "현재 분석이 최신 upstream 상태와 일치하는지 확인하려면 원격 확인을 실행하세요.",
+      "up_to_date": "이 분석은 현재 HEAD 기준으로 {{upstream}}와 일치합니다.",
+      "behind": "이 분석은 {{upstream}}보다 {{behind}}개 뒤처진 로컬 HEAD를 기준으로 계산되었습니다.",
+      "ahead": "이 분석은 {{upstream}}보다 앞선 로컬 커밋을 포함한 상태를 기준으로 계산되었습니다.",
+      "diverged": "이 분석은 {{upstream}}와 분기된 로컬 브랜치를 기준으로 계산되었습니다.",
+      "no_upstream": "현재 브랜치에 연결된 원격 브랜치가 없어 최신성을 검증할 수 없습니다.",
+      "fetch_failed": "GitPulse가 현재 분석이 최신 원격 상태와 일치하는지 검증하지 못했습니다.",
+      "dirty": "로컬 변경사항이 있어 refresh/pull 이후에도 깨끗한 브랜치 기준인지 바로 확신하기 어렵습니다.",
+      "pull_failed": "원격 업데이트 적용에 실패해서 현재 분석이 여전히 오래된 상태일 수 있습니다."
+    }
   }
 }

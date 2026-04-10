@@ -69,5 +69,30 @@
     "recordedAt": "Recorded at",
     "noPreviousRun": "No previous run",
     "empty": "No analysis history recorded yet."
+  },
+  "freshness": {
+    "title": "Analysis freshness",
+    "status": {
+      "notChecked": "Not verified",
+      "up_to_date": "Verified current",
+      "behind": "Stale by {{behind}}",
+      "ahead": "Ahead locally",
+      "diverged": "Diverged",
+      "no_upstream": "No upstream",
+      "fetch_failed": "Verification failed",
+      "dirty": "Local changes",
+      "pull_failed": "Pull failed"
+    },
+    "description": {
+      "notChecked": "Run a remote check before trusting that this analysis matches the latest upstream state.",
+      "up_to_date": "This analysis matches {{upstream}} at the current HEAD.",
+      "behind": "This analysis is based on a local HEAD that is {{behind}} commits behind {{upstream}}.",
+      "ahead": "This analysis is based on local commits that are ahead of {{upstream}}.",
+      "diverged": "This analysis is based on a local branch that has diverged from {{upstream}}.",
+      "no_upstream": "This branch does not track a remote branch yet, so freshness cannot be verified.",
+      "fetch_failed": "GitPulse could not verify whether this analysis matches the latest remote state.",
+      "dirty": "Local changes are present, so refresh and pull actions may not reflect a clean branch state.",
+      "pull_failed": "Remote updates could not be applied, so this analysis may still be stale."
+    }
   }
 }

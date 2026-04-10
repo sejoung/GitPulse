@@ -52,6 +52,24 @@ function remoteStatusTone(status?: GitRemoteStatus["status"]) {
   }
 }
 
+function freshnessTone(status?: GitRemoteStatus["status"]) {
+  switch (status) {
+    case "up_to_date":
+      return "healthy";
+    case "behind":
+    case "diverged":
+      return "watch";
+    case "fetch_failed":
+    case "pull_failed":
+    case "dirty":
+      return "critical";
+    case "ahead":
+      return "brand";
+    default:
+      return "neutral";
+  }
+}
+
 export function OverviewPage() {
   const { t } = useTranslation(["overview", "common", "settings"]);
   const queryClient = useQueryClient();
@@ -140,6 +158,25 @@ export function OverviewPage() {
       : remoteStatus?.status === "dirty"
         ? t("workspaceDetails.remoteStatus.dirtyDescription")
         : (remoteStatus?.message ?? t("workspaceDetails.remoteStatus.description"));
+  const freshnessLabel = remoteStatus
+    ? t(`freshness.status.${remoteStatus.status}`, {
+        ahead: remoteStatus.ahead,
+        behind: remoteStatus.behind,
+      })
+    : t("freshness.status.notChecked");
+  const freshnessDescription = remoteStatus?.upstream
+    ? t(`freshness.description.${remoteStatus.status}`, {
+        upstream: remoteStatus.upstream,
+        ahead: remoteStatus.ahead,
+        behind: remoteStatus.behind,
+      })
+    : remoteStatus?.status === "fetch_failed" || remoteStatus?.status === "pull_failed"
+      ? (remoteStatus.message ?? t("freshness.description.fetch_failed"))
+      : remoteStatus?.status === "dirty"
+        ? t("freshness.description.dirty")
+        : remoteStatus?.status === "no_upstream"
+          ? t("freshness.description.no_upstream")
+          : t("freshness.description.notChecked");
   const lastAnalyzedAt = data
     ? new Intl.DateTimeFormat(undefined, {
         dateStyle: "medium",
@@ -419,6 +456,15 @@ export function OverviewPage() {
             <p className="gp-kicker">{t("workspaceDetails.analysisBasis.lastAnalyzed")}</p>
             <p className="gp-text-secondary mt-1 truncate text-sm">{lastAnalyzedAt}</p>
           </div>
+        </div>
+        <div className="gp-status-row mb-4">
+          <div className="min-w-0">
+            <p className="gp-kicker">{t("freshness.title")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">{freshnessDescription}</p>
+          </div>
+          <Badge tone={freshnessTone(remoteStatus?.status)} className="w-fit">
+            {freshnessLabel}
+          </Badge>
         </div>
         <Table
           columns={[
