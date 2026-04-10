@@ -45,24 +45,32 @@ export function useCheckoutGitBranch(workspacePath: string) {
   });
 }
 
-export function useCheckGitRemoteStatus(workspacePath: string) {
+export function useCheckGitRemoteStatus(
+  workspacePath: string,
+  options?: { onSuccess?: () => void }
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => checkGitRemoteStatus(workspacePath),
     onSuccess: (remoteStatus) => {
       queryClient.setQueryData(queryKeys.remoteStatus(workspacePath), remoteStatus);
+      options?.onSuccess?.();
     },
   });
 }
 
-export function usePullGitRemoteUpdates(workspacePath: string) {
+export function usePullGitRemoteUpdates(
+  workspacePath: string,
+  options?: { onSuccess?: () => void }
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => pullGitRemoteUpdates(workspacePath),
     onSuccess: (remoteStatus) => {
       queryClient.setQueryData(queryKeys.remoteStatus(workspacePath), remoteStatus);
+      options?.onSuccess?.();
       void queryClient.invalidateQueries({ queryKey: queryKeys.branches(workspacePath) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.repositoryState(workspacePath) });
       void queryClient.invalidateQueries({ queryKey: ["overview"] });

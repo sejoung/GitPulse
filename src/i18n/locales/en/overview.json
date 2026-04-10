@@ -92,6 +92,7 @@
   },
   "freshness": {
     "title": "Analysis freshness",
+    "warning": "This remote check is stale. Run a new remote check before trusting freshness based on the result from {{checkedAt}}.",
     "status": {
       "notChecked": "Not verified",
       "up_to_date": "Verified current",
@@ -113,6 +114,17 @@
       "fetch_failed": "GitPulse could not verify whether this analysis matches the latest remote state.",
       "dirty": "Local changes are present, so refresh and pull actions may not reflect a clean branch state.",
       "pull_failed": "Remote updates could not be applied, so this analysis may still be stale."
+    },
+    "check": {
+      "title": "Remote check age",
+      "notChecked": "Not checked yet",
+      "fresh": "Fresh",
+      "stale": "Stale",
+      "description": {
+        "notChecked": "No remote check has been recorded for this branch in the current session.",
+        "fresh": "The latest remote check was recorded at {{checkedAt}}.",
+        "stale": "The last remote check was recorded at {{checkedAt}} and should be refreshed."
+      }
     }
   },
   "export": {

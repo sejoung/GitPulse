@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "../../src/i18n/config";
@@ -433,11 +433,47 @@ describe("OverviewPage branch controls", () => {
     expect(screen.getByText("Tracking origin/main")).toBeInTheDocument();
     expect(screen.getByText("Analysis freshness")).toBeInTheDocument();
     expect(screen.getByText("Stale by 2")).toBeInTheDocument();
+    expect(screen.getByText("Remote check age")).toBeInTheDocument();
+    expect(screen.getByText("Fresh")).toBeInTheDocument();
     expect(
       screen.getByText(
         "This analysis is based on a local HEAD that is 2 commits behind origin/main."
       )
     ).toBeInTheDocument();
+  });
+
+  it("marks the remote freshness check as stale after five minutes", async () => {
+    vi.useFakeTimers();
+    try {
+      useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+      api.getGitBranches.mockResolvedValue([
+        { name: "main", label: "main", kind: "local", current: true },
+      ]);
+      api.checkGitRemoteStatus.mockResolvedValue({
+        status: "up_to_date",
+        upstream: "origin/main",
+        ahead: 0,
+        behind: 0,
+        message: null,
+      });
+
+      renderWithClient(<OverviewPage />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Check remote" }));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(screen.getByText("Fresh")).toBeInTheDocument();
+
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+
+      expect(screen.getByText("Stale")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /This remote check is stale\. Run a new remote check before trusting freshness/
+        )
+      ).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("shows analysis basis and can pull after a behind remote check", async () => {

@@ -44,6 +44,9 @@ const periodTabs = [
   { id: "3m", labelKey: "settings:defaults.analysisWindows.3m" },
 ] as const;
 
+const REMOTE_CHECK_STALE_MS = 5 * 60 * 1000;
+const REMOTE_CHECK_TICK_MS = 60 * 1000;
+
 function remoteStatusTone(status?: GitRemoteStatus["status"]) {
   switch (status) {
     case "up_to_date":
@@ -87,6 +90,14 @@ export function OverviewPage() {
   const [comparisonHeadSha, setComparisonHeadSha] = useState("");
   const [exportDetailLevel, setExportDetailLevel] = useState<ReportDetailLevel>("full");
   const [exportScope, setExportScope] = useState<ReportScope>("current");
+  const [nowTimestamp, setNowTimestamp] = useState(() => Date.now());
+  const [remoteCheckState, setRemoteCheckState] = useState<{
+    contextKey: string;
+    checkedAt: number | null;
+  }>({
+    contextKey: "",
+    checkedAt: null,
+  });
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
@@ -108,7 +119,13 @@ export function OverviewPage() {
   const { data: repositoryState, isError: isRepositoryStateError } =
     useGitRepositoryState(workspacePath);
   const checkoutBranch = useCheckoutGitBranch(workspacePath);
-  const pullRemoteUpdates = usePullGitRemoteUpdates(workspacePath);
+  const pullRemoteUpdates = usePullGitRemoteUpdates(workspacePath, {
+    onSuccess: () =>
+      setRemoteCheckState({
+        contextKey: `${workspacePath}:${repositoryState?.branch ?? selectedBranch}`,
+        checkedAt: Date.now(),
+      }),
+  });
   const resetPullRemoteUpdates = pullRemoteUpdates.reset;
   const {
     data: checkedRemoteStatus,
@@ -117,10 +134,19 @@ export function OverviewPage() {
     isPending: isRemoteStatusPending,
     mutate: checkRemoteStatus,
     reset: resetRemoteStatus,
-  } = useCheckGitRemoteStatus(workspacePath);
+  } = useCheckGitRemoteStatus(workspacePath, {
+    onSuccess: () =>
+      setRemoteCheckState({
+        contextKey: `${workspacePath}:${repositoryState?.branch ?? selectedBranch}`,
+        checkedAt: Date.now(),
+      }),
+  });
   const remoteStatus = pullRemoteUpdates.data ?? checkedRemoteStatus;
   const currentBranch = branches.find((branch) => branch.current)?.name ?? "";
   const activeBranch = selectedBranch || currentBranch || (repositoryState?.branch ?? "");
+  const remoteCheckContextKey = `${workspacePath}:${activeBranch}`;
+  const lastRemoteCheckedAt =
+    remoteCheckState.contextKey === remoteCheckContextKey ? remoteCheckState.checkedAt : null;
   const { data, isLoading, isError } = useOverviewAnalysis(
     workspacePath,
     activeBranch,
@@ -206,6 +232,33 @@ export function OverviewPage() {
         : remoteStatus?.status === "no_upstream"
           ? t("freshness.description.no_upstream")
           : t("freshness.description.notChecked");
+  const remoteCheckAgeMs = lastRemoteCheckedAt ? nowTimestamp - lastRemoteCheckedAt : null;
+  const isRemoteCheckStale = Boolean(
+    remoteStatus && remoteCheckAgeMs !== null && remoteCheckAgeMs >= REMOTE_CHECK_STALE_MS
+  );
+  const freshnessCheckLabel = !lastRemoteCheckedAt
+    ? t("freshness.check.notChecked")
+    : isRemoteCheckStale
+      ? t("freshness.check.stale")
+      : t("freshness.check.fresh");
+  const freshnessCheckDescription = !lastRemoteCheckedAt
+    ? t("freshness.check.description.notChecked")
+    : t(
+        isRemoteCheckStale
+          ? "freshness.check.description.stale"
+          : "freshness.check.description.fresh",
+        {
+          checkedAt: new Intl.DateTimeFormat(undefined, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(new Date(lastRemoteCheckedAt)),
+        }
+      );
+  const freshnessCheckTone = !lastRemoteCheckedAt
+    ? "neutral"
+    : isRemoteCheckStale
+      ? "watch"
+      : "healthy";
   const lastAnalyzedAt = data
     ? new Intl.DateTimeFormat(undefined, {
         dateStyle: "medium",
@@ -260,6 +313,14 @@ export function OverviewPage() {
         ? `${comparisonRun?.shortHeadSha ?? ""} -> ${latestRecordedRun?.shortHeadSha ?? ""}`
         : t("export.scopeUnavailable")
       : t("export.scopeCurrent");
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNowTimestamp(Date.now());
+    }, REMOTE_CHECK_TICK_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   function refreshAnalysis() {
     void queryClient.invalidateQueries({ queryKey: ["overview"] });
@@ -614,6 +675,18 @@ export function OverviewPage() {
         {pullRemoteUpdates.isError ? (
           <p className="gp-alert-critical mb-4">{String(pullRemoteUpdates.error)}</p>
         ) : null}
+        {hasWorkspace && isRemoteCheckStale ? (
+          <div className="gp-alert-critical mb-4">
+            {t("freshness.warning", {
+              checkedAt: lastRemoteCheckedAt
+                ? new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(lastRemoteCheckedAt))
+                : t("freshness.check.notChecked"),
+            })}
+          </div>
+        ) : null}
         <div className="gp-status-row mb-4">
           <div className="min-w-0">
             <p className="gp-kicker">{t("workspaceDetails.remoteStatus.title")}</p>
@@ -654,6 +727,17 @@ export function OverviewPage() {
           </div>
           <Badge tone={freshnessTone(remoteStatus?.status)} className="w-fit">
             {freshnessLabel}
+          </Badge>
+        </div>
+        <div className="gp-status-row mb-4">
+          <div className="min-w-0">
+            <p className="gp-kicker">{t("freshness.check.title")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {freshnessCheckDescription}
+            </p>
+          </div>
+          <Badge tone={freshnessCheckTone} className="w-fit">
+            {freshnessCheckLabel}
           </Badge>
         </div>
         <Table
