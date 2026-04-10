@@ -113,6 +113,47 @@ fn delivery_risk_analysis_counts_custom_aliases_and_keeps_signal() {
     let _ = fs::remove_dir_all(repo);
 }
 
+#[test]
+fn hotspot_commit_details_returns_recent_file_commits_with_keyword_matches() {
+    let repo = init_temp_repo("hotspot-commits");
+    commit_file(
+        &repo,
+        "src/app.rs",
+        "first change",
+        "refactor app shell",
+        "2099-03-15T00:00:00+0000",
+    );
+    commit_file(
+        &repo,
+        "src/app.rs",
+        "bug fix",
+        "fix app shell bug",
+        "2099-04-15T00:00:00+0000",
+    );
+    commit_file(
+        &repo,
+        "src/other.rs",
+        "other change",
+        "fix unrelated file",
+        "2099-04-16T00:00:00+0000",
+    );
+
+    let rows = build_hotspot_commit_details(
+        repo.to_str(),
+        Some("3m"),
+        Some("fix, bug"),
+        Some("src/app.rs"),
+    );
+
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[0].subject, "fix app shell bug");
+    assert!(rows[0].matches_bug_keyword);
+    assert_eq!(rows[1].subject, "refactor app shell");
+    assert!(!rows[1].matches_bug_keyword);
+
+    let _ = fs::remove_dir_all(repo);
+}
+
 fn init_temp_repo(name: &str) -> PathBuf {
     let repo = std::env::temp_dir().join(format!("gitpulse-{name}-{}", std::process::id()));
     let _ = fs::remove_dir_all(&repo);
@@ -121,6 +162,16 @@ fn init_temp_repo(name: &str) -> PathBuf {
     run_repo_git(&repo, &["config", "user.email", "tests@gitpulse.local"]);
     run_repo_git(&repo, &["config", "user.name", "GitPulse Tests"]);
     repo
+}
+
+fn commit_file(repo: &PathBuf, path: &str, contents: &str, message: &str, date: &str) {
+    let file_path = repo.join(path);
+    if let Some(parent) = file_path.parent() {
+        fs::create_dir_all(parent).expect("create file parent");
+    }
+    fs::write(&file_path, contents).expect("write test file");
+    run_repo_git(repo, &["add", path]);
+    commit_empty(repo, message, date);
 }
 
 fn commit_empty(repo: &PathBuf, message: &str, date: &str) {

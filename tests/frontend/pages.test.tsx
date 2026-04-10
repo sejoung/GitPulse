@@ -19,6 +19,7 @@ const api = vi.hoisted(() => ({
   getDeliveryRiskAnalysis: vi.fn(),
   getGitBranches: vi.fn(),
   getGitRepositoryState: vi.fn(),
+  getHotspotCommitDetails: vi.fn(),
   getHotspotsAnalysis: vi.fn(),
   getOverviewAnalysis: vi.fn(),
   getOwnershipAnalysis: vi.fn(),
@@ -60,6 +61,7 @@ beforeEach(async () => {
     deliveryRiskLevel: "low",
   });
   api.getHotspotsAnalysis.mockResolvedValue([]);
+  api.getHotspotCommitDetails.mockResolvedValue([]);
   api.getActivityAnalysis.mockResolvedValue([]);
   api.getOwnershipAnalysis.mockResolvedValue([]);
   api.getDeliveryRiskAnalysis.mockResolvedValue([]);
@@ -253,6 +255,43 @@ describe("analysis pages initial states", () => {
     renderWithClient(<DeliveryRiskPage />);
     expect(screen.getAllByText("Not analyzed").length).toBeGreaterThan(0);
     expect(screen.getByText("Select a repository to see analysis results.")).toBeInTheDocument();
+  });
+});
+
+describe("HotspotsPage", () => {
+  it("shows commit evidence for the selected hotspot file", async () => {
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getHotspotsAnalysis.mockResolvedValue([
+      {
+        path: "src/app.tsx",
+        changes: 12,
+        fixes: 4,
+        risk: "watch",
+      },
+    ]);
+    api.getHotspotCommitDetails.mockResolvedValue([
+      {
+        sha: "abcdef123456",
+        shortSha: "abcdef1",
+        date: "2026-04-01",
+        author: "Beni",
+        subject: "fix app shell bug",
+        matchesBugKeyword: true,
+      },
+    ]);
+
+    renderWithClient(<HotspotsPage />);
+
+    expect(await screen.findByText("Commit evidence")).toBeInTheDocument();
+    expect((await screen.findAllByText("fix app shell bug")).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("abcdef1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Bug keyword").length).toBeGreaterThan(0);
+    expect(api.getHotspotCommitDetails).toHaveBeenCalledWith({
+      workspacePath: "/repo",
+      period: "1y",
+      bugKeywords: "fix, bug, broken",
+      filePath: "src/app.tsx",
+    });
   });
 });
 

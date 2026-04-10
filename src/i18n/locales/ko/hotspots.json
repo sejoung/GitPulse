@@ -21,7 +21,18 @@
     "title": "Hotspot details",
     "description": "{{path}} 파일의 신호를 확인합니다.",
     "bugKeywords": "Bug keywords",
-    "excludedPaths": "제외 경로"
+    "excludedPaths": "제외 경로",
+    "commitEvidence": "커밋 근거",
+    "commitEvidenceDescription": "선택한 파일의 최근 커밋을 기준으로 Hotspot으로 분류된 이유를 확인합니다.",
+    "commit": "커밋",
+    "date": "날짜",
+    "author": "작성자",
+    "subject": "메시지",
+    "keywordMatch": "키워드 매칭",
+    "bugKeywordMatched": "Bug keyword",
+    "changeOnly": "변경만 있음",
+    "loadingCommits": "커밋 근거를 불러오는 중입니다.",
+    "noCommitEvidence": "이 파일에 대한 커밋 근거가 없습니다."
   },
   "chart": {
     "title": "Change frequency",

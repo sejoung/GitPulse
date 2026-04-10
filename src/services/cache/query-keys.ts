@@ -26,6 +26,13 @@ export const queryKeys = {
     excludedPaths: string,
     bugKeywords: string
   ) => ["hotspots", workspacePath, branch, period, excludedPaths, bugKeywords] as const,
+  hotspotCommits: (
+    workspacePath: string,
+    branch: string,
+    period: string,
+    bugKeywords: string,
+    path: string
+  ) => ["hotspot-commits", workspacePath, branch, period, bugKeywords, path] as const,
   ownership: (workspacePath: string, branch: string) =>
     ["ownership", workspacePath, branch] as const,
   activity: (workspacePath: string, branch: string, period: string) =>

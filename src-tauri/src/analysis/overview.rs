@@ -3,8 +3,8 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::models::overview::{
-    ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotFile, OverviewAnalysis,
-    OwnershipContributor,
+    ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
+    OverviewAnalysis, OwnershipContributor,
 };
 
 fn is_git_workspace(workspace_path: &str) -> bool {
@@ -112,6 +112,14 @@ fn keyword_pattern(keywords: Option<&str>, fallback: &[&str]) -> String {
         .map(|keyword| escape_git_regex(keyword))
         .collect::<Vec<_>>()
         .join("|")
+}
+
+fn commit_matches_keywords(subject: &str, keywords: &[String]) -> bool {
+    let subject = subject.to_lowercase();
+
+    keywords
+        .iter()
+        .any(|keyword| subject.contains(&keyword.to_lowercase()))
 }
 
 fn split_csv(value: Option<&str>) -> Vec<String> {
@@ -298,6 +306,59 @@ pub fn build_hotspots_analysis(
     });
     rows.truncate(20);
     rows
+}
+
+pub fn build_hotspot_commit_details(
+    workspace_path: Option<&str>,
+    period: Option<&str>,
+    bug_keywords: Option<&str>,
+    file_path: Option<&str>,
+) -> Vec<HotspotCommit> {
+    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+        return Vec::new();
+    };
+    let Some(file_path) = file_path.map(str::trim).filter(|path| !path.is_empty()) else {
+        return Vec::new();
+    };
+
+    let since = since_arg(period).unwrap_or("1 year ago");
+    let since = format!("--since={since}");
+    let Some(output) = run_git(
+        workspace_path,
+        &[
+            "log",
+            "--format=%H%x1f%h%x1f%ad%x1f%an%x1f%s",
+            "--date=short",
+            &since,
+            "--",
+            file_path,
+        ],
+    ) else {
+        return Vec::new();
+    };
+    let bug_keywords = split_keywords(bug_keywords, &["fix", "bug", "broken"]);
+
+    output
+        .lines()
+        .filter_map(|line| {
+            let mut fields = line.split('\x1f');
+            let sha = fields.next()?;
+            let short_sha = fields.next()?;
+            let date = fields.next()?;
+            let author = fields.next()?;
+            let subject = fields.next()?;
+
+            Some(HotspotCommit {
+                sha: sha.to_string(),
+                short_sha: short_sha.to_string(),
+                date: date.to_string(),
+                author: author.to_string(),
+                subject: subject.to_string(),
+                matches_bug_keyword: commit_matches_keywords(subject, &bug_keywords),
+            })
+        })
+        .take(20)
+        .collect()
 }
 
 pub fn build_ownership_analysis(workspace_path: Option<&str>) -> Vec<OwnershipContributor> {

@@ -21,6 +21,17 @@ pub struct HotspotFile {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct HotspotCommit {
+    pub sha: String,
+    pub short_sha: String,
+    pub date: String,
+    pub author: String,
+    pub subject: String,
+    pub matches_bug_keyword: bool,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OwnershipContributor {
     pub name: String,
     pub commits: u32,

@@ -13,6 +13,15 @@ export type HotspotFile = {
   risk: "healthy" | "watch" | "risky";
 };
 
+export type HotspotCommit = {
+  sha: string;
+  shortSha: string;
+  date: string;
+  author: string;
+  subject: string;
+  matchesBugKeyword: boolean;
+};
+
 export type OwnershipContributor = {
   name: string;
   commits: number;

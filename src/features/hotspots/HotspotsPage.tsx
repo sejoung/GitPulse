@@ -11,7 +11,7 @@ import {
   StatCard,
   Table,
 } from "../../components/ui";
-import { useHotspotsAnalysis } from "./useHotspotsAnalysis";
+import { useHotspotCommitDetails, useHotspotsAnalysis } from "./useHotspotsAnalysis";
 
 export function HotspotsPage() {
   const { t } = useTranslation(["hotspots", "common"]);
@@ -31,6 +31,13 @@ export function HotspotsPage() {
   const hasWorkspace = Boolean(workspacePath);
   const hasData = hotspotRows.length > 0;
   const selectedHotspot = hotspotRows.find((row) => row.path === selectedPath) ?? hotspotRows[0];
+  const { data: commitRows = [], isLoading: isCommitLoading } = useHotspotCommitDetails(
+    workspacePath,
+    selectedBranch,
+    analysisPeriod,
+    bugKeywords,
+    selectedHotspot?.path ?? ""
+  );
   const bugOverlap = hotspotRows.filter((row) => row.fixes > 0).length;
   const highestSignal = hotspotRows.some((row) => row.risk === "risky")
     ? "risky"
@@ -121,7 +128,11 @@ export function HotspotsPage() {
               header: t("ranking.details"),
               align: "right",
               render: (row) => (
-                <Button variant="ghost" size="sm" onClick={() => setSelectedPath(row.path)}>
+                <Button
+                  variant={selectedHotspot?.path === row.path ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => setSelectedPath(row.path)}
+                >
                   {selectedHotspot?.path === row.path
                     ? t("ranking.selected")
                     : t("ranking.inspect")}
@@ -178,6 +189,93 @@ export function HotspotsPage() {
               <p className="gp-kicker">{t("details.excludedPaths")}</p>
               <p className="gp-text-secondary mt-1 break-words text-sm">{excludedPaths}</p>
             </div>
+          </div>
+          <div className="mt-4">
+            <p className="gp-kicker">{t("details.commitEvidence")}</p>
+            <p className="gp-text-secondary mt-1 mb-3 text-sm">
+              {t("details.commitEvidenceDescription")}
+            </p>
+            {commitRows.length > 0 ? (
+              <>
+                <div className="space-y-3 xl:hidden">
+                  {commitRows.map((row) => (
+                    <div key={row.sha} className="gp-panel min-w-0 p-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge tone="brand">{row.shortSha}</Badge>
+                        <Badge tone={row.matchesBugKeyword ? "watch" : "neutral"}>
+                          {row.matchesBugKeyword
+                            ? t("details.bugKeywordMatched")
+                            : t("details.changeOnly")}
+                        </Badge>
+                      </div>
+                      <p className="gp-text-secondary mt-3 break-words text-sm">{row.subject}</p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div className="min-w-0">
+                          <p className="gp-kicker">{t("details.date")}</p>
+                          <p className="gp-text-secondary mt-1 text-sm">{row.date}</p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="gp-kicker">{t("details.author")}</p>
+                          <p className="gp-text-secondary mt-1 break-words text-sm">{row.author}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden xl:block">
+                  <Table
+                    columns={[
+                      {
+                        key: "sha",
+                        header: t("details.commit"),
+                        render: (row) => row.shortSha,
+                      },
+                      {
+                        key: "date",
+                        header: t("details.date"),
+                        render: (row) => row.date,
+                      },
+                      {
+                        key: "author",
+                        header: t("details.author"),
+                        render: (row) => row.author,
+                      },
+                      {
+                        key: "subject",
+                        header: t("details.subject"),
+                        render: (row) => (
+                          <span className="block max-w-md truncate" title={row.subject}>
+                            {row.subject}
+                          </span>
+                        ),
+                      },
+                      {
+                        key: "match",
+                        header: t("details.keywordMatch"),
+                        align: "right",
+                        render: (row) =>
+                          row.matchesBugKeyword ? (
+                            <Badge tone="watch">{t("details.bugKeywordMatched")}</Badge>
+                          ) : (
+                            <Badge tone="neutral">{t("details.changeOnly")}</Badge>
+                          ),
+                      },
+                    ]}
+                    rows={commitRows}
+                    getRowKey={(row) => row.sha}
+                    emptyText={
+                      isCommitLoading ? t("details.loadingCommits") : t("details.noCommitEvidence")
+                    }
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-text-secondary text-sm">
+                  {isCommitLoading ? t("details.loadingCommits") : t("details.noCommitEvidence")}
+                </p>
+              </div>
+            )}
           </div>
         </DetailPanel>
       ) : null}

@@ -11,6 +11,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::analysis::get_overview_analysis,
             commands::analysis::get_hotspots_analysis,
+            commands::analysis::get_hotspot_commit_details,
             commands::analysis::get_ownership_analysis,
             commands::analysis::get_activity_analysis,
             commands::analysis::get_delivery_risk_analysis,

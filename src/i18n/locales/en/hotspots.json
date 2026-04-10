@@ -21,7 +21,18 @@
     "title": "Hotspot details",
     "description": "Review the selected file signal for {{path}}.",
     "bugKeywords": "Bug keywords",
-    "excludedPaths": "Excluded paths"
+    "excludedPaths": "Excluded paths",
+    "commitEvidence": "Commit evidence",
+    "commitEvidenceDescription": "Recent commits for the selected file explain why this file is ranked as a hotspot.",
+    "commit": "Commit",
+    "date": "Date",
+    "author": "Author",
+    "subject": "Subject",
+    "keywordMatch": "Keyword match",
+    "bugKeywordMatched": "Bug keyword",
+    "changeOnly": "Change only",
+    "loadingCommits": "Loading commit evidence.",
+    "noCommitEvidence": "No commit evidence found for this file."
   },
   "chart": {
     "title": "Change frequency",

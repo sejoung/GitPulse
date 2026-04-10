@@ -5,6 +5,7 @@ import type {
   GitBranch,
   GitRepositoryState,
   GitRemoteStatus,
+  HotspotCommit,
   HotspotFile,
   OverviewAnalysis,
   OwnershipContributor,
@@ -64,6 +65,24 @@ export function getHotspotsAnalysis({
     period,
     excludedPaths,
     bugKeywords,
+  });
+}
+
+export function getHotspotCommitDetails({
+  workspacePath,
+  period = "1y",
+  bugKeywords,
+  filePath,
+}: AnalysisParams & { filePath: string }) {
+  if (!isTauriRuntime() || !workspacePath || !filePath) {
+    return Promise.resolve<HotspotCommit[]>([]);
+  }
+
+  return invoke<HotspotCommit[]>("get_hotspot_commit_details", {
+    workspacePath,
+    period,
+    bugKeywords,
+    filePath,
   });
 }
 

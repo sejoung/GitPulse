@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   checkGitRemoteStatus,
   getActivityAnalysis,
+  getHotspotCommitDetails,
   getOverviewAnalysis,
   pullGitRemoteUpdates,
 } from "../../src/services/tauri/analysis-api";
@@ -32,6 +33,14 @@ describe("analysis-api runtime guards", () => {
 
   it("returns empty fallback data without invoking Tauri outside the native runtime", async () => {
     await expect(getActivityAnalysis("/repo", "3m")).resolves.toEqual([]);
+    await expect(
+      getHotspotCommitDetails({
+        workspacePath: "/repo",
+        period: "3m",
+        bugKeywords: "fix,bug",
+        filePath: "",
+      })
+    ).resolves.toEqual([]);
     await expect(checkGitRemoteStatus("")).resolves.toEqual({
       status: "no_upstream",
       upstream: null,
@@ -74,6 +83,25 @@ describe("analysis-api runtime guards", () => {
       excludedPaths: "dist/",
       bugKeywords: "fix,bug",
       emergencyPatterns: [{ pattern: "revert, reverted", signal: "Rollback activity" }],
+    });
+  });
+
+  it("passes hotspot commit detail settings through to the native command", async () => {
+    setTauriRuntime(true);
+    invokeMock.mockResolvedValue([]);
+
+    await getHotspotCommitDetails({
+      workspacePath: "/repo",
+      period: "6m",
+      bugKeywords: "fix,bug",
+      filePath: "src/app.tsx",
+    });
+
+    expect(invokeMock).toHaveBeenCalledWith("get_hotspot_commit_details", {
+      workspacePath: "/repo",
+      period: "6m",
+      bugKeywords: "fix,bug",
+      filePath: "src/app.tsx",
     });
   });
 });
