@@ -11,6 +11,8 @@ export default tseslint.config(
     ignores: [
       "coverage",
       "dist",
+      "playwright-report",
+      "test-results",
       "eslint.config.js",
       "lint-staged.config.js",
       "postcss.config.js",
