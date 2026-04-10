@@ -10,6 +10,14 @@
     "highChangeAndFixHeavy": "변경 많음 + fix 많음",
     "potentialMaintenanceLoad": "잠재 유지보수 부담"
   },
+  "basis": {
+    "title": "분석 기준",
+    "description": "Hotspot 행을 보기 전에 저장소, 분석 기간, 필터 범위를 확인합니다.",
+    "repository": "저장소",
+    "branch": "브랜치",
+    "window": "분석 기간",
+    "filters": "키워드 / 제외 경로"
+  },
   "ranking": {
     "title": "Hotspot ranking",
     "description": "많이 바뀌고 자주 고쳐지는 파일은 우선적으로 살펴볼 후보입니다.",

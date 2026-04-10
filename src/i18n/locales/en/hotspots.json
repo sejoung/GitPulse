@@ -10,6 +10,14 @@
     "highChangeAndFixHeavy": "High-change and fix-heavy",
     "potentialMaintenanceLoad": "Potential maintenance load"
   },
+  "basis": {
+    "title": "Analysis basis",
+    "description": "Review the repository, time window, and filter scope before inspecting hotspot rows.",
+    "repository": "Repository",
+    "branch": "Branch",
+    "window": "Analysis window",
+    "filters": "Keywords / exclusions"
+  },
   "ranking": {
     "title": "Hotspot ranking",
     "description": "Files that change often and break often are candidates to inspect first.",

@@ -10,6 +10,14 @@
     "comparedWithPreviousMonth": "Compared with previous month",
     "noDeclinePattern": "No decline pattern"
   },
+  "basis": {
+    "title": "Analysis basis",
+    "description": "Review the repository scope and time window used for the activity signal.",
+    "repository": "Repository",
+    "branch": "Branch",
+    "window": "Analysis window",
+    "rows": "Visible months"
+  },
   "chart": {
     "title": "Monthly commit trend",
     "description": "A steady rhythm is a healthy project signal."

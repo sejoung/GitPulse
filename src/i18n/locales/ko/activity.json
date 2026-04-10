@@ -10,6 +10,14 @@
     "comparedWithPreviousMonth": "이전 달 대비",
     "noDeclinePattern": "감소 패턴 없음"
   },
+  "basis": {
+    "title": "분석 기준",
+    "description": "활동 신호를 계산할 때 사용한 저장소 범위와 기간을 확인합니다.",
+    "repository": "저장소",
+    "branch": "브랜치",
+    "window": "분석 기간",
+    "rows": "표시 월 수"
+  },
   "chart": {
     "title": "Monthly commit trend",
     "description": "일정한 리듬은 건강한 프로젝트 신호입니다."

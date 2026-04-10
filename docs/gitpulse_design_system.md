@@ -259,6 +259,13 @@ These patterns are now implemented in the app and should be reused.
 - `Settings` is the configuration surface for signal defaults, repository scope, repository overrides, and persistence visibility.
 - When a user needs to move between the two, use direct actions such as `Open settings`, `Adjust settings`, or `Open Overview`.
 
+### Analysis Page Context
+
+- Every analysis page should expose an `Analysis basis` panel near the top of the page.
+- This panel should use `DetailPanel` with `gp-panel` summary cells for the active repository context.
+- At minimum, show the current repository and branch. Add analysis window, configured filters, or visible row counts when they materially explain the page result.
+- When a page depends on settings interpretation, include an `Open settings` action in the panel header instead of creating a separate settings callout elsewhere.
+
 ### Summary Panels
 
 - Use `gp-panel` for compact summary blocks that show one label and one short value.

@@ -11,6 +11,14 @@
     "recentActivity": "Recent activity",
     "ownershipConcentration": "Ownership concentration"
   },
+  "basis": {
+    "title": "Analysis basis",
+    "description": "Review the repository and branch used when calculating ownership concentration.",
+    "repository": "Repository",
+    "branch": "Branch",
+    "contributors": "Visible contributors",
+    "active": "Active contributors"
+  },
   "table": {
     "title": "Contributor distribution",
     "description": "Contribution distribution by commit count."

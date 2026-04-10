@@ -10,6 +10,14 @@
     "signal": "Signal",
     "deliveryRisk": "배포 위험"
   },
+  "basis": {
+    "title": "분석 기준",
+    "description": "Emergency 신호를 읽기 전에 저장소 브랜치와 패턴 범위를 확인합니다.",
+    "repository": "저장소",
+    "branch": "브랜치",
+    "patternRows": "설정된 패턴 수",
+    "matchedRows": "매칭된 행 수"
+  },
   "patterns": {
     "title": "Emergency patterns",
     "description": "2주마다 반복되는 긴급 대응은 더 깊은 배포 문제를 의심할 신호입니다.",

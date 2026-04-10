@@ -21,6 +21,7 @@ export function HotspotsPage() {
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
+  const setActiveItem = useUiStore((state) => state.setActiveItem);
   const globalExcludedPaths = useUiStore((state) => state.excludedPaths);
   const globalBugKeywords = useUiStore((state) => state.bugKeywords);
   const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
@@ -133,6 +134,45 @@ export function HotspotsPage() {
           tone={hasWorkspace && hasData ? highestSignal : "neutral"}
         />
       </section>
+
+      <DetailPanel
+        title={t("basis.title")}
+        description={t("basis.description")}
+        actions={
+          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
+            {t("common:actions.openSettings")}
+          </Button>
+        }
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.repository")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.branch")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {selectedBranch || t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.window")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {t(`settings:defaults.analysisWindows.${analysisPeriod}`)}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.filters")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {`${bugKeywords.split(",").filter(Boolean).length} / ${
+                excludedPaths.split(",").filter(Boolean).length
+              }`}
+            </p>
+          </div>
+        </div>
+      </DetailPanel>
 
       <DetailPanel title={t("ranking.title")} description={t("ranking.description")}>
         <Table

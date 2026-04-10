@@ -8,6 +8,7 @@ export function DeliveryRiskPage() {
   const { t } = useTranslation(["deliveryRisk", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
+  const setActiveItem = useUiStore((state) => state.setActiveItem);
   const globalEmergencyPatterns = useUiStore((state) => state.emergencyPatterns);
   const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
   const emergencyPatterns = repositoryOverride?.emergencyPatterns ?? globalEmergencyPatterns;
@@ -90,6 +91,39 @@ export function DeliveryRiskPage() {
           tone={hasWorkspace && hasData ? deliverySignal : "neutral"}
         />
       </section>
+
+      <DetailPanel
+        title={t("basis.title")}
+        description={t("basis.description")}
+        actions={
+          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
+            {t("common:actions.openSettings")}
+          </Button>
+        }
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.repository")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.branch")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {selectedBranch || t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.patternRows")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{emergencyPatterns.length}</p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.matchedRows")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{deliveryRows.length}</p>
+          </div>
+        </div>
+      </DetailPanel>
 
       <DetailPanel title={t("patterns.title")} description={t("patterns.description")}>
         <Table

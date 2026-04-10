@@ -1,13 +1,22 @@
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
-import { Badge, DetailPanel, EmptyState, PageHeader, StatCard, Table } from "../../components/ui";
+import {
+  Badge,
+  Button,
+  DetailPanel,
+  EmptyState,
+  PageHeader,
+  StatCard,
+  Table,
+} from "../../components/ui";
 import { useOwnershipAnalysis } from "./useOwnershipAnalysis";
 
 export function OwnershipPage() {
   const { t } = useTranslation(["ownership", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
+  const setActiveItem = useUiStore((state) => state.setActiveItem);
   const { data: contributorRows = [], isLoading } = useOwnershipAnalysis(
     workspacePath,
     selectedBranch
@@ -75,6 +84,39 @@ export function OwnershipPage() {
           tone={hasWorkspace && hasData ? knowledgeRisk : "neutral"}
         />
       </section>
+
+      <DetailPanel
+        title={t("basis.title")}
+        description={t("basis.description")}
+        actions={
+          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
+            {t("common:actions.openSettings")}
+          </Button>
+        }
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.repository")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.branch")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {selectedBranch || t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.contributors")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{contributorRows.length}</p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("basis.active")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{activeContributorCount}</p>
+          </div>
+        </div>
+      </DetailPanel>
 
       <DetailPanel title={t("table.title")} description={t("table.description")}>
         <Table

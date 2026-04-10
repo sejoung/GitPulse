@@ -10,6 +10,14 @@
     "signal": "Signal",
     "deliveryRisk": "Delivery risk"
   },
+  "basis": {
+    "title": "Analysis basis",
+    "description": "Review the repository branch and configured pattern scope before reading emergency signals.",
+    "repository": "Repository",
+    "branch": "Branch",
+    "patternRows": "Configured patterns",
+    "matchedRows": "Matched rows"
+  },
   "patterns": {
     "title": "Emergency patterns",
     "description": "Emergency response every two weeks is a signal to inspect deeper delivery issues.",
