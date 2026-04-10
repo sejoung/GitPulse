@@ -4,6 +4,8 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
+const nodeConfigFiles = ["tailwind.config.ts", "vite.config.ts", "playwright.config.ts"];
+
 export default tseslint.config(
   {
     ignores: [
@@ -56,7 +58,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ["vite.config.ts"],
+    files: nodeConfigFiles,
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
     rules: {
       "@typescript-eslint/no-unsafe-call": "off",
     },
