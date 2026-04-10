@@ -95,6 +95,7 @@ export function OverviewPage() {
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
   const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
   const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);
+  const setActiveItem = useUiStore((state) => state.setActiveItem);
   const analysisRuns = useUiStore((state) => state.analysisRuns);
   const addAnalysisRun = useUiStore((state) => state.addAnalysisRun);
   const selectWorkspace = useWorkspacePrompt();
@@ -357,6 +358,9 @@ export function OverviewPage() {
             <Badge tone={hasWorkspace ? "healthy" : "neutral"} className="max-w-full truncate">
               {hasWorkspace ? workspacePath : t("common:status.notSelected")}
             </Badge>
+            <Button variant="secondary" onClick={() => setActiveItem("settings")}>
+              {t("common:actions.openSettings")}
+            </Button>
             <Button variant={hasWorkspace ? "secondary" : "primary"} onClick={selectWorkspace}>
               {hasWorkspace
                 ? t("common:actions.changeWorkspace")
@@ -424,7 +428,16 @@ export function OverviewPage() {
         title={t("workspaceDetails.title")}
         description={t("workspaceDetails.description")}
         actions={
-          <Tabs items={translatedPeriodTabs} value={analysisPeriod} onChange={setAnalysisPeriod} />
+          <div className="gp-header-actions">
+            <Button variant="secondary" onClick={() => setActiveItem("settings")}>
+              {t("workspaceDetails.adjustSettings")}
+            </Button>
+            <Tabs
+              items={translatedPeriodTabs}
+              value={analysisPeriod}
+              onChange={setAnalysisPeriod}
+            />
+          </div>
         }
       >
         <div className="gp-control-grid mb-4">

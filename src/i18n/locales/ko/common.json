@@ -11,7 +11,8 @@
   "actions": {
     "selectWorkspace": "저장소 선택",
     "changeWorkspace": "저장소 변경",
-    "browse": "찾아보기"
+    "browse": "찾아보기",
+    "openSettings": "설정 열기"
   },
   "status": {
     "notSelected": "선택 안 됨",
@@ -54,7 +55,7 @@
   },
   "time": {
     "lastYear": "최근 1년",
-    "currentWorkspace": "현재 workspace",
+    "currentWorkspace": "현재 저장소",
     "all": "전체"
   },
   "signals": {

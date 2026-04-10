@@ -3,9 +3,9 @@
   "title": "Select a repository",
   "description": "GitPulse reads signals from Git history before opening source files.",
   "current": {
-    "title": "Current workspace",
+    "title": "Current repository",
     "description": "Local repository used for Git CLI based analysis.",
-    "value": "No workspace selected",
+    "value": "No repository selected",
     "prompt": "Enter a local repository path to analyze."
   }
 }

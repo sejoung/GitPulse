@@ -9,9 +9,10 @@
     "settings": "Settings"
   },
   "actions": {
-    "selectWorkspace": "Select workspace",
-    "changeWorkspace": "Change workspace",
-    "browse": "Browse"
+    "selectWorkspace": "Select repository",
+    "changeWorkspace": "Change repository",
+    "browse": "Browse",
+    "openSettings": "Open settings"
   },
   "status": {
     "notSelected": "Not selected",
@@ -54,7 +55,7 @@
   },
   "time": {
     "lastYear": "Last year",
-    "currentWorkspace": "Current workspace",
+    "currentWorkspace": "Current repository",
     "all": "All"
   },
   "signals": {

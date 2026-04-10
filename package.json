@@ -14,9 +14,12 @@
     "lint": "npm run lint:frontend && npm run lint:rust",
     "lint:frontend": "eslint .",
     "lint:rust": "cargo gp-lint",
-    "test": "npm run test:frontend && npm run test:rust",
+    "test": "npm run test:all",
+    "test:all": "npm run test:frontend && npm run test:rust",
     "test:frontend": "vitest run",
+    "test:frontend:watch": "vitest",
     "test:rust": "cargo gp-test",
+    "test:rust:filter": "cargo test --manifest-path src-tauri/Cargo.toml",
     "preview": "vite preview",
     "prepare": "husky"
   },

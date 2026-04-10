@@ -19,8 +19,9 @@
     "body": "GitPulse는 로컬 Git 이력만 분석합니다. 저장소를 선택하면 브랜치, 원격 상태, 신호 분석 컨트롤을 사용할 수 있습니다."
   },
   "workspaceDetails": {
-    "title": "Workspace details",
+    "title": "저장소 세부 정보",
     "description": "현재 저장소의 분석 기준입니다.",
+    "adjustSettings": "설정 조정",
     "branch": "브랜치",
     "noBranches": "브랜치 없음",
     "checkRemote": "원격 확인",

@@ -1,4 +1,4 @@
-import { useDeferredValue, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import type {
@@ -130,6 +130,30 @@ export function SettingsPage() {
     t("cache.volatileItems.loadingState"),
     t("cache.volatileItems.toastMessage"),
   ];
+
+  useEffect(() => {
+    if (!settingsMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSettingsMessage("");
+    }, 4000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [settingsMessage]);
+
+  useEffect(() => {
+    if (!cacheMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCacheMessage("");
+    }, 4000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [cacheMessage]);
 
   function handleLanguageChange(nextLanguage: AppLanguage) {
     setLanguage(nextLanguage);
@@ -339,7 +363,7 @@ export function SettingsPage() {
             <div className="gp-panel min-w-0 p-4">
               <p className="gp-kicker">{t("defaults.cacheKey")}</p>
               <p className="gp-text-secondary mt-2 break-words text-sm">
-                workspace + branch + period + HEAD_SHA
+                repository + branch + period + HEAD_SHA
               </p>
             </div>
           </div>
@@ -783,7 +807,7 @@ export function SettingsPage() {
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("cache.key")}</p>
             <p className="gp-text-secondary mt-1 break-words text-sm">
-              workspace + branch + period + HEAD_SHA
+              repository + branch + period + HEAD_SHA
             </p>
           </div>
           <div className="gp-panel min-w-0 p-3">

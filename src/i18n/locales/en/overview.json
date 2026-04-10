@@ -19,8 +19,9 @@
     "body": "GitPulse analyzes local Git history only. Select a repository to enable branch, remote, and signal controls."
   },
   "workspaceDetails": {
-    "title": "Workspace details",
+    "title": "Repository details",
     "description": "Analysis controls for the current repository.",
+    "adjustSettings": "Adjust settings",
     "branch": "Branch",
     "noBranches": "No branches",
     "checkRemote": "Check remote",

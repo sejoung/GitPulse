@@ -3,7 +3,7 @@
   "title": "분석할 저장소 선택",
   "description": "GitPulse는 코드를 열기 전에 Git 이력에서 먼저 신호를 읽습니다.",
   "current": {
-    "title": "Current workspace",
+    "title": "현재 저장소",
     "description": "Git CLI 기반 분석을 실행할 로컬 저장소입니다.",
     "value": "선택된 저장소가 없습니다.",
     "prompt": "분석할 로컬 저장소 경로를 입력하세요."
