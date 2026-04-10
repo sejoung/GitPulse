@@ -18,8 +18,11 @@ export function HotspotsPage() {
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
-  const excludedPaths = useUiStore((state) => state.excludedPaths);
-  const bugKeywords = useUiStore((state) => state.bugKeywords);
+  const globalExcludedPaths = useUiStore((state) => state.excludedPaths);
+  const globalBugKeywords = useUiStore((state) => state.bugKeywords);
+  const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
+  const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
+  const bugKeywords = repositoryOverride?.bugKeywords ?? globalBugKeywords;
   const [selectedPath, setSelectedPath] = useState("");
   const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(
     workspacePath,

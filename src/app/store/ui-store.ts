@@ -6,6 +6,11 @@ export type EmergencyPattern = {
   pattern: string;
   signal: string;
 };
+export type RepositoryOverrideSettings = {
+  excludedPaths: string;
+  bugKeywords: string;
+  emergencyPatterns: EmergencyPattern[];
+};
 export type NavigationItem =
   | "overview"
   | "hotspots"
@@ -24,6 +29,7 @@ type UiState = {
   bugKeywords: string;
   emergencyPatterns: EmergencyPattern[];
   rememberLastRepository: boolean;
+  repositoryOverrides: Record<string, RepositoryOverrideSettings>;
   setActiveItem: (item: NavigationItem) => void;
   setWorkspacePath: (path: string) => void;
   setSelectedBranch: (branch: string) => void;
@@ -34,6 +40,13 @@ type UiState = {
   setEmergencyPatterns: (patterns: EmergencyPattern[]) => void;
   setEmergencyPattern: (index: number, pattern: EmergencyPattern) => void;
   setRememberLastRepository: (remember: boolean) => void;
+  setRepositoryOverride: (workspacePath: string, settings: RepositoryOverrideSettings) => void;
+  setRepositoryOverridePattern: (
+    workspacePath: string,
+    index: number,
+    pattern: EmergencyPattern
+  ) => void;
+  clearRepositoryOverride: (workspacePath: string) => void;
 };
 
 type PersistedUiSettings = {
@@ -45,6 +58,7 @@ type PersistedUiSettings = {
   bugKeywords: string;
   emergencyPatterns: EmergencyPattern[];
   rememberLastRepository: boolean;
+  repositoryOverrides: Record<string, RepositoryOverrideSettings>;
 };
 
 type PersistedUiState = Partial<Omit<PersistedUiSettings, "analysisPeriod">> & {
@@ -93,6 +107,22 @@ function emergencyPatternsFromKeywords(keywords?: string): EmergencyPattern[] {
   }));
 }
 
+export function getEffectiveRepositorySettings(
+  state: Pick<
+    UiState,
+    "excludedPaths" | "bugKeywords" | "emergencyPatterns" | "repositoryOverrides"
+  >,
+  workspacePath: string
+): RepositoryOverrideSettings {
+  const repositoryOverride = workspacePath ? state.repositoryOverrides[workspacePath] : undefined;
+
+  return {
+    excludedPaths: repositoryOverride?.excludedPaths ?? state.excludedPaths,
+    bugKeywords: repositoryOverride?.bugKeywords ?? state.bugKeywords,
+    emergencyPatterns: repositoryOverride?.emergencyPatterns ?? state.emergencyPatterns,
+  };
+}
+
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
@@ -105,6 +135,7 @@ export const useUiStore = create<UiState>()(
       bugKeywords: "fix, bug, broken",
       emergencyPatterns: defaultEmergencyPatterns,
       rememberLastRepository: true,
+      repositoryOverrides: {},
       setActiveItem: (activeItem) => set({ activeItem }),
       setWorkspacePath: (workspacePath) => set({ workspacePath }),
       setSelectedBranch: (selectedBranch) => set({ selectedBranch }),
@@ -125,10 +156,37 @@ export const useUiStore = create<UiState>()(
           workspacePath: rememberLastRepository ? state.workspacePath : "",
           selectedBranch: rememberLastRepository ? state.selectedBranch : "",
         })),
+      setRepositoryOverride: (workspacePath, settings) =>
+        set((state) => ({
+          repositoryOverrides: {
+            ...state.repositoryOverrides,
+            [workspacePath]: settings,
+          },
+        })),
+      setRepositoryOverridePattern: (workspacePath, index, pattern) =>
+        set((state) => ({
+          repositoryOverrides: {
+            ...state.repositoryOverrides,
+            [workspacePath]: {
+              ...state.repositoryOverrides[workspacePath],
+              emergencyPatterns:
+                state.repositoryOverrides[workspacePath]?.emergencyPatterns.map(
+                  (item, itemIndex) => (itemIndex === index ? pattern : item)
+                ) ?? defaultEmergencyPatterns,
+            },
+          },
+        })),
+      clearRepositoryOverride: (workspacePath) =>
+        set((state) => {
+          const repositoryOverrides = { ...state.repositoryOverrides };
+          delete repositoryOverrides[workspacePath];
+
+          return { repositoryOverrides };
+        }),
     }),
     {
       name: "gitpulse.ui",
-      version: 4,
+      version: 5,
       partialize: ({
         workspacePath,
         selectedBranch,
@@ -138,6 +196,7 @@ export const useUiStore = create<UiState>()(
         bugKeywords,
         emergencyPatterns,
         rememberLastRepository,
+        repositoryOverrides,
       }) => ({
         workspacePath: rememberLastRepository ? workspacePath : "",
         selectedBranch: rememberLastRepository ? selectedBranch : "",
@@ -147,6 +206,7 @@ export const useUiStore = create<UiState>()(
         bugKeywords,
         emergencyPatterns,
         rememberLastRepository,
+        repositoryOverrides,
       }),
       migrate: (persistedState) => {
         const state = persistedState as PersistedUiState;
@@ -161,6 +221,7 @@ export const useUiStore = create<UiState>()(
           emergencyPatterns:
             state.emergencyPatterns ?? emergencyPatternsFromKeywords(state.emergencyKeywords),
           rememberLastRepository: state.rememberLastRepository ?? true,
+          repositoryOverrides: state.repositoryOverrides ?? {},
         };
       },
     }

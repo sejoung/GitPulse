@@ -30,6 +30,22 @@
     "on": "On",
     "off": "Off"
   },
+  "repositoryOverrides": {
+    "title": "Repository override",
+    "description": "Override selected analysis defaults for the current repository only.",
+    "enable": "Enable override",
+    "clear": "Clear override",
+    "currentRepository": "Current repository",
+    "overrideActive": "Override active",
+    "inheritingDefaults": "Using global defaults",
+    "inheritDescription": "This repository currently inherits the global defaults below.",
+    "excludedPaths": "Repository excluded paths",
+    "bugKeywords": "Repository bug keywords",
+    "emergencyPattern": "Repository emergency pattern",
+    "emergencySignal": "Repository emergency signal",
+    "help": "These values apply only to the selected repository. Empty rows still fall back to the global defaults.",
+    "empty": "Select a repository before setting repository-specific analysis defaults."
+  },
   "language": {
     "title": "Language",
     "description": "Choose the language used in the app.",

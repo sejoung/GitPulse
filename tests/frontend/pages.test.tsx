@@ -45,6 +45,7 @@ function resetStore() {
       { pattern: "rollback", signal: "Rollback pattern" },
     ],
     rememberLastRepository: true,
+    repositoryOverrides: {},
   });
 }
 
@@ -125,6 +126,28 @@ describe("SettingsPage", () => {
     expect(useUiStore.getState().rememberLastRepository).toBe(false);
     expect(useUiStore.getState().workspacePath).toBe("");
     expect(useUiStore.getState().selectedBranch).toBe("");
+  });
+
+  it("enables a repository override for the current workspace", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({
+      workspacePath: "/Users/beni/career-ops",
+    });
+
+    renderWithClient(<SettingsPage />);
+
+    await user.click(screen.getByRole("button", { name: "Enable override" }));
+
+    expect(useUiStore.getState().repositoryOverrides["/Users/beni/career-ops"]).toEqual({
+      excludedPaths: "dist/, node_modules/, target/",
+      bugKeywords: "fix, bug, broken",
+      emergencyPatterns: [
+        { pattern: "revert", signal: "Normal recovery" },
+        { pattern: "hotfix", signal: "Watch release pressure" },
+        { pattern: "emergency", signal: "Emergency response" },
+        { pattern: "rollback", signal: "Rollback pattern" },
+      ],
+    });
   });
 });
 
@@ -291,6 +314,44 @@ describe("HotspotsPage", () => {
       period: "1y",
       bugKeywords: "fix, bug, broken",
       filePath: "src/app.tsx",
+    });
+  });
+
+  it("uses repository override settings for hotspot analysis", async () => {
+    useUiStore.setState({
+      workspacePath: "/repo",
+      selectedBranch: "main",
+      repositoryOverrides: {
+        "/repo": {
+          excludedPaths: "build/",
+          bugKeywords: "incident, outage",
+          emergencyPatterns: [
+            { pattern: "revert", signal: "Normal recovery" },
+            { pattern: "hotfix", signal: "Watch release pressure" },
+            { pattern: "emergency", signal: "Emergency response" },
+            { pattern: "rollback", signal: "Rollback pattern" },
+          ],
+        },
+      },
+    });
+    api.getHotspotsAnalysis.mockResolvedValue([
+      {
+        path: "src/app.tsx",
+        changes: 12,
+        fixes: 4,
+        risk: "watch",
+      },
+    ]);
+
+    renderWithClient(<HotspotsPage />);
+
+    expect(await screen.findByText("incident, outage")).toBeInTheDocument();
+    expect(screen.getByText("build/")).toBeInTheDocument();
+    expect(api.getHotspotsAnalysis).toHaveBeenCalledWith({
+      workspacePath: "/repo",
+      period: "1y",
+      excludedPaths: "build/",
+      bugKeywords: "incident, outage",
     });
   });
 });

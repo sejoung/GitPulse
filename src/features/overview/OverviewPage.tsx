@@ -58,9 +58,13 @@ export function OverviewPage() {
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
-  const excludedPaths = useUiStore((state) => state.excludedPaths);
-  const bugKeywords = useUiStore((state) => state.bugKeywords);
-  const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const globalExcludedPaths = useUiStore((state) => state.excludedPaths);
+  const globalBugKeywords = useUiStore((state) => state.bugKeywords);
+  const globalEmergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
+  const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
+  const bugKeywords = repositoryOverride?.bugKeywords ?? globalBugKeywords;
+  const emergencyPatterns = repositoryOverride?.emergencyPatterns ?? globalEmergencyPatterns;
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
   const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
   const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);

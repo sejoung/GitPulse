@@ -1,4 +1,3 @@
-import type { EmergencyPattern } from "../../app/store/ui-store";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
@@ -9,7 +8,9 @@ export function DeliveryRiskPage() {
   const { t } = useTranslation(["deliveryRisk", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
-  const emergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const globalEmergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
+  const emergencyPatterns = repositoryOverride?.emergencyPatterns ?? globalEmergencyPatterns;
   const [selectedEvent, setSelectedEvent] = useState("");
   const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(
     workspacePath,
@@ -31,7 +32,8 @@ export function DeliveryRiskPage() {
         .map(
           (
             item
-          ): Pick<EmergencyPattern, "pattern"> & {
+          ): {
+            pattern: string;
             event: string;
             count: number;
             risk: "healthy";
@@ -121,7 +123,11 @@ export function DeliveryRiskPage() {
               header: t("patterns.details"),
               align: "right",
               render: (row) => (
-                <Button variant="ghost" size="sm" onClick={() => setSelectedEvent(row.event)}>
+                <Button
+                  variant={selectedPattern?.event === row.event ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => setSelectedEvent(row.event)}
+                >
                   {selectedPattern?.event === row.event
                     ? t("patterns.selected")
                     : t("patterns.inspect")}
