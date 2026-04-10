@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
@@ -21,8 +22,11 @@ export function OwnershipPage() {
     workspacePath,
     selectedBranch
   );
+  const [selectedContributorName, setSelectedContributorName] = useState("");
   const hasWorkspace = Boolean(workspacePath);
   const hasData = contributorRows.length > 0;
+  const selectedContributor =
+    contributorRows.find((row) => row.name === selectedContributorName) ?? null;
   const topContributor = contributorRows[0]?.share ?? "0%";
   const activeContributorCount = contributorRows.filter(
     (row) => row.recentKey === "status.active"
@@ -150,12 +154,81 @@ export function OwnershipPage() {
                 </Badge>
               ),
             },
+            {
+              key: "details",
+              header: t("table.details"),
+              align: "right",
+              render: (row) => (
+                <Button
+                  variant={selectedContributor?.name === row.name ? "primary" : "secondary"}
+                  size="sm"
+                  onClick={() => setSelectedContributorName(row.name)}
+                >
+                  {selectedContributor?.name === row.name
+                    ? t("table.selected")
+                    : t("table.inspect")}
+                </Button>
+              ),
+            },
           ]}
           rows={contributorRows}
           getRowKey={(row) => row.name}
           emptyText={hasWorkspace ? t("common:empty.ownership") : t("common:empty.selectWorkspace")}
         />
       </DetailPanel>
+
+      {selectedContributor ? (
+        <DetailPanel
+          title={t("details.title")}
+          description={t("details.description", { contributor: selectedContributor.name })}
+        >
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.contributor")}</p>
+              <p className="gp-text-secondary mt-1 break-words text-sm">
+                {selectedContributor.name}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.commits")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{selectedContributor.commits}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.share")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{selectedContributor.share}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("common:table.signal")}</p>
+              <Badge
+                tone={selectedContributor.risk === "watch" ? "watch" : "healthy"}
+                className="mt-2"
+              >
+                {t(`common:status.${selectedContributor.risk}`)}
+              </Badge>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("details.recent")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {t(`common:${selectedContributor.recentKey}`)}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("details.reading")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {selectedContributor.risk === "watch"
+                  ? t("details.watchReading")
+                  : t("details.healthyReading")}
+              </p>
+            </div>
+          </div>
+        </DetailPanel>
+      ) : hasWorkspace && hasData ? (
+        <DetailPanel title={t("details.title")} description={t("details.emptyDescription")}>
+          <EmptyState title={t("details.emptyTitle")} description={t("details.emptyBody")} />
+        </DetailPanel>
+      ) : null}
 
       <ChartCard title={t("chart.title")} description={t("chart.description")}>
         {contributorRows.length === 0 ? (

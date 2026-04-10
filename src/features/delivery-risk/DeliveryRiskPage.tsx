@@ -20,8 +20,7 @@ export function DeliveryRiskPage() {
   );
   const hasWorkspace = Boolean(workspacePath);
   const hasData = deliveryRows.length > 0;
-  const selectedPattern =
-    deliveryRows.find((row) => row.event === selectedEvent) ?? deliveryRows[0];
+  const selectedPattern = deliveryRows.find((row) => row.event === selectedEvent) ?? null;
   const selectedConfiguredPattern = emergencyPatterns.find(
     (item) => item.pattern === selectedPattern?.event
   );
@@ -218,6 +217,13 @@ export function DeliveryRiskPage() {
             <p className="gp-text-secondary mt-1 break-words text-sm">
               {selectedConfiguredPattern?.signal ?? t("details.noConfiguredSignal")}
             </p>
+          </div>
+        </DetailPanel>
+      ) : hasWorkspace && hasData ? (
+        <DetailPanel title={t("details.title")} description={t("details.emptyDescription")}>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("details.emptyTitle")}</p>
+            <p className="gp-text-secondary mt-2 text-sm">{t("details.emptyBody")}</p>
           </div>
         </DetailPanel>
       ) : null}

@@ -29,6 +29,9 @@
     "title": "패턴 상세",
     "description": "{{pattern}} 긴급 패턴의 신호를 확인합니다.",
     "configuredSignal": "설정된 신호",
-    "noConfiguredSignal": "이 패턴에 연결된 설정 신호가 없습니다."
+    "noConfiguredSignal": "이 패턴에 연결된 설정 신호가 없습니다.",
+    "emptyTitle": "패턴을 선택하세요",
+    "emptyDescription": "기본 화면은 패턴 표 중심으로 두고, 필요한 행만 상세를 열어 확인합니다.",
+    "emptyBody": "설정된 신호와 매칭 수를 함께 보고 싶을 때만 패턴을 선택하세요."
   }
 }

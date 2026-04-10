@@ -21,7 +21,21 @@
   },
   "table": {
     "title": "기여자 분포",
-    "description": "커밋 수 기준 기여 분포입니다."
+    "description": "커밋 수 기준 기여 분포입니다.",
+    "details": "상세",
+    "inspect": "확인",
+    "selected": "선택됨"
+  },
+  "details": {
+    "title": "기여자 상세",
+    "description": "{{contributor}}의 소유권 신호를 확인합니다.",
+    "recent": "최근 활동",
+    "reading": "해석",
+    "watchReading": "이 기여자에게 커밋 비중이 크게 몰려 있습니다. 지식 편중이 과한지 확인해보는 것이 좋습니다.",
+    "healthyReading": "현재 비중만으로는 watch 기준을 넘지 않지만, 소유권 흐름을 읽는 기준점으로 볼 수 있습니다.",
+    "emptyTitle": "기여자를 선택하세요",
+    "emptyDescription": "더 깊은 소유권 맥락이 필요할 때만 기여자 행을 선택합니다.",
+    "emptyBody": "기본 화면은 표 중심으로 두고, 확인이 필요한 기여자만 상세를 열어 보세요."
   },
   "chart": {
     "title": "소유권 집중도",

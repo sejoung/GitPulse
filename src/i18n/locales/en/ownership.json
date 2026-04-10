@@ -21,7 +21,21 @@
   },
   "table": {
     "title": "Contributor distribution",
-    "description": "Contribution distribution by commit count."
+    "description": "Contribution distribution by commit count.",
+    "details": "Details",
+    "inspect": "Inspect",
+    "selected": "Selected"
+  },
+  "details": {
+    "title": "Contributor details",
+    "description": "Review the selected ownership signal for {{contributor}}.",
+    "recent": "Recent activity",
+    "reading": "Reading",
+    "watchReading": "This contributor holds a large share of commits. Review whether knowledge is too concentrated.",
+    "healthyReading": "Ownership is visible here, but the current share does not cross the watch threshold.",
+    "emptyTitle": "Choose a contributor",
+    "emptyDescription": "Select a contributor row only when you need deeper ownership context.",
+    "emptyBody": "Keep the table as the default view and open details only for the contributor you want to review."
   },
   "chart": {
     "title": "Ownership concentration",

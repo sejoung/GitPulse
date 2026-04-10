@@ -957,4 +957,57 @@ describe("DeliveryRiskPage", () => {
     const riskyTexts = await screen.findAllByText("risky");
     expect(riskyTexts.some((element) => element.classList.contains("gp-badge-risky"))).toBe(true);
   });
+
+  it("opens delivery pattern details only after explicit selection", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getDeliveryRiskAnalysis.mockResolvedValue([
+      {
+        event: "hotfix",
+        count: 2,
+        signal: "Release pressure",
+        signalKey: "signals.watchReleasePressure",
+        risk: "watch",
+      },
+    ]);
+
+    renderWithClient(<DeliveryRiskPage />);
+
+    expect(await screen.findByText("Choose a pattern")).toBeInTheDocument();
+    expect(screen.queryByText("Configured signal")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Inspect" }));
+
+    expect(await screen.findByText("Configured signal")).toBeInTheDocument();
+    expect(await screen.findAllByText("Release pressure")).not.toHaveLength(0);
+  });
+});
+
+describe("OwnershipPage", () => {
+  it("opens contributor details only after explicit selection", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getOwnershipAnalysis.mockResolvedValue([
+      {
+        name: "Beni",
+        commits: 10,
+        share: "50%",
+        recentKey: "status.active",
+        risk: "watch",
+      },
+    ]);
+
+    renderWithClient(<OwnershipPage />);
+
+    expect(await screen.findByText("Choose a contributor")).toBeInTheDocument();
+    expect(
+      screen.queryByText("This contributor holds a large share of commits.")
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Inspect" }));
+
+    expect(
+      await screen.findByText(/This contributor holds a large share of commits\./)
+    ).toBeInTheDocument();
+  });
 });

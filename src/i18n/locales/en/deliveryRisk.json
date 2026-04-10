@@ -29,6 +29,9 @@
     "title": "Pattern details",
     "description": "Review the selected emergency pattern for {{pattern}}.",
     "configuredSignal": "Configured signal",
-    "noConfiguredSignal": "No configured signal was found for this pattern."
+    "noConfiguredSignal": "No configured signal was found for this pattern.",
+    "emptyTitle": "Choose a pattern",
+    "emptyDescription": "Keep the pattern table as the default view and open details only for the row you need to inspect.",
+    "emptyBody": "Select a pattern when you need its configured signal and match count together."
   }
 }
