@@ -8,6 +8,38 @@ import type {
   OwnershipContributor,
 } from "../../domains/metrics/overview";
 
+export type ReportDetailLevel = "summary" | "full";
+export type ReportScope = "current" | "compare";
+
+type AnalysisReportComparison = {
+  current: {
+    branch: string;
+    period: AnalysisPeriod;
+    shortHeadSha: string;
+    deliveryRiskLevel: "low" | "medium" | "high";
+  };
+  baseline: {
+    branch: string;
+    period: AnalysisPeriod;
+    shortHeadSha: string;
+    recordedAt: string;
+    totalCommits: number;
+    hotspotCount: number;
+    contributorCount: number;
+    deliveryRiskLevel: "low" | "medium" | "high";
+  };
+  deltas: {
+    commits: number | null;
+    hotspots: number | null;
+    contributors: number | null;
+    riskChanged: boolean;
+  };
+  scopeChanged: {
+    branch: boolean;
+    period: boolean;
+  };
+};
+
 type AnalysisReportInput = {
   generatedAt: string;
   workspacePath: string;
@@ -16,6 +48,8 @@ type AnalysisReportInput = {
   headSha: string | null;
   shortHeadSha: string | null;
   period: AnalysisPeriod;
+  detailLevel: ReportDetailLevel;
+  scope: ReportScope;
   remoteStatus: GitRemoteStatus | null;
   excludedPaths: string;
   bugKeywords: string;
@@ -25,6 +59,7 @@ type AnalysisReportInput = {
   ownership: OwnershipContributor[];
   activity: ActivityPoint[];
   deliveryRisk: DeliveryEvent[];
+  comparison: AnalysisReportComparison | null;
 };
 
 function slugify(value: string) {
@@ -36,10 +71,24 @@ function slugify(value: string) {
     .slice(0, 48);
 }
 
-function reportBaseName(repositoryName: string, branch: string) {
+function formatTimestampForFilename(generatedAt: string) {
+  return generatedAt.replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+}
+
+export function buildAnalysisReportFilename(
+  repositoryName: string,
+  branch: string,
+  generatedAt: string,
+  detailLevel: ReportDetailLevel,
+  scope: ReportScope,
+  format: "json" | "md"
+) {
   const repositorySlug = slugify(repositoryName) || "gitpulse";
   const branchSlug = slugify(branch) || "head";
-  return `${repositorySlug}-${branchSlug}-report`;
+  const timestamp = formatTimestampForFilename(generatedAt);
+  const extension = format === "json" ? "json" : "md";
+
+  return `${repositorySlug}-${branchSlug}-${timestamp}-${detailLevel}-${scope}-report.${extension}`;
 }
 
 function remoteFreshnessLine(remoteStatus: GitRemoteStatus | null) {
@@ -78,24 +127,38 @@ function remoteFreshnessLine(remoteStatus: GitRemoteStatus | null) {
 }
 
 export function buildAnalysisReportJson(input: AnalysisReportInput) {
+  const basePayload = {
+    generatedAt: input.generatedAt,
+    report: {
+      detailLevel: input.detailLevel,
+      scope: input.scope,
+    },
+    repository: {
+      name: input.repositoryName,
+      repositoryPath: input.workspacePath,
+      branch: input.branch,
+      headSha: input.headSha,
+      shortHeadSha: input.shortHeadSha,
+      analysisWindow: input.period,
+      remoteStatus: input.remoteStatus,
+      freshness: remoteFreshnessLine(input.remoteStatus),
+    },
+    settings: {
+      excludedPaths: input.excludedPaths,
+      bugKeywords: input.bugKeywords,
+      emergencyPatterns: input.emergencyPatterns,
+    },
+    overview: input.overview,
+    comparison: input.comparison,
+  };
+
+  if (input.detailLevel === "summary") {
+    return JSON.stringify(basePayload, null, 2);
+  }
+
   return JSON.stringify(
     {
-      generatedAt: input.generatedAt,
-      repository: {
-        name: input.repositoryName,
-        repositoryPath: input.workspacePath,
-        branch: input.branch,
-        headSha: input.headSha,
-        shortHeadSha: input.shortHeadSha,
-        analysisWindow: input.period,
-        remoteStatus: input.remoteStatus,
-        freshness: remoteFreshnessLine(input.remoteStatus),
-      },
-      settings: {
-        excludedPaths: input.excludedPaths,
-        bugKeywords: input.bugKeywords,
-        emergencyPatterns: input.emergencyPatterns,
-      },
+      ...basePayload,
       overview: input.overview,
       hotspots: input.hotspots,
       ownership: input.ownership,
@@ -108,6 +171,21 @@ export function buildAnalysisReportJson(input: AnalysisReportInput) {
 }
 
 export function buildAnalysisReportMarkdown(input: AnalysisReportInput) {
+  const comparisonLines = input.comparison
+    ? [
+        "## Snapshot Compare",
+        `- Current snapshot: ${input.comparison.current.shortHeadSha} | branch: ${input.comparison.current.branch} | window: ${input.comparison.current.period} | risk: ${input.comparison.current.deliveryRiskLevel}`,
+        `- Baseline snapshot: ${input.comparison.baseline.shortHeadSha} | branch: ${input.comparison.baseline.branch} | window: ${input.comparison.baseline.period} | risk: ${input.comparison.baseline.deliveryRiskLevel}`,
+        `- Baseline recorded at: ${input.comparison.baseline.recordedAt}`,
+        `- Commit delta: ${input.comparison.deltas.commits ?? "Not enough history"}`,
+        `- Hotspot delta: ${input.comparison.deltas.hotspots ?? "Not enough history"}`,
+        `- Contributor delta: ${input.comparison.deltas.contributors ?? "Not enough history"}`,
+        `- Risk changed: ${input.comparison.deltas.riskChanged ? "Yes" : "No"}`,
+        `- Branch changed: ${input.comparison.scopeChanged.branch ? "Yes" : "No"}`,
+        `- Analysis window changed: ${input.comparison.scopeChanged.period ? "Yes" : "No"}`,
+        "",
+      ].join("\n")
+    : "";
   const hotspotLines =
     input.hotspots.length > 0
       ? input.hotspots
@@ -145,12 +223,15 @@ export function buildAnalysisReportMarkdown(input: AnalysisReportInput) {
     input.emergencyPatterns.length > 0
       ? input.emergencyPatterns.map((row) => `- ${row.pattern} -> ${row.signal}`).join("\n")
       : "- No emergency patterns";
-
-  return [
+  const summaryLines = [
     "# GitPulse Analysis Report",
     "",
-    "## Repository",
+    "## Report Scope",
     `- Generated at: ${input.generatedAt}`,
+    `- Detail level: ${input.detailLevel}`,
+    `- Scope: ${input.scope}`,
+    "",
+    "## Repository",
     `- Repository: ${input.repositoryName}`,
     `- Repository path: ${input.workspacePath}`,
     `- Branch: ${input.branch}`,
@@ -170,6 +251,18 @@ export function buildAnalysisReportMarkdown(input: AnalysisReportInput) {
     "- Emergency patterns:",
     emergencyPatternLines,
     "",
+  ];
+
+  if (input.comparison) {
+    summaryLines.push(comparisonLines);
+  }
+
+  if (input.detailLevel === "summary") {
+    return summaryLines.join("\n");
+  }
+
+  return [
+    ...summaryLines,
     "## Hotspots",
     hotspotLines,
     "",
@@ -188,12 +281,21 @@ export function buildAnalysisReportMarkdown(input: AnalysisReportInput) {
 export function downloadAnalysisReport(
   repositoryName: string,
   branch: string,
+  generatedAt: string,
+  detailLevel: ReportDetailLevel,
+  scope: ReportScope,
   format: "json" | "md",
   contents: string
 ) {
-  const extension = format === "json" ? "json" : "md";
   const mimeType = format === "json" ? "application/json" : "text/markdown";
-  const filename = `${reportBaseName(repositoryName, branch)}.${extension}`;
+  const filename = buildAnalysisReportFilename(
+    repositoryName,
+    branch,
+    generatedAt,
+    detailLevel,
+    scope,
+    format
+  );
   const blob = new Blob([contents], { type: `${mimeType};charset=utf-8` });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildAnalysisReportFilename,
   buildAnalysisReportJson,
   buildAnalysisReportMarkdown,
 } from "../../src/features/overview/report-export";
@@ -12,6 +13,8 @@ const baseInput = {
   headSha: "1234567890abcdef",
   shortHeadSha: "1234567",
   period: "3m" as const,
+  detailLevel: "full" as const,
+  scope: "current" as const,
   remoteStatus: {
     status: "behind" as const,
     upstream: "origin/main",
@@ -43,17 +46,21 @@ const baseInput = {
       risk: "watch" as const,
     },
   ],
+  comparison: null,
 };
 
 describe("report-export", () => {
   it("builds a structured JSON report", () => {
     const report = buildAnalysisReportJson(baseInput);
     const parsed = JSON.parse(report) as {
+      report: { detailLevel: string; scope: string };
       repository: { branch: string; freshness: string };
       settings: { excludedPaths: string };
       hotspots: { path: string }[];
     };
 
+    expect(parsed.report.detailLevel).toBe("full");
+    expect(parsed.report.scope).toBe("current");
     expect(parsed.repository.branch).toBe("main");
     expect(parsed.repository.freshness).toContain("Stale by 2");
     expect(parsed.settings.excludedPaths).toBe("dist/, target/");
@@ -69,5 +76,58 @@ describe("report-export", () => {
     expect(report).toContain("- Analysis freshness: Stale by 2 commits against origin/main");
     expect(report).toContain("## Hotspots");
     expect(report).toContain("src/app.tsx | changes: 12 | fixes: 3 | risk: watch");
+  });
+
+  it("builds a compact compare report and timestamped filename", () => {
+    const report = buildAnalysisReportMarkdown({
+      ...baseInput,
+      detailLevel: "summary",
+      scope: "compare",
+      comparison: {
+        current: {
+          branch: "main",
+          period: "3m",
+          shortHeadSha: "1234567",
+          deliveryRiskLevel: "medium",
+        },
+        baseline: {
+          branch: "main",
+          period: "6m",
+          shortHeadSha: "7654321",
+          recordedAt: "2026-04-01T00:00:00.000Z",
+          totalCommits: 12,
+          hotspotCount: 2,
+          contributorCount: 2,
+          deliveryRiskLevel: "low",
+        },
+        deltas: {
+          commits: 6,
+          hotspots: 2,
+          contributors: 1,
+          riskChanged: true,
+        },
+        scopeChanged: {
+          branch: false,
+          period: true,
+        },
+      },
+    });
+
+    expect(report).toContain("## Report Scope");
+    expect(report).toContain("- Detail level: summary");
+    expect(report).toContain("- Scope: compare");
+    expect(report).toContain("## Snapshot Compare");
+    expect(report).not.toContain("## Hotspots");
+
+    expect(
+      buildAnalysisReportFilename(
+        "career-ops",
+        "main",
+        "2026-04-10T01:02:03.000Z",
+        "summary",
+        "compare",
+        "json"
+      )
+    ).toBe("career-ops-main-20260410T010203Z-summary-compare-report.json");
   });
 });

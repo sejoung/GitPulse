@@ -571,6 +571,77 @@ describe("OverviewPage branch controls", () => {
     clickSpy.mockRestore();
     vi.unstubAllGlobals();
   });
+
+  it("exports a compare summary report with a timestamped filename", async () => {
+    const user = userEvent.setup();
+    const downloads: string[] = [];
+    const createObjectUrl = vi.fn(() => "blob:gitpulse-report-compare");
+    const revokeObjectUrl = vi.fn();
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(function click(this: HTMLAnchorElement) {
+        downloads.push(this.download);
+      });
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: createObjectUrl,
+      revokeObjectURL: revokeObjectUrl,
+    });
+    useUiStore.setState({
+      workspacePath: "/repo",
+      selectedBranch: "main",
+      analysisRuns: [
+        {
+          workspacePath: "/repo",
+          branch: "main",
+          period: "3m",
+          headSha: "head-current",
+          shortHeadSha: "cur1234",
+          recordedAt: "2026-04-10T01:02:03.000Z",
+          totalCommits: 24,
+          hotspotCount: 5,
+          contributorCount: 3,
+          deliveryRiskLevel: "medium",
+        },
+        {
+          workspacePath: "/repo",
+          branch: "main",
+          period: "6m",
+          headSha: "head-prev",
+          shortHeadSha: "prev123",
+          recordedAt: "2026-04-01T01:02:03.000Z",
+          totalCommits: 18,
+          hotspotCount: 3,
+          contributorCount: 2,
+          deliveryRiskLevel: "low",
+        },
+      ],
+    });
+    api.getGitBranches.mockResolvedValue([
+      { name: "main", label: "main", kind: "local", current: true },
+    ]);
+    api.getOverviewAnalysis.mockResolvedValue({
+      repositoryName: "repo",
+      totalCommits: 24,
+      hotspotCount: 5,
+      contributorCount: 3,
+      deliveryRiskLevel: "medium",
+    });
+
+    renderWithClient(<OverviewPage />);
+
+    await screen.findByText("Analysis report export");
+    await user.click(screen.getByRole("tab", { name: "Summary" }));
+    await user.click(screen.getByRole("tab", { name: "Compare snapshot" }));
+    await user.click(screen.getByRole("button", { name: "Export JSON" }));
+
+    expect(createObjectUrl).toHaveBeenCalledTimes(1);
+    expect(downloads[0]).toMatch(/^repo-main-\d{8}T\d{6}Z-summary-compare-report\.json$/);
+    expect(revokeObjectUrl).toHaveBeenCalledWith("blob:gitpulse-report-compare");
+
+    clickSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
 });
 
 describe("ActivityPage", () => {

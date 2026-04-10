@@ -33,6 +33,8 @@ import {
   buildAnalysisReportJson,
   buildAnalysisReportMarkdown,
   downloadAnalysisReport,
+  type ReportDetailLevel,
+  type ReportScope,
 } from "./report-export";
 import { upsertLocalDatabaseAnalysisCache } from "../../services/tauri/local-database";
 
@@ -83,6 +85,8 @@ export function OverviewPage() {
   const queryClient = useQueryClient();
   const [exportMessage, setExportMessage] = useState("");
   const [comparisonHeadSha, setComparisonHeadSha] = useState("");
+  const [exportDetailLevel, setExportDetailLevel] = useState<ReportDetailLevel>("full");
+  const [exportScope, setExportScope] = useState<ReportScope>("current");
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
@@ -243,6 +247,19 @@ export function OverviewPage() {
     comparisonSummary?.contributorDelta === undefined
       ? t("history.compare.notEnough")
       : `${comparisonSummary.contributorDelta > 0 ? "+" : ""}${comparisonSummary.contributorDelta}`;
+  const canExportComparison = Boolean(latestRecordedRun && comparisonRun);
+  const exportIncludesValue = t(
+    exportDetailLevel === "summary" ? "export.includesValueSummary" : "export.includesValueFull"
+  );
+  const exportFormatValue = t(
+    exportScope === "compare" ? "export.formatValueCompare" : "export.formatValueCurrent"
+  );
+  const exportScopeValue =
+    exportScope === "compare"
+      ? canExportComparison
+        ? `${comparisonRun?.shortHeadSha ?? ""} -> ${latestRecordedRun?.shortHeadSha ?? ""}`
+        : t("export.scopeUnavailable")
+      : t("export.scopeCurrent");
 
   function refreshAnalysis() {
     void queryClient.invalidateQueries({ queryKey: ["overview"] });
@@ -258,8 +275,43 @@ export function OverviewPage() {
       setExportMessage(t("export.empty"));
       return;
     }
+    if (exportScope === "compare" && !canExportComparison) {
+      setExportMessage(t("export.compareUnavailable"));
+      return;
+    }
 
     const generatedAt = new Date().toISOString();
+    const comparison =
+      exportScope === "compare" && latestRecordedRun && comparisonRun
+        ? {
+            current: {
+              branch: latestRecordedRun.branch,
+              period: latestRecordedRun.period,
+              shortHeadSha: latestRecordedRun.shortHeadSha,
+              deliveryRiskLevel: latestRecordedRun.deliveryRiskLevel,
+            },
+            baseline: {
+              branch: comparisonRun.branch,
+              period: comparisonRun.period,
+              shortHeadSha: comparisonRun.shortHeadSha,
+              recordedAt: comparisonRun.recordedAt,
+              totalCommits: comparisonRun.totalCommits,
+              hotspotCount: comparisonRun.hotspotCount,
+              contributorCount: comparisonRun.contributorCount,
+              deliveryRiskLevel: comparisonRun.deliveryRiskLevel,
+            },
+            deltas: {
+              commits: comparisonSummary?.commitDelta ?? null,
+              hotspots: comparisonSummary?.hotspotDelta ?? null,
+              contributors: comparisonSummary?.contributorDelta ?? null,
+              riskChanged: comparisonSummary?.riskChanged ?? false,
+            },
+            scopeChanged: {
+              branch: comparisonSummary?.branchChanged ?? false,
+              period: comparisonSummary?.periodChanged ?? false,
+            },
+          }
+        : null;
     const reportInput = {
       generatedAt,
       workspacePath,
@@ -268,6 +320,8 @@ export function OverviewPage() {
       headSha: repositoryState?.headSha ?? null,
       shortHeadSha: repositoryState?.shortHeadSha ?? null,
       period: analysisPeriod,
+      detailLevel: exportDetailLevel,
+      scope: exportScope,
       remoteStatus: remoteStatus ?? null,
       excludedPaths,
       bugKeywords,
@@ -277,6 +331,7 @@ export function OverviewPage() {
       ownership: ownershipRows,
       activity: activityRows,
       deliveryRisk: deliveryRows,
+      comparison,
     };
 
     const contents =
@@ -284,7 +339,15 @@ export function OverviewPage() {
         ? buildAnalysisReportJson(reportInput)
         : buildAnalysisReportMarkdown(reportInput);
 
-    downloadAnalysisReport(data.repositoryName, activeBranch, format, contents);
+    downloadAnalysisReport(
+      data.repositoryName,
+      activeBranch,
+      generatedAt,
+      exportDetailLevel,
+      exportScope,
+      format,
+      contents
+    );
     setExportMessage(t(`export.success.${format}`));
   }
 
@@ -837,15 +900,59 @@ export function OverviewPage() {
           </div>
         }
       >
+        <div className="mb-4 grid gap-3 xl:grid-cols-2">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.detailLevel")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{t("export.detailLevelDescription")}</p>
+            <div className="mt-3">
+              <Tabs
+                items={[
+                  { id: "summary", label: t("export.summary") },
+                  { id: "full", label: t("export.full") },
+                ]}
+                value={exportDetailLevel}
+                onChange={(value) => setExportDetailLevel(value)}
+              />
+            </div>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.scope")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{t("export.scopeDescription")}</p>
+            <div className="mt-3">
+              <Tabs
+                items={[
+                  { id: "current", label: t("export.scopeCurrentTab") },
+                  { id: "compare", label: t("export.scopeCompareTab") },
+                ]}
+                value={exportScope}
+                onChange={(value) => setExportScope(value)}
+              />
+            </div>
+          </div>
+        </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("export.includes")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{t("export.includesValue")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{exportIncludesValue}</p>
           </div>
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("export.format")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{t("export.formatValue")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{exportFormatValue}</p>
           </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.scopeTarget")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">
+              {hasWorkspace ? exportScopeValue : t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.status")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {exportMessage || t("export.statusIdle")}
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("export.repository")}</p>
             <p className="gp-text-secondary mt-1 truncate text-sm">
@@ -855,9 +962,11 @@ export function OverviewPage() {
             </p>
           </div>
           <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.status")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {exportMessage || t("export.statusIdle")}
+            <p className="gp-kicker">{t("export.filename")}</p>
+            <p className="gp-text-secondary mt-1 break-all text-sm">
+              {hasWorkspace && data
+                ? `${data.repositoryName}-${activeBranch}-${exportDetailLevel}-${exportScope}-report.*`
+                : t("common:status.notSelected")}
             </p>
           </div>
         </div>
