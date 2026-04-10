@@ -61,9 +61,10 @@ type UiState = {
   ) => void;
   clearRepositoryOverride: (workspacePath: string) => void;
   addAnalysisRun: (run: AnalysisRunRecord) => void;
+  hydrateFromDatabase: (payload: Partial<PersistedUiSettings>) => void;
 };
 
-type PersistedUiSettings = {
+export type PersistedUiSettings = {
   workspacePath: string;
   selectedBranch: string;
   analysisPeriod: AnalysisPeriod;
@@ -135,6 +136,21 @@ export function getEffectiveRepositorySettings(
     excludedPaths: repositoryOverride?.excludedPaths ?? state.excludedPaths,
     bugKeywords: repositoryOverride?.bugKeywords ?? state.bugKeywords,
     emergencyPatterns: repositoryOverride?.emergencyPatterns ?? state.emergencyPatterns,
+  };
+}
+
+export function selectPersistedUiSettings(state: Pick<UiState, keyof PersistedUiSettings>) {
+  return {
+    workspacePath: state.rememberLastRepository ? state.workspacePath : "",
+    selectedBranch: state.rememberLastRepository ? state.selectedBranch : "",
+    analysisPeriod: state.analysisPeriod,
+    excludedPaths: state.excludedPaths,
+    defaultBranch: state.defaultBranch,
+    bugKeywords: state.bugKeywords,
+    emergencyPatterns: state.emergencyPatterns,
+    rememberLastRepository: state.rememberLastRepository,
+    repositoryOverrides: state.repositoryOverrides,
+    analysisRuns: state.analysisRuns,
   };
 }
 
@@ -215,33 +231,24 @@ export const useUiStore = create<UiState>()(
             analysisRuns: nextRuns,
           };
         }),
+      hydrateFromDatabase: (payload) =>
+        set((state) => ({
+          workspacePath: payload.workspacePath ?? state.workspacePath,
+          selectedBranch: payload.selectedBranch ?? state.selectedBranch,
+          analysisPeriod: normalizeAnalysisPeriod(payload.analysisPeriod ?? state.analysisPeriod),
+          excludedPaths: payload.excludedPaths ?? state.excludedPaths,
+          defaultBranch: payload.defaultBranch ?? state.defaultBranch,
+          bugKeywords: payload.bugKeywords ?? state.bugKeywords,
+          emergencyPatterns: payload.emergencyPatterns ?? state.emergencyPatterns,
+          rememberLastRepository: payload.rememberLastRepository ?? state.rememberLastRepository,
+          repositoryOverrides: payload.repositoryOverrides ?? state.repositoryOverrides,
+          analysisRuns: payload.analysisRuns ?? state.analysisRuns,
+        })),
     }),
     {
       name: "gitpulse.ui",
       version: 5,
-      partialize: ({
-        workspacePath,
-        selectedBranch,
-        analysisPeriod,
-        excludedPaths,
-        defaultBranch,
-        bugKeywords,
-        emergencyPatterns,
-        rememberLastRepository,
-        repositoryOverrides,
-        analysisRuns,
-      }) => ({
-        workspacePath: rememberLastRepository ? workspacePath : "",
-        selectedBranch: rememberLastRepository ? selectedBranch : "",
-        analysisPeriod,
-        excludedPaths,
-        defaultBranch,
-        bugKeywords,
-        emergencyPatterns,
-        rememberLastRepository,
-        repositoryOverrides,
-        analysisRuns,
-      }),
+      partialize: (state) => selectPersistedUiSettings(state),
       migrate: (persistedState) => {
         const state = persistedState as PersistedUiState;
 

@@ -34,6 +34,7 @@ import {
   buildAnalysisReportMarkdown,
   downloadAnalysisReport,
 } from "./report-export";
+import { upsertLocalDatabaseAnalysisCache } from "../../services/tauri/local-database";
 
 const periodTabs = [
   { id: "1y", labelKey: "settings:defaults.analysisWindows.1y" },
@@ -295,6 +296,29 @@ export function OverviewPage() {
     repositoryState?.shortHeadSha,
     workspacePath,
   ]);
+
+  useEffect(() => {
+    if (!workspacePath || !activeBranch || !data || !repositoryState?.headSha) {
+      return;
+    }
+
+    void upsertLocalDatabaseAnalysisCache({
+      workspacePath,
+      repositoryName: data.repositoryName,
+      branch: activeBranch,
+      period: analysisPeriod,
+      headSha: repositoryState.headSha,
+      recordedAt: new Date().toISOString(),
+      totalCommits: data.totalCommits,
+      hotspotCount: data.hotspotCount,
+      contributorCount: data.contributorCount,
+      deliveryRiskLevel: data.deliveryRiskLevel,
+    })
+      .then(() => {
+        void queryClient.invalidateQueries({ queryKey: ["local-database-summary"] });
+      })
+      .catch(() => undefined);
+  }, [activeBranch, analysisPeriod, data, queryClient, repositoryState?.headSha, workspacePath]);
 
   return (
     <div className="space-y-6">

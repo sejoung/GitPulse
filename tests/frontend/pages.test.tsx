@@ -15,6 +15,7 @@ import { renderWithClient } from "./support/render";
 const api = vi.hoisted(() => ({
   checkGitRemoteStatus: vi.fn(),
   checkoutGitBranch: vi.fn(),
+  getLocalDatabaseSummary: vi.fn(),
   getActivityAnalysis: vi.fn(),
   getDeliveryRiskAnalysis: vi.fn(),
   getGitBranches: vi.fn(),
@@ -23,11 +24,21 @@ const api = vi.hoisted(() => ({
   getHotspotsAnalysis: vi.fn(),
   getOverviewAnalysis: vi.fn(),
   getOwnershipAnalysis: vi.fn(),
+  openLocalDatabaseDirectory: vi.fn(),
   getSettingsMatchPreview: vi.fn(),
   pullGitRemoteUpdates: vi.fn(),
+  upsertLocalDatabaseAnalysisCache: vi.fn(),
 }));
 
 vi.mock("../../src/services/tauri/analysis-api", () => api);
+vi.mock("../../src/services/tauri/local-database", () => ({
+  getLocalDatabaseSummary: api.getLocalDatabaseSummary,
+  openLocalDatabaseDirectory: api.openLocalDatabaseDirectory,
+  loadLocalDatabase: vi.fn(),
+  saveLocalDatabaseSettings: vi.fn(),
+  saveLocalDatabaseAnalysisRuns: vi.fn(),
+  upsertLocalDatabaseAnalysisCache: api.upsertLocalDatabaseAnalysisCache,
+}));
 
 function resetStore() {
   window.localStorage.clear();
@@ -75,6 +86,15 @@ beforeEach(async () => {
     excludedFiles: [],
     emergencyMatches: [],
   });
+  api.getLocalDatabaseSummary.mockResolvedValue({
+    settingsStored: true,
+    analysisRunCount: 7,
+    analysisCacheCount: 12,
+    cachedRepositoryCount: 2,
+    databasePath: "/mock-data/gitpulse-db.json",
+    analysisRunLimit: 20,
+    analysisCacheLimit: 50,
+  });
   api.getGitBranches.mockResolvedValue([]);
   api.getGitRepositoryState.mockResolvedValue({
     branch: "main",
@@ -97,6 +117,8 @@ beforeEach(async () => {
     behind: 0,
     message: null,
   });
+  api.openLocalDatabaseDirectory.mockResolvedValue(undefined);
+  api.upsertLocalDatabaseAnalysisCache.mockResolvedValue(undefined);
 });
 
 describe("SettingsPage", () => {
@@ -194,6 +216,24 @@ describe("SettingsPage", () => {
         { pattern: "rollback", signal: "Rollback pattern" },
       ],
     });
+  });
+
+  it("shows local database retention and opens the database folder", async () => {
+    const user = userEvent.setup();
+
+    renderWithClient(<SettingsPage />);
+
+    expect(await screen.findByText("Local database")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Keep the latest 20 analysis runs and 50 cached analysis snapshots.")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Database path")).toBeInTheDocument();
+    expect(api.getLocalDatabaseSummary).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole("button", { name: "Show DB file" }));
+
+    expect(api.openLocalDatabaseDirectory).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("Revealed the local database file.")).toBeInTheDocument();
   });
 });
 

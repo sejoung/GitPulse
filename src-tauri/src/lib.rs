@@ -20,7 +20,13 @@ pub fn run() {
             commands::branch::checkout_git_branch,
             commands::branch::get_git_repository_state,
             commands::branch::check_git_remote_status,
-            commands::branch::pull_git_remote_updates
+            commands::branch::pull_git_remote_updates,
+            commands::storage::load_local_database,
+            commands::storage::save_local_database_settings,
+            commands::storage::save_local_database_analysis_runs,
+            commands::storage::upsert_local_database_analysis_cache,
+            commands::storage::get_local_database_summary,
+            commands::storage::open_local_database_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running GitPulse");

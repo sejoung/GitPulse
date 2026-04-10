@@ -9,6 +9,8 @@ import type {
 import { useUiStore } from "../../app/store/ui-store";
 import { Badge, Button, DetailPanel, Input, PageHeader, Table, Tabs } from "../../components/ui";
 import { languageStorageKey } from "../../i18n/config";
+import { openLocalDatabaseDirectory } from "../../services/tauri/local-database";
+import { useLocalDatabaseSummary } from "./useLocalDatabaseSummary";
 import { useSettingsMatchPreview } from "./useSettingsMatchPreview";
 
 type Language = "ko" | "en";
@@ -58,6 +60,7 @@ export function SettingsPage() {
   const importInputRef = useRef<HTMLInputElement>(null);
   const [settingsMessage, setSettingsMessage] = useState("");
   const [cacheMessage, setCacheMessage] = useState("");
+  const { data: databaseSummary } = useLocalDatabaseSummary();
   const workspacePath = useUiStore((state) => state.workspacePath);
   const excludedPaths = useUiStore((state) => state.excludedPaths);
   const defaultBranch = useUiStore((state) => state.defaultBranch);
@@ -178,6 +181,20 @@ export function SettingsPage() {
   function clearAnalysisCache() {
     queryClient.clear();
     setCacheMessage(t("cache.cleared"));
+    void queryClient.invalidateQueries({ queryKey: ["local-database-summary"] });
+  }
+
+  async function openDatabaseDirectory() {
+    try {
+      await openLocalDatabaseDirectory();
+      setCacheMessage(t("cache.openedFolder"));
+    } catch (error) {
+      setCacheMessage(
+        error instanceof Error && error.message
+          ? `${t("cache.openFolderFailed")} ${error.message}`
+          : t("cache.openFolderFailed")
+      );
+    }
   }
 
   function exportSettings() {
@@ -665,12 +682,17 @@ export function SettingsPage() {
         title={t("cache.title")}
         description={t("cache.description")}
         actions={
-          <Button variant="danger" onClick={clearAnalysisCache}>
-            {t("cache.clear")}
-          </Button>
+          <div className="gp-header-actions">
+            <Button variant="secondary" onClick={() => void openDatabaseDirectory()}>
+              {t("cache.openFolder")}
+            </Button>
+            <Button variant="danger" onClick={clearAnalysisCache}>
+              {t("cache.clear")}
+            </Button>
+          </div>
         }
       >
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("cache.key")}</p>
             <p className="gp-text-secondary mt-1 break-words text-sm">
@@ -681,6 +703,43 @@ export function SettingsPage() {
             <p className="gp-kicker">{t("cache.status")}</p>
             <p className="gp-text-secondary mt-1 text-sm">
               {cacheMessage || t("cache.localQueryCache")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.database")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {databaseSummary?.settingsStored
+                ? t("cache.databaseReady")
+                : t("cache.databaseEmpty")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.cachedRuns")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {databaseSummary?.analysisRunCount ?? 0}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.cachedAnalyses")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {databaseSummary?.analysisCacheCount ?? 0}
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.retention")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {t("cache.retentionValue", {
+                runs: databaseSummary?.analysisRunLimit ?? 20,
+                cache: databaseSummary?.analysisCacheLimit ?? 50,
+              })}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.databasePath")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {databaseSummary?.databasePath ?? t("cache.databasePathUnavailable")}
             </p>
           </div>
         </div>
