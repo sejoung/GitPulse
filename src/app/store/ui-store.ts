@@ -11,6 +11,18 @@ export type RepositoryOverrideSettings = {
   bugKeywords: string;
   emergencyPatterns: EmergencyPattern[];
 };
+export type AnalysisRunRecord = {
+  workspacePath: string;
+  branch: string;
+  period: AnalysisPeriod;
+  headSha: string;
+  shortHeadSha: string;
+  recordedAt: string;
+  totalCommits: number;
+  hotspotCount: number;
+  contributorCount: number;
+  deliveryRiskLevel: "low" | "medium" | "high";
+};
 export type NavigationItem =
   | "overview"
   | "hotspots"
@@ -30,6 +42,7 @@ type UiState = {
   emergencyPatterns: EmergencyPattern[];
   rememberLastRepository: boolean;
   repositoryOverrides: Record<string, RepositoryOverrideSettings>;
+  analysisRuns: AnalysisRunRecord[];
   setActiveItem: (item: NavigationItem) => void;
   setWorkspacePath: (path: string) => void;
   setSelectedBranch: (branch: string) => void;
@@ -47,6 +60,7 @@ type UiState = {
     pattern: EmergencyPattern
   ) => void;
   clearRepositoryOverride: (workspacePath: string) => void;
+  addAnalysisRun: (run: AnalysisRunRecord) => void;
 };
 
 type PersistedUiSettings = {
@@ -59,6 +73,7 @@ type PersistedUiSettings = {
   emergencyPatterns: EmergencyPattern[];
   rememberLastRepository: boolean;
   repositoryOverrides: Record<string, RepositoryOverrideSettings>;
+  analysisRuns: AnalysisRunRecord[];
 };
 
 type PersistedUiState = Partial<Omit<PersistedUiSettings, "analysisPeriod">> & {
@@ -136,6 +151,7 @@ export const useUiStore = create<UiState>()(
       emergencyPatterns: defaultEmergencyPatterns,
       rememberLastRepository: true,
       repositoryOverrides: {},
+      analysisRuns: [],
       setActiveItem: (activeItem) => set({ activeItem }),
       setWorkspacePath: (workspacePath) => set({ workspacePath }),
       setSelectedBranch: (selectedBranch) => set({ selectedBranch }),
@@ -183,6 +199,22 @@ export const useUiStore = create<UiState>()(
 
           return { repositoryOverrides };
         }),
+      addAnalysisRun: (run) =>
+        set((state) => {
+          const duplicateIndex = state.analysisRuns.findIndex(
+            (item) =>
+              item.workspacePath === run.workspacePath &&
+              item.branch === run.branch &&
+              item.period === run.period &&
+              item.headSha === run.headSha
+          );
+          const nextRuns =
+            duplicateIndex >= 0 ? state.analysisRuns : [run, ...state.analysisRuns].slice(0, 20);
+
+          return {
+            analysisRuns: nextRuns,
+          };
+        }),
     }),
     {
       name: "gitpulse.ui",
@@ -197,6 +229,7 @@ export const useUiStore = create<UiState>()(
         emergencyPatterns,
         rememberLastRepository,
         repositoryOverrides,
+        analysisRuns,
       }) => ({
         workspacePath: rememberLastRepository ? workspacePath : "",
         selectedBranch: rememberLastRepository ? selectedBranch : "",
@@ -207,6 +240,7 @@ export const useUiStore = create<UiState>()(
         emergencyPatterns,
         rememberLastRepository,
         repositoryOverrides,
+        analysisRuns,
       }),
       migrate: (persistedState) => {
         const state = persistedState as PersistedUiState;
@@ -222,6 +256,7 @@ export const useUiStore = create<UiState>()(
             state.emergencyPatterns ?? emergencyPatternsFromKeywords(state.emergencyKeywords),
           rememberLastRepository: state.rememberLastRepository ?? true,
           repositoryOverrides: state.repositoryOverrides ?? {},
+          analysisRuns: state.analysisRuns ?? [],
         };
       },
     }

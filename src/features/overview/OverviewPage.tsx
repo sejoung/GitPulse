@@ -68,6 +68,8 @@ export function OverviewPage() {
   const setAnalysisPeriod = useUiStore((state) => state.setAnalysisPeriod);
   const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
   const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);
+  const analysisRuns = useUiStore((state) => state.analysisRuns);
+  const addAnalysisRun = useUiStore((state) => state.addAnalysisRun);
   const selectWorkspace = useWorkspacePrompt();
   const { data: branches = [], isLoading: isBranchLoading } = useGitBranches(workspacePath);
   const { data: repositoryState, isError: isRepositoryStateError } =
@@ -110,6 +112,17 @@ export function OverviewPage() {
     id: item.id,
     label: t(item.labelKey),
   }));
+  const repositoryHistory = analysisRuns.filter((run) => run.workspacePath === workspacePath);
+  const latestRecordedRun = repositoryHistory[0];
+  const previousRecordedRun = repositoryHistory[1];
+  const commitDelta =
+    latestRecordedRun && previousRecordedRun
+      ? latestRecordedRun.totalCommits - previousRecordedRun.totalCommits
+      : null;
+  const hotspotDelta =
+    latestRecordedRun && previousRecordedRun
+      ? latestRecordedRun.hotspotCount - previousRecordedRun.hotspotCount
+      : null;
   const hasWorkspace = Boolean(workspacePath);
   const maxActivityCommits = Math.max(1, ...activityRows.map((row) => row.commits));
   const initialValue = t("common:status.notAnalyzed");
@@ -163,6 +176,39 @@ export function OverviewPage() {
       setSelectedBranch("");
     }
   }, [isRepositoryStateError, setSelectedBranch, setWorkspacePath, workspacePath]);
+
+  useEffect(() => {
+    if (
+      !workspacePath ||
+      !activeBranch ||
+      !data ||
+      !repositoryState?.headSha ||
+      !repositoryState.shortHeadSha
+    ) {
+      return;
+    }
+
+    addAnalysisRun({
+      workspacePath,
+      branch: activeBranch,
+      period: analysisPeriod,
+      headSha: repositoryState.headSha,
+      shortHeadSha: repositoryState.shortHeadSha,
+      recordedAt: new Date().toISOString(),
+      totalCommits: data.totalCommits,
+      hotspotCount: data.hotspotCount,
+      contributorCount: data.contributorCount,
+      deliveryRiskLevel: data.deliveryRiskLevel,
+    });
+  }, [
+    activeBranch,
+    addAnalysisRun,
+    analysisPeriod,
+    data,
+    repositoryState?.headSha,
+    repositoryState?.shortHeadSha,
+    workspacePath,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -399,6 +445,100 @@ export function OverviewPage() {
           rows={hotspotRows.slice(0, 5)}
           getRowKey={(row) => row.path}
           emptyText={hasWorkspace ? t("common:empty.hotspots") : initialEmptyText}
+        />
+      </DetailPanel>
+
+      <DetailPanel title={t("history.title")} description={t("history.description")}>
+        <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("history.latestRun")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">
+              {latestRecordedRun
+                ? new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(latestRecordedRun.recordedAt))
+                : t("common:status.notAnalyzed")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("history.latestHead")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">
+              {latestRecordedRun?.shortHeadSha ?? t("common:status.notAnalyzed")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("history.commitDelta")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {commitDelta === null
+                ? t("history.noPreviousRun")
+                : `${commitDelta > 0 ? "+" : ""}${commitDelta}`}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("history.hotspotDelta")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {hotspotDelta === null
+                ? t("history.noPreviousRun")
+                : `${hotspotDelta > 0 ? "+" : ""}${hotspotDelta}`}
+            </p>
+          </div>
+        </div>
+        <Table
+          columns={[
+            {
+              key: "recordedAt",
+              header: t("history.recordedAt"),
+              render: (row) =>
+                new Intl.DateTimeFormat(undefined, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(new Date(row.recordedAt)),
+            },
+            {
+              key: "branch",
+              header: t("workspaceDetails.analysisBasis.branch"),
+              render: (row) => row.branch,
+            },
+            {
+              key: "head",
+              header: t("workspaceDetails.analysisBasis.head"),
+              render: (row) => row.shortHeadSha,
+            },
+            {
+              key: "commits",
+              header: t("stats.commits"),
+              align: "right",
+              render: (row) => row.totalCommits,
+            },
+            {
+              key: "hotspots",
+              header: t("stats.hotspots"),
+              align: "right",
+              render: (row) => row.hotspotCount,
+            },
+            {
+              key: "risk",
+              header: t("stats.risk"),
+              align: "right",
+              render: (row) => (
+                <Badge
+                  tone={
+                    row.deliveryRiskLevel === "high"
+                      ? "risky"
+                      : row.deliveryRiskLevel === "medium"
+                        ? "watch"
+                        : "healthy"
+                  }
+                >
+                  {row.deliveryRiskLevel}
+                </Badge>
+              ),
+            },
+          ]}
+          rows={repositoryHistory}
+          getRowKey={(row) => `${row.workspacePath}:${row.branch}:${row.headSha}:${row.period}`}
+          emptyText={hasWorkspace ? t("history.empty") : initialEmptyText}
         />
       </DetailPanel>
 

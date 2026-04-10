@@ -58,5 +58,16 @@
   },
   "chart": {
     "activityTrend": "Activity trend"
+  },
+  "history": {
+    "title": "분석 히스토리",
+    "description": "최근 분석 실행 기록을 저장해서 현재 신호를 이전 기준과 비교합니다.",
+    "latestRun": "최근 실행",
+    "latestHead": "최근 HEAD",
+    "commitDelta": "커밋 변화량",
+    "hotspotDelta": "Hotspot 변화량",
+    "recordedAt": "기록 시각",
+    "noPreviousRun": "이전 기록 없음",
+    "empty": "아직 저장된 분석 히스토리가 없습니다."
   }
 }

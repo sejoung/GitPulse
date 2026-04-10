@@ -46,6 +46,7 @@ function resetStore() {
     ],
     rememberLastRepository: true,
     repositoryOverrides: {},
+    analysisRuns: [],
   });
 }
 
@@ -238,13 +239,43 @@ describe("OverviewPage branch controls", () => {
 
     renderWithClient(<OverviewPage />);
 
-    expect(await screen.findByText("1234567")).toBeInTheDocument();
+    expect((await screen.findAllByText("1234567")).length).toBeGreaterThan(0);
     await user.click(await screen.findByRole("button", { name: "Check remote" }));
     await screen.findByText("Behind 1");
     await user.click(screen.getByRole("button", { name: "Pull" }));
 
     expect(api.pullGitRemoteUpdates).toHaveBeenCalledWith("/repo");
     expect(await screen.findByText("Up to date")).toBeInTheDocument();
+  });
+
+  it("stores and renders analysis history for the current repository", async () => {
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getGitBranches.mockResolvedValue([
+      { name: "main", label: "main", kind: "local", current: true },
+    ]);
+    api.getOverviewAnalysis.mockResolvedValue({
+      repositoryName: "repo",
+      totalCommits: 24,
+      hotspotCount: 5,
+      contributorCount: 3,
+      deliveryRiskLevel: "medium",
+    });
+
+    renderWithClient(<OverviewPage />);
+
+    expect(await screen.findByText("Analysis history")).toBeInTheDocument();
+    expect(await screen.findByText("Latest HEAD")).toBeInTheDocument();
+    expect(useUiStore.getState().analysisRuns[0]).toMatchObject({
+      workspacePath: "/repo",
+      branch: "main",
+      period: "1y",
+      headSha: "1234567890abcdef",
+      shortHeadSha: "1234567",
+      totalCommits: 24,
+      hotspotCount: 5,
+      contributorCount: 3,
+      deliveryRiskLevel: "medium",
+    });
   });
 });
 
