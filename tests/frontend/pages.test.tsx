@@ -427,6 +427,75 @@ describe("OverviewPage branch controls", () => {
     });
   });
 
+  it("renders snapshot compare and lets the user change the baseline run", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({
+      workspacePath: "/repo",
+      selectedBranch: "main",
+      analysisRuns: [
+        {
+          workspacePath: "/repo",
+          branch: "main",
+          period: "1y",
+          headSha: "head-current",
+          shortHeadSha: "cur1234",
+          recordedAt: "2026-04-10T10:00:00.000Z",
+          totalCommits: 30,
+          hotspotCount: 6,
+          contributorCount: 4,
+          deliveryRiskLevel: "medium",
+        },
+        {
+          workspacePath: "/repo",
+          branch: "main",
+          period: "1y",
+          headSha: "head-prev",
+          shortHeadSha: "prev123",
+          recordedAt: "2026-04-09T10:00:00.000Z",
+          totalCommits: 24,
+          hotspotCount: 5,
+          contributorCount: 3,
+          deliveryRiskLevel: "low",
+        },
+        {
+          workspacePath: "/repo",
+          branch: "release",
+          period: "3m",
+          headSha: "head-old",
+          shortHeadSha: "old1234",
+          recordedAt: "2026-04-08T10:00:00.000Z",
+          totalCommits: 18,
+          hotspotCount: 3,
+          contributorCount: 2,
+          deliveryRiskLevel: "low",
+        },
+      ],
+    });
+    api.getGitRepositoryState.mockResolvedValue({
+      branch: "main",
+      headSha: "head-current",
+      shortHeadSha: "cur1234",
+      dirty: false,
+    });
+    api.getGitBranches.mockResolvedValue([
+      { name: "main", label: "main", kind: "local", current: true },
+    ]);
+
+    renderWithClient(<OverviewPage />);
+
+    expect(await screen.findByText("Snapshot compare")).toBeInTheDocument();
+    expect(screen.getByText("Commit delta vs baseline")).toBeInTheDocument();
+    expect(screen.getAllByText("+6").length).toBeGreaterThan(0);
+    expect(screen.getByText("low -> medium")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Compare" }));
+
+    expect(await screen.findByText("+12")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Branch and analysis window changed between the compared snapshots.")
+    ).toBeInTheDocument();
+  });
+
   it("exports the current analysis as JSON", async () => {
     const user = userEvent.setup();
     const createObjectUrl = vi.fn(() => "blob:gitpulse-report");

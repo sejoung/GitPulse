@@ -82,6 +82,7 @@ export function OverviewPage() {
   const { t } = useTranslation(["overview", "common", "settings"]);
   const queryClient = useQueryClient();
   const [exportMessage, setExportMessage] = useState("");
+  const [comparisonHeadSha, setComparisonHeadSha] = useState("");
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
@@ -149,6 +150,10 @@ export function OverviewPage() {
   const repositoryHistory = analysisRuns.filter((run) => run.workspacePath === workspacePath);
   const latestRecordedRun = repositoryHistory[0];
   const previousRecordedRun = repositoryHistory[1];
+  const comparisonRun =
+    repositoryHistory.find((run) => run.headSha === comparisonHeadSha) ??
+    previousRecordedRun ??
+    null;
   const commitDelta =
     latestRecordedRun && previousRecordedRun
       ? latestRecordedRun.totalCommits - previousRecordedRun.totalCommits
@@ -202,6 +207,38 @@ export function OverviewPage() {
   const canPullRemoteUpdates = Boolean(hasWorkspace && remoteStatus?.status === "behind");
   const isRepositoryActionPending =
     checkoutBranch.isPending || isRemoteStatusPending || pullRemoteUpdates.isPending;
+  const selectedComparisonHeadSha = comparisonRun?.headSha ?? "";
+  const comparisonSummary = latestRecordedRun
+    ? {
+        periodChanged: comparisonRun ? latestRecordedRun.period !== comparisonRun.period : false,
+        branchChanged: comparisonRun ? latestRecordedRun.branch !== comparisonRun.branch : false,
+        commitDelta: comparisonRun
+          ? latestRecordedRun.totalCommits - comparisonRun.totalCommits
+          : null,
+        hotspotDelta: comparisonRun
+          ? latestRecordedRun.hotspotCount - comparisonRun.hotspotCount
+          : null,
+        contributorDelta: comparisonRun
+          ? latestRecordedRun.contributorCount - comparisonRun.contributorCount
+          : null,
+        riskChanged: comparisonRun
+          ? latestRecordedRun.deliveryRiskLevel !== comparisonRun.deliveryRiskLevel
+          : false,
+      }
+    : null;
+  const comparisonCommitDeltaText =
+    comparisonSummary?.commitDelta === null || comparisonSummary?.commitDelta === undefined
+      ? t("history.compare.notEnough")
+      : `${comparisonSummary.commitDelta > 0 ? "+" : ""}${comparisonSummary.commitDelta}`;
+  const comparisonHotspotDeltaText =
+    comparisonSummary?.hotspotDelta === null || comparisonSummary?.hotspotDelta === undefined
+      ? t("history.compare.notEnough")
+      : `${comparisonSummary.hotspotDelta > 0 ? "+" : ""}${comparisonSummary.hotspotDelta}`;
+  const comparisonContributorDeltaText =
+    comparisonSummary?.contributorDelta === null ||
+    comparisonSummary?.contributorDelta === undefined
+      ? t("history.compare.notEnough")
+      : `${comparisonSummary.contributorDelta > 0 ? "+" : ""}${comparisonSummary.contributorDelta}`;
 
   function refreshAnalysis() {
     void queryClient.invalidateQueries({ queryKey: ["overview"] });
@@ -252,6 +289,17 @@ export function OverviewPage() {
       setSelectedBranch(currentBranch);
     }
   }, [currentBranch, selectedBranch, setSelectedBranch]);
+
+  useEffect(() => {
+    if (!comparisonHeadSha && previousRecordedRun?.headSha) {
+      setComparisonHeadSha(previousRecordedRun.headSha);
+      return;
+    }
+
+    if (comparisonHeadSha && !repositoryHistory.some((run) => run.headSha === comparisonHeadSha)) {
+      setComparisonHeadSha(previousRecordedRun?.headSha ?? "");
+    }
+  }, [comparisonHeadSha, previousRecordedRun?.headSha, repositoryHistory]);
 
   useEffect(() => {
     resetRemoteStatus();
@@ -616,6 +664,87 @@ export function OverviewPage() {
             </p>
           </div>
         </div>
+        <div className="mb-4 space-y-3">
+          <div className="gp-status-row">
+            <div className="min-w-0">
+              <p className="gp-kicker">{t("history.compare.title")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{t("history.compare.description")}</p>
+            </div>
+            <div className="w-full max-w-xs">
+              <Select
+                value={selectedComparisonHeadSha}
+                disabled={repositoryHistory.length < 2}
+                aria-label={t("history.compare.select")}
+                onChange={(event) => setComparisonHeadSha(event.target.value)}
+              >
+                <option value="" disabled>
+                  {repositoryHistory.length < 2
+                    ? t("history.compare.notEnough")
+                    : t("history.compare.select")}
+                </option>
+                {repositoryHistory.slice(1).map((run) => (
+                  <option key={`${run.headSha}:${run.recordedAt}`} value={run.headSha}>
+                    {`${run.shortHeadSha} - ${run.branch} - ${new Intl.DateTimeFormat(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }).format(new Date(run.recordedAt))}`}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.compare.commitDelta")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{comparisonCommitDeltaText}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.compare.hotspotDelta")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{comparisonHotspotDeltaText}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.compare.contributorDelta")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{comparisonContributorDeltaText}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.compare.riskChange")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {!comparisonRun || !latestRecordedRun
+                  ? t("history.compare.notEnough")
+                  : comparisonSummary?.riskChanged
+                    ? `${comparisonRun.deliveryRiskLevel} -> ${latestRecordedRun.deliveryRiskLevel}`
+                    : t("history.compare.noRiskChange")}
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.compare.currentSnapshot")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {latestRecordedRun
+                  ? `${latestRecordedRun.shortHeadSha} - ${latestRecordedRun.branch}`
+                  : t("common:status.notAnalyzed")}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.compare.baselineSnapshot")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {comparisonRun
+                  ? `${comparisonRun.shortHeadSha} - ${comparisonRun.branch}`
+                  : t("history.compare.notEnough")}
+              </p>
+              {comparisonSummary?.branchChanged || comparisonSummary?.periodChanged ? (
+                <p className="gp-text-muted mt-2 text-xs">
+                  {comparisonSummary.branchChanged && comparisonSummary.periodChanged
+                    ? t("history.compare.scopeChangedBoth")
+                    : comparisonSummary.branchChanged
+                      ? t("history.compare.scopeChangedBranch")
+                      : t("history.compare.scopeChangedWindow")}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
         <Table
           columns={[
             {
@@ -666,6 +795,25 @@ export function OverviewPage() {
                   {row.deliveryRiskLevel}
                 </Badge>
               ),
+            },
+            {
+              key: "compare",
+              header: t("history.compare.action"),
+              align: "right",
+              render: (row) =>
+                latestRecordedRun && row.headSha !== latestRecordedRun.headSha ? (
+                  <Button
+                    variant={selectedComparisonHeadSha === row.headSha ? "primary" : "secondary"}
+                    size="sm"
+                    onClick={() => setComparisonHeadSha(row.headSha)}
+                  >
+                    {selectedComparisonHeadSha === row.headSha
+                      ? t("history.compare.selected")
+                      : t("history.compare.action")}
+                  </Button>
+                ) : (
+                  <Badge tone="neutral">{t("history.compare.current")}</Badge>
+                ),
             },
           ]}
           rows={repositoryHistory}

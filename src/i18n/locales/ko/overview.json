@@ -69,7 +69,26 @@
     "hotspotDelta": "Hotspot 변화량",
     "recordedAt": "기록 시각",
     "noPreviousRun": "이전 기록 없음",
-    "empty": "아직 저장된 분석 히스토리가 없습니다."
+    "empty": "아직 저장된 분석 히스토리가 없습니다.",
+    "compare": {
+      "title": "스냅샷 비교",
+      "description": "현재 저장소의 최신 분석 스냅샷을 이전 실행 기록과 비교합니다.",
+      "select": "기준 스냅샷 선택",
+      "notEnough": "비교할 히스토리가 아직 부족합니다",
+      "commitDelta": "기준 대비 커밋 변화량",
+      "hotspotDelta": "기준 대비 hotspot 변화량",
+      "contributorDelta": "기준 대비 contributor 변화량",
+      "riskChange": "리스크 변화",
+      "noRiskChange": "리스크 변화 없음",
+      "currentSnapshot": "현재 스냅샷",
+      "baselineSnapshot": "기준 스냅샷",
+      "scopeChangedBranch": "비교한 두 스냅샷의 브랜치가 다릅니다.",
+      "scopeChangedWindow": "비교한 두 스냅샷의 분석 기간이 다릅니다.",
+      "scopeChangedBoth": "비교한 두 스냅샷의 브랜치와 분석 기간이 모두 다릅니다.",
+      "action": "비교",
+      "selected": "비교 중",
+      "current": "현재"
+    }
   },
   "freshness": {
     "title": "분석 최신성",

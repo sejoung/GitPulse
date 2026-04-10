@@ -69,7 +69,26 @@
     "hotspotDelta": "Hotspot delta",
     "recordedAt": "Recorded at",
     "noPreviousRun": "No previous run",
-    "empty": "No analysis history recorded yet."
+    "empty": "No analysis history recorded yet.",
+    "compare": {
+      "title": "Snapshot compare",
+      "description": "Compare the latest analysis snapshot with an earlier run from the same repository.",
+      "select": "Select baseline snapshot",
+      "notEnough": "Not enough history yet",
+      "commitDelta": "Commit delta vs baseline",
+      "hotspotDelta": "Hotspot delta vs baseline",
+      "contributorDelta": "Contributor delta vs baseline",
+      "riskChange": "Risk change",
+      "noRiskChange": "No risk change",
+      "currentSnapshot": "Current snapshot",
+      "baselineSnapshot": "Baseline snapshot",
+      "scopeChangedBranch": "Branch changed between the compared snapshots.",
+      "scopeChangedWindow": "Analysis window changed between the compared snapshots.",
+      "scopeChangedBoth": "Branch and analysis window changed between the compared snapshots.",
+      "action": "Compare",
+      "selected": "Comparing",
+      "current": "Current"
+    }
   },
   "freshness": {
     "title": "Analysis freshness",
