@@ -24,6 +24,20 @@
     "excludedPaths": "제외 경로",
     "commitEvidence": "커밋 근거",
     "commitEvidenceDescription": "선택한 파일의 최근 커밋을 기준으로 Hotspot으로 분류된 이유를 확인합니다.",
+    "recentCommits": "최근 커밋 {{count}}개",
+    "scope": "근거 범위",
+    "scopeAll": "전체 커밋",
+    "scopeMatched": "키워드 매칭만",
+    "authorFilter": "작성자 필터",
+    "allAuthors": "전체 작성자",
+    "search": "커밋 검색",
+    "searchPlaceholder": "sha, 작성자, 메시지, 날짜로 검색",
+    "summary": {
+      "totalCommits": "표시 커밋 수",
+      "matchedCommits": "키워드 매칭",
+      "authors": "작성자 수",
+      "latestDate": "최신 커밋"
+    },
     "commit": "커밋",
     "date": "날짜",
     "author": "작성자",
@@ -32,7 +46,8 @@
     "bugKeywordMatched": "Bug keyword",
     "changeOnly": "변경만 있음",
     "loadingCommits": "커밋 근거를 불러오는 중입니다.",
-    "noCommitEvidence": "이 파일에 대한 커밋 근거가 없습니다."
+    "noCommitEvidence": "이 파일에 대한 커밋 근거가 없습니다.",
+    "noFilteredCommits": "현재 필터에 맞는 커밋 근거가 없습니다."
   },
   "chart": {
     "title": "Change frequency",

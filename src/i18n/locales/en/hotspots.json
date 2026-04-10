@@ -24,6 +24,20 @@
     "excludedPaths": "Excluded paths",
     "commitEvidence": "Commit evidence",
     "commitEvidenceDescription": "Recent commits for the selected file explain why this file is ranked as a hotspot.",
+    "recentCommits": "{{count}} recent commits",
+    "scope": "Evidence scope",
+    "scopeAll": "All commits",
+    "scopeMatched": "Keyword matches",
+    "authorFilter": "Author filter",
+    "allAuthors": "All authors",
+    "search": "Search commits",
+    "searchPlaceholder": "Search by sha, author, subject, or date",
+    "summary": {
+      "totalCommits": "Visible commits",
+      "matchedCommits": "Keyword matched",
+      "authors": "Authors",
+      "latestDate": "Latest commit"
+    },
     "commit": "Commit",
     "date": "Date",
     "author": "Author",
@@ -32,7 +46,8 @@
     "bugKeywordMatched": "Bug keyword",
     "changeOnly": "Change only",
     "loadingCommits": "Loading commit evidence.",
-    "noCommitEvidence": "No commit evidence found for this file."
+    "noCommitEvidence": "No commit evidence found for this file.",
+    "noFilteredCommits": "No commit evidence matches the current filters."
   },
   "chart": {
     "title": "Change frequency",

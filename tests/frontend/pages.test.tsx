@@ -616,6 +616,51 @@ describe("HotspotsPage", () => {
     });
   });
 
+  it("filters hotspot commit evidence by keyword match and author", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getHotspotsAnalysis.mockResolvedValue([
+      {
+        path: "src/app.tsx",
+        changes: 12,
+        fixes: 4,
+        risk: "watch",
+      },
+    ]);
+    api.getHotspotCommitDetails.mockResolvedValue([
+      {
+        sha: "abcdef123456",
+        shortSha: "abcdef1",
+        date: "2026-04-01",
+        author: "Beni",
+        subject: "fix app shell bug",
+        matchesBugKeyword: true,
+      },
+      {
+        sha: "123456abcdef",
+        shortSha: "123456a",
+        date: "2026-03-28",
+        author: "Alex",
+        subject: "refactor app shell",
+        matchesBugKeyword: false,
+      },
+    ]);
+
+    renderWithClient(<HotspotsPage />);
+
+    expect(await screen.findByText("Visible commits")).toBeInTheDocument();
+    expect(screen.getAllByText("fix app shell bug").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("refactor app shell").length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("tab", { name: "Keyword matches" }));
+
+    expect(screen.getAllByText("fix app shell bug").length).toBeGreaterThan(0);
+    expect(screen.queryByText("refactor app shell")).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "Author filter" }), "Beni");
+    expect(screen.getAllByText("Beni").length).toBeGreaterThan(0);
+  });
+
   it("uses repository override settings for hotspot analysis", async () => {
     useUiStore.setState({
       workspacePath: "/repo",

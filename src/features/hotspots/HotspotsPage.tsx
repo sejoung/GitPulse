@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
@@ -7,9 +7,12 @@ import {
   Button,
   DetailPanel,
   EmptyState,
+  Input,
   PageHeader,
+  Select,
   StatCard,
   Table,
+  Tabs,
 } from "../../components/ui";
 import { useHotspotCommitDetails, useHotspotsAnalysis } from "./useHotspotsAnalysis";
 
@@ -24,6 +27,9 @@ export function HotspotsPage() {
   const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
   const bugKeywords = repositoryOverride?.bugKeywords ?? globalBugKeywords;
   const [selectedPath, setSelectedPath] = useState("");
+  const [commitScope, setCommitScope] = useState<"all" | "matched">("all");
+  const [selectedAuthor, setSelectedAuthor] = useState("all");
+  const [commitSearch, setCommitSearch] = useState("");
   const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(
     workspacePath,
     selectedBranch,
@@ -47,6 +53,36 @@ export function HotspotsPage() {
     : hotspotRows.some((row) => row.risk === "watch")
       ? "watch"
       : "healthy";
+  const commitAuthors = useMemo(
+    () =>
+      Array.from(new Set(commitRows.map((row) => row.author))).sort((left, right) =>
+        left.localeCompare(right)
+      ),
+    [commitRows]
+  );
+  const filteredCommitRows = useMemo(() => {
+    const normalizedSearch = commitSearch.trim().toLowerCase();
+
+    return commitRows.filter((row) => {
+      if (commitScope === "matched" && !row.matchesBugKeyword) {
+        return false;
+      }
+
+      if (selectedAuthor !== "all" && row.author !== selectedAuthor) {
+        return false;
+      }
+
+      if (!normalizedSearch) {
+        return true;
+      }
+
+      return [row.shortSha, row.author, row.subject, row.date].some((value) =>
+        value.toLowerCase().includes(normalizedSearch)
+      );
+    });
+  }, [commitRows, commitScope, selectedAuthor, commitSearch]);
+  const matchedCommitCount = commitRows.filter((row) => row.matchesBugKeyword).length;
+  const latestCommitDate = commitRows[0]?.date ?? t("details.noCommitEvidence");
 
   return (
     <div className="space-y-6">
@@ -194,14 +230,86 @@ export function HotspotsPage() {
             </div>
           </div>
           <div className="mt-4">
-            <p className="gp-kicker">{t("details.commitEvidence")}</p>
-            <p className="gp-text-secondary mt-1 mb-3 text-sm">
-              {t("details.commitEvidenceDescription")}
-            </p>
+            <div className="gp-status-row">
+              <div className="min-w-0">
+                <p className="gp-kicker">{t("details.commitEvidence")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {t("details.commitEvidenceDescription")}
+                </p>
+              </div>
+              <Badge tone={matchedCommitCount > 0 ? "watch" : "neutral"} className="w-fit">
+                {t("details.recentCommits", { count: commitRows.length })}
+              </Badge>
+            </div>
             {commitRows.length > 0 ? (
               <>
+                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("details.summary.totalCommits")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">{commitRows.length}</p>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("details.summary.matchedCommits")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">{matchedCommitCount}</p>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("details.summary.authors")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">{commitAuthors.length}</p>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("details.summary.latestDate")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">{latestCommitDate}</p>
+                  </div>
+                </div>
+                <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,1fr)]">
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("details.scope")}</p>
+                    <div className="mt-2">
+                      <Tabs
+                        items={[
+                          { id: "all", label: t("details.scopeAll") },
+                          { id: "matched", label: t("details.scopeMatched") },
+                        ]}
+                        value={commitScope}
+                        onChange={(value) => setCommitScope(value as "all" | "matched")}
+                      />
+                    </div>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <label className="gp-kicker" htmlFor="hotspot-author-filter">
+                      {t("details.authorFilter")}
+                    </label>
+                    <Select
+                      id="hotspot-author-filter"
+                      className="mt-2"
+                      value={selectedAuthor}
+                      aria-label={t("details.authorFilter")}
+                      onChange={(event) => setSelectedAuthor(event.target.value)}
+                    >
+                      <option value="all">{t("details.allAuthors")}</option>
+                      {commitAuthors.map((author) => (
+                        <option key={author} value={author}>
+                          {author}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <label className="gp-kicker" htmlFor="hotspot-commit-search">
+                      {t("details.search")}
+                    </label>
+                    <Input
+                      id="hotspot-commit-search"
+                      className="mt-2"
+                      value={commitSearch}
+                      onChange={(event) => setCommitSearch(event.target.value)}
+                      placeholder={t("details.searchPlaceholder")}
+                      aria-label={t("details.search")}
+                    />
+                  </div>
+                </div>
                 <div className="space-y-3 xl:hidden">
-                  {commitRows.map((row) => (
+                  {filteredCommitRows.map((row) => (
                     <div key={row.sha} className="gp-panel min-w-0 p-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge tone="brand">{row.shortSha}</Badge>
@@ -264,10 +372,10 @@ export function HotspotsPage() {
                           ),
                       },
                     ]}
-                    rows={commitRows}
+                    rows={filteredCommitRows}
                     getRowKey={(row) => row.sha}
                     emptyText={
-                      isCommitLoading ? t("details.loadingCommits") : t("details.noCommitEvidence")
+                      isCommitLoading ? t("details.loadingCommits") : t("details.noFilteredCommits")
                     }
                   />
                 </div>
