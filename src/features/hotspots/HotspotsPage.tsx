@@ -31,6 +31,7 @@ export function HotspotsPage() {
   const [commitScope, setCommitScope] = useState<"all" | "matched">("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
   const [commitSearch, setCommitSearch] = useState("");
+  const [showCommitFilters, setShowCommitFilters] = useState(false);
   const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(
     workspacePath,
     selectedBranch,
@@ -277,9 +278,20 @@ export function HotspotsPage() {
                   {t("details.commitEvidenceDescription")}
                 </p>
               </div>
-              <Badge tone={matchedCommitCount > 0 ? "watch" : "neutral"} className="w-fit">
-                {t("details.recentCommits", { count: commitRows.length })}
-              </Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={matchedCommitCount > 0 ? "watch" : "neutral"} className="w-fit">
+                  {t("details.recentCommits", { count: commitRows.length })}
+                </Badge>
+                {commitRows.length > 0 ? (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowCommitFilters((current) => !current)}
+                  >
+                    {showCommitFilters ? t("details.hideFilters") : t("details.showFilters")}
+                  </Button>
+                ) : null}
+              </div>
             </div>
             {commitRows.length > 0 ? (
               <>
@@ -301,53 +313,55 @@ export function HotspotsPage() {
                     <p className="gp-text-secondary mt-1 text-sm">{latestCommitDate}</p>
                   </div>
                 </div>
-                <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,1fr)]">
-                  <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-kicker">{t("details.scope")}</p>
-                    <div className="mt-2">
-                      <Tabs
-                        items={[
-                          { id: "all", label: t("details.scopeAll") },
-                          { id: "matched", label: t("details.scopeMatched") },
-                        ]}
-                        value={commitScope}
-                        onChange={(value) => setCommitScope(value)}
+                {showCommitFilters ? (
+                  <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,1fr)]">
+                    <div className="gp-panel min-w-0 p-3">
+                      <p className="gp-kicker">{t("details.scope")}</p>
+                      <div className="mt-2">
+                        <Tabs
+                          items={[
+                            { id: "all", label: t("details.scopeAll") },
+                            { id: "matched", label: t("details.scopeMatched") },
+                          ]}
+                          value={commitScope}
+                          onChange={(value) => setCommitScope(value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="gp-panel min-w-0 p-3">
+                      <label className="gp-kicker" htmlFor="hotspot-author-filter">
+                        {t("details.authorFilter")}
+                      </label>
+                      <Select
+                        id="hotspot-author-filter"
+                        className="mt-2"
+                        value={selectedAuthor}
+                        aria-label={t("details.authorFilter")}
+                        onChange={(event) => setSelectedAuthor(event.target.value)}
+                      >
+                        <option value="all">{t("details.allAuthors")}</option>
+                        {commitAuthors.map((author) => (
+                          <option key={author} value={author}>
+                            {author}
+                          </option>
+                        ))}
+                      </Select>
+                    </div>
+                    <div className="gp-panel min-w-0 p-3">
+                      <label className="gp-kicker" htmlFor="hotspot-commit-search">
+                        {t("details.search")}
+                      </label>
+                      <Input
+                        id="hotspot-commit-search"
+                        className="mt-2"
+                        value={commitSearch}
+                        onChange={(event) => setCommitSearch(event.target.value)}
+                        placeholder={t("details.searchPlaceholder")}
+                        aria-label={t("details.search")}
                       />
                     </div>
                   </div>
-                  <div className="gp-panel min-w-0 p-3">
-                    <label className="gp-kicker" htmlFor="hotspot-author-filter">
-                      {t("details.authorFilter")}
-                    </label>
-                    <Select
-                      id="hotspot-author-filter"
-                      className="mt-2"
-                      value={selectedAuthor}
-                      aria-label={t("details.authorFilter")}
-                      onChange={(event) => setSelectedAuthor(event.target.value)}
-                    >
-                      <option value="all">{t("details.allAuthors")}</option>
-                      {commitAuthors.map((author) => (
-                        <option key={author} value={author}>
-                          {author}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="gp-panel min-w-0 p-3">
-                    <label className="gp-kicker" htmlFor="hotspot-commit-search">
-                      {t("details.search")}
-                    </label>
-                    <Input
-                      id="hotspot-commit-search"
-                      className="mt-2"
-                      value={commitSearch}
-                      onChange={(event) => setCommitSearch(event.target.value)}
-                      placeholder={t("details.searchPlaceholder")}
-                      aria-label={t("details.search")}
-                    />
-                  </div>
-                </div>
+                ) : null}
                 <div className="space-y-3 xl:hidden">
                   {filteredCommitRows.map((row) => (
                     <div key={row.sha} className="gp-panel min-w-0 p-3">

@@ -253,6 +253,14 @@ import { ChartCard } from "../../components/charts";
 
 These patterns are now implemented in the app and should be reused.
 
+### Progressive Disclosure
+
+- Do not keep every secondary control open by default.
+- Keep the first screen focused on the current repository state and the next likely action.
+- Move comparison history, export options, diagnostic tools, and dense filters behind tabs or an explicit reveal action.
+- Use section tabs for large settings surfaces such as `General`, `Repository`, and `Advanced`.
+- In investigation pages, keep summary metrics visible and hide deep filters until the user asks for them.
+
 ### Overview and Settings Flow
 
 - `Overview` is the execution surface for repository selection, branch control, remote checks, and analysis refresh.

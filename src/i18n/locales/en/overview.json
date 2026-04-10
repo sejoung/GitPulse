@@ -60,6 +60,20 @@
   "chart": {
     "activityTrend": "Activity trend"
   },
+  "secondary": {
+    "title": "Secondary tools",
+    "description": "Keep history and export nearby without pushing them into the primary analysis flow.",
+    "items": {
+      "history": {
+        "title": "History and compare",
+        "description": "Use this area when you need to compare the current snapshot with an earlier run."
+      },
+      "export": {
+        "title": "Export options",
+        "description": "Use this area when you need to package the current snapshot or a comparison for sharing."
+      }
+    }
+  },
   "history": {
     "title": "Analysis history",
     "description": "Recent analysis runs for this repository let you compare the current signal with the previous baseline.",

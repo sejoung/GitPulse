@@ -33,6 +33,8 @@
     "commitEvidence": "커밋 근거",
     "commitEvidenceDescription": "선택한 파일의 최근 커밋을 기준으로 핫스팟으로 분류된 이유를 확인합니다.",
     "recentCommits": "최근 커밋 {{count}}개",
+    "showFilters": "필터 보기",
+    "hideFilters": "필터 숨기기",
     "scope": "근거 범위",
     "scopeAll": "전체 커밋",
     "scopeMatched": "키워드 매칭만",

@@ -87,6 +87,7 @@ export function OverviewPage() {
   const { t } = useTranslation(["overview", "common", "settings"]);
   const queryClient = useQueryClient();
   const [exportMessage, setExportMessage] = useState("");
+  const [secondarySection, setSecondarySection] = useState<"history" | "export">("history");
   const [comparisonHeadSha, setComparisonHeadSha] = useState("");
   const [exportDetailLevel, setExportDetailLevel] = useState<ReportDetailLevel>("full");
   const [exportScope, setExportScope] = useState<ReportScope>("current");
@@ -768,294 +769,6 @@ export function OverviewPage() {
         />
       </DetailPanel>
 
-      <DetailPanel title={t("history.title")} description={t("history.description")}>
-        <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("history.latestRun")}</p>
-            <p className="gp-text-secondary mt-1 truncate text-sm">
-              {latestRecordedRun
-                ? new Intl.DateTimeFormat(undefined, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }).format(new Date(latestRecordedRun.recordedAt))
-                : t("common:status.notAnalyzed")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("history.latestHead")}</p>
-            <p className="gp-text-secondary mt-1 truncate text-sm">
-              {latestRecordedRun?.shortHeadSha ?? t("common:status.notAnalyzed")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("history.commitDelta")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {commitDelta === null
-                ? t("history.noPreviousRun")
-                : `${commitDelta > 0 ? "+" : ""}${commitDelta}`}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("history.hotspotDelta")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {hotspotDelta === null
-                ? t("history.noPreviousRun")
-                : `${hotspotDelta > 0 ? "+" : ""}${hotspotDelta}`}
-            </p>
-          </div>
-        </div>
-        <div className="mb-4 space-y-3">
-          <div className="gp-status-row">
-            <div className="min-w-0">
-              <p className="gp-kicker">{t("history.compare.title")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{t("history.compare.description")}</p>
-            </div>
-            <div className="w-full max-w-xs">
-              <Select
-                value={selectedComparisonHeadSha}
-                disabled={repositoryHistory.length < 2}
-                aria-label={t("history.compare.select")}
-                onChange={(event) => setComparisonHeadSha(event.target.value)}
-              >
-                <option value="" disabled>
-                  {repositoryHistory.length < 2
-                    ? t("history.compare.notEnough")
-                    : t("history.compare.select")}
-                </option>
-                {repositoryHistory.slice(1).map((run) => (
-                  <option key={`${run.headSha}:${run.recordedAt}`} value={run.headSha}>
-                    {`${run.shortHeadSha} - ${run.branch} - ${new Intl.DateTimeFormat(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }).format(new Date(run.recordedAt))}`}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("history.compare.commitDelta")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{comparisonCommitDeltaText}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("history.compare.hotspotDelta")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{comparisonHotspotDeltaText}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("history.compare.contributorDelta")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{comparisonContributorDeltaText}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("history.compare.riskChange")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">
-                {!comparisonRun || !latestRecordedRun
-                  ? t("history.compare.notEnough")
-                  : comparisonSummary?.riskChanged
-                    ? `${comparisonRun.deliveryRiskLevel} -> ${latestRecordedRun.deliveryRiskLevel}`
-                    : t("history.compare.noRiskChange")}
-              </p>
-            </div>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("history.compare.currentSnapshot")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">
-                {latestRecordedRun
-                  ? `${latestRecordedRun.shortHeadSha} - ${latestRecordedRun.branch}`
-                  : t("common:status.notAnalyzed")}
-              </p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("history.compare.baselineSnapshot")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">
-                {comparisonRun
-                  ? `${comparisonRun.shortHeadSha} - ${comparisonRun.branch}`
-                  : t("history.compare.notEnough")}
-              </p>
-              {comparisonSummary?.branchChanged || comparisonSummary?.periodChanged ? (
-                <p className="gp-text-muted mt-2 text-xs">
-                  {comparisonSummary.branchChanged && comparisonSummary.periodChanged
-                    ? t("history.compare.scopeChangedBoth")
-                    : comparisonSummary.branchChanged
-                      ? t("history.compare.scopeChangedBranch")
-                      : t("history.compare.scopeChangedWindow")}
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </div>
-        <Table
-          columns={[
-            {
-              key: "recordedAt",
-              header: t("history.recordedAt"),
-              render: (row) =>
-                new Intl.DateTimeFormat(undefined, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                }).format(new Date(row.recordedAt)),
-            },
-            {
-              key: "branch",
-              header: t("workspaceDetails.analysisBasis.branch"),
-              render: (row) => row.branch,
-            },
-            {
-              key: "head",
-              header: t("workspaceDetails.analysisBasis.head"),
-              render: (row) => row.shortHeadSha,
-            },
-            {
-              key: "commits",
-              header: t("stats.commits"),
-              align: "right",
-              render: (row) => row.totalCommits,
-            },
-            {
-              key: "hotspots",
-              header: t("stats.hotspots"),
-              align: "right",
-              render: (row) => row.hotspotCount,
-            },
-            {
-              key: "risk",
-              header: t("stats.risk"),
-              align: "right",
-              render: (row) => (
-                <Badge
-                  tone={
-                    row.deliveryRiskLevel === "high"
-                      ? "risky"
-                      : row.deliveryRiskLevel === "medium"
-                        ? "watch"
-                        : "healthy"
-                  }
-                >
-                  {row.deliveryRiskLevel}
-                </Badge>
-              ),
-            },
-            {
-              key: "compare",
-              header: t("history.compare.action"),
-              align: "right",
-              render: (row) =>
-                latestRecordedRun && row.headSha !== latestRecordedRun.headSha ? (
-                  <Button
-                    variant={selectedComparisonHeadSha === row.headSha ? "primary" : "secondary"}
-                    size="sm"
-                    onClick={() => setComparisonHeadSha(row.headSha)}
-                  >
-                    {selectedComparisonHeadSha === row.headSha
-                      ? t("history.compare.selected")
-                      : t("history.compare.action")}
-                  </Button>
-                ) : (
-                  <Badge tone="neutral">{t("history.compare.current")}</Badge>
-                ),
-            },
-          ]}
-          rows={repositoryHistory}
-          getRowKey={(row) => `${row.workspacePath}:${row.branch}:${row.headSha}:${row.period}`}
-          emptyText={hasWorkspace ? t("history.empty") : initialEmptyText}
-        />
-      </DetailPanel>
-
-      <DetailPanel
-        title={t("export.title")}
-        description={t("export.description")}
-        actions={
-          <div className="gp-header-actions">
-            <Button
-              variant="secondary"
-              disabled={!data || !hasWorkspace}
-              onClick={() => exportReport("md")}
-            >
-              {t("export.markdown")}
-            </Button>
-            <Button
-              variant="secondary"
-              disabled={!data || !hasWorkspace}
-              onClick={() => exportReport("json")}
-            >
-              {t("export.json")}
-            </Button>
-          </div>
-        }
-      >
-        <div className="mb-4 grid gap-3 xl:grid-cols-2">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.detailLevel")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{t("export.detailLevelDescription")}</p>
-            <div className="mt-3">
-              <Tabs
-                items={[
-                  { id: "summary", label: t("export.summary") },
-                  { id: "full", label: t("export.full") },
-                ]}
-                value={exportDetailLevel}
-                onChange={(value) => setExportDetailLevel(value)}
-              />
-            </div>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.scope")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{t("export.scopeDescription")}</p>
-            <div className="mt-3">
-              <Tabs
-                items={[
-                  { id: "current", label: t("export.scopeCurrentTab") },
-                  { id: "compare", label: t("export.scopeCompareTab") },
-                ]}
-                value={exportScope}
-                onChange={(value) => setExportScope(value)}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.includes")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{exportIncludesValue}</p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.format")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{exportFormatValue}</p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.scopeTarget")}</p>
-            <p className="gp-text-secondary mt-1 truncate text-sm">
-              {hasWorkspace ? exportScopeValue : t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.status")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {exportMessage || t("export.statusIdle")}
-            </p>
-          </div>
-        </div>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.repository")}</p>
-            <p className="gp-text-secondary mt-1 truncate text-sm">
-              {hasWorkspace
-                ? (data?.repositoryName ?? workspacePath)
-                : t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("export.filename")}</p>
-            <p className="gp-text-secondary mt-1 break-all text-sm">
-              {hasWorkspace && data
-                ? `${data.repositoryName}-${activeBranch}-${exportDetailLevel}-${exportScope}-report.*`
-                : t("common:status.notSelected")}
-            </p>
-          </div>
-        </div>
-      </DetailPanel>
-
       <ChartCard
         title={t("chart.activityTrend")}
         emptyText={hasWorkspace ? t("common:empty.activity") : initialEmptyText}
@@ -1078,6 +791,329 @@ export function OverviewPage() {
           </div>
         ) : null}
       </ChartCard>
+
+      <DetailPanel
+        title={t("secondary.title")}
+        description={t("secondary.description")}
+        actions={
+          <Tabs
+            items={[
+              { id: "history", label: t("history.title") },
+              { id: "export", label: t("export.title") },
+            ]}
+            value={secondarySection}
+            onChange={(value) => setSecondarySection(value)}
+          />
+        }
+      >
+        <div className="gp-status-row">
+          <div className="min-w-0">
+            <p className="gp-kicker">{t(`secondary.items.${secondarySection}.title`)}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {t(`secondary.items.${secondarySection}.description`)}
+            </p>
+          </div>
+          <Badge tone="neutral" className="w-fit">
+            {secondarySection === "history"
+              ? formatCount(repositoryHistory.length)
+              : exportScope === "compare"
+                ? t("export.scopeCompareTab")
+                : t("export.scopeCurrentTab")}
+          </Badge>
+        </div>
+      </DetailPanel>
+
+      {secondarySection === "history" ? (
+        <DetailPanel title={t("history.title")} description={t("history.description")}>
+          <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.latestRun")}</p>
+              <p className="gp-text-secondary mt-1 truncate text-sm">
+                {latestRecordedRun
+                  ? new Intl.DateTimeFormat(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }).format(new Date(latestRecordedRun.recordedAt))
+                  : t("common:status.notAnalyzed")}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.latestHead")}</p>
+              <p className="gp-text-secondary mt-1 truncate text-sm">
+                {latestRecordedRun?.shortHeadSha ?? t("common:status.notAnalyzed")}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.commitDelta")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {commitDelta === null
+                  ? t("history.noPreviousRun")
+                  : `${commitDelta > 0 ? "+" : ""}${commitDelta}`}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("history.hotspotDelta")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {hotspotDelta === null
+                  ? t("history.noPreviousRun")
+                  : `${hotspotDelta > 0 ? "+" : ""}${hotspotDelta}`}
+              </p>
+            </div>
+          </div>
+          <div className="mb-4 space-y-3">
+            <div className="gp-status-row">
+              <div className="min-w-0">
+                <p className="gp-kicker">{t("history.compare.title")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">{t("history.compare.description")}</p>
+              </div>
+              <div className="w-full max-w-xs">
+                <Select
+                  value={selectedComparisonHeadSha}
+                  disabled={repositoryHistory.length < 2}
+                  aria-label={t("history.compare.select")}
+                  onChange={(event) => setComparisonHeadSha(event.target.value)}
+                >
+                  <option value="" disabled>
+                    {repositoryHistory.length < 2
+                      ? t("history.compare.notEnough")
+                      : t("history.compare.select")}
+                  </option>
+                  {repositoryHistory.slice(1).map((run) => (
+                    <option key={`${run.headSha}:${run.recordedAt}`} value={run.headSha}>
+                      {`${run.shortHeadSha} - ${run.branch} - ${new Intl.DateTimeFormat(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(run.recordedAt))}`}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("history.compare.commitDelta")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">{comparisonCommitDeltaText}</p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("history.compare.hotspotDelta")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">{comparisonHotspotDeltaText}</p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("history.compare.contributorDelta")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">{comparisonContributorDeltaText}</p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("history.compare.riskChange")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {!comparisonRun || !latestRecordedRun
+                    ? t("history.compare.notEnough")
+                    : comparisonSummary?.riskChanged
+                      ? `${comparisonRun.deliveryRiskLevel} -> ${latestRecordedRun.deliveryRiskLevel}`
+                      : t("history.compare.noRiskChange")}
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("history.compare.currentSnapshot")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {latestRecordedRun
+                    ? `${latestRecordedRun.shortHeadSha} - ${latestRecordedRun.branch}`
+                    : t("common:status.notAnalyzed")}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("history.compare.baselineSnapshot")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {comparisonRun
+                    ? `${comparisonRun.shortHeadSha} - ${comparisonRun.branch}`
+                    : t("history.compare.notEnough")}
+                </p>
+                {comparisonSummary?.branchChanged || comparisonSummary?.periodChanged ? (
+                  <p className="gp-text-muted mt-2 text-xs">
+                    {comparisonSummary.branchChanged && comparisonSummary.periodChanged
+                      ? t("history.compare.scopeChangedBoth")
+                      : comparisonSummary.branchChanged
+                        ? t("history.compare.scopeChangedBranch")
+                        : t("history.compare.scopeChangedWindow")}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+          <Table
+            columns={[
+              {
+                key: "recordedAt",
+                header: t("history.recordedAt"),
+                render: (row) =>
+                  new Intl.DateTimeFormat(undefined, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(row.recordedAt)),
+              },
+              {
+                key: "branch",
+                header: t("workspaceDetails.analysisBasis.branch"),
+                render: (row) => row.branch,
+              },
+              {
+                key: "head",
+                header: t("workspaceDetails.analysisBasis.head"),
+                render: (row) => row.shortHeadSha,
+              },
+              {
+                key: "commits",
+                header: t("stats.commits"),
+                align: "right",
+                render: (row) => row.totalCommits,
+              },
+              {
+                key: "hotspots",
+                header: t("stats.hotspots"),
+                align: "right",
+                render: (row) => row.hotspotCount,
+              },
+              {
+                key: "risk",
+                header: t("stats.risk"),
+                align: "right",
+                render: (row) => (
+                  <Badge
+                    tone={
+                      row.deliveryRiskLevel === "high"
+                        ? "risky"
+                        : row.deliveryRiskLevel === "medium"
+                          ? "watch"
+                          : "healthy"
+                    }
+                  >
+                    {row.deliveryRiskLevel}
+                  </Badge>
+                ),
+              },
+              {
+                key: "compare",
+                header: t("history.compare.action"),
+                align: "right",
+                render: (row) =>
+                  latestRecordedRun && row.headSha !== latestRecordedRun.headSha ? (
+                    <Button
+                      variant={selectedComparisonHeadSha === row.headSha ? "primary" : "secondary"}
+                      size="sm"
+                      onClick={() => setComparisonHeadSha(row.headSha)}
+                    >
+                      {selectedComparisonHeadSha === row.headSha
+                        ? t("history.compare.selected")
+                        : t("history.compare.action")}
+                    </Button>
+                  ) : (
+                    <Badge tone="neutral">{t("history.compare.current")}</Badge>
+                  ),
+              },
+            ]}
+            rows={repositoryHistory}
+            getRowKey={(row) => `${row.workspacePath}:${row.branch}:${row.headSha}:${row.period}`}
+            emptyText={hasWorkspace ? t("history.empty") : initialEmptyText}
+          />
+        </DetailPanel>
+      ) : null}
+
+      {secondarySection === "export" ? (
+        <DetailPanel
+          title={t("export.title")}
+          description={t("export.description")}
+          actions={
+            <div className="gp-header-actions">
+              <Button
+                variant="secondary"
+                disabled={!data || !hasWorkspace}
+                onClick={() => exportReport("md")}
+              >
+                {t("export.markdown")}
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={!data || !hasWorkspace}
+                onClick={() => exportReport("json")}
+              >
+                {t("export.json")}
+              </Button>
+            </div>
+          }
+        >
+          <div className="mb-4 grid gap-3 xl:grid-cols-2">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.detailLevel")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{t("export.detailLevelDescription")}</p>
+              <div className="mt-3">
+                <Tabs
+                  items={[
+                    { id: "summary", label: t("export.summary") },
+                    { id: "full", label: t("export.full") },
+                  ]}
+                  value={exportDetailLevel}
+                  onChange={(value) => setExportDetailLevel(value)}
+                />
+              </div>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.scope")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{t("export.scopeDescription")}</p>
+              <div className="mt-3">
+                <Tabs
+                  items={[
+                    { id: "current", label: t("export.scopeCurrentTab") },
+                    { id: "compare", label: t("export.scopeCompareTab") },
+                  ]}
+                  value={exportScope}
+                  onChange={(value) => setExportScope(value)}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.includes")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{exportIncludesValue}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.format")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{exportFormatValue}</p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.scopeTarget")}</p>
+              <p className="gp-text-secondary mt-1 truncate text-sm">
+                {hasWorkspace ? exportScopeValue : t("common:status.notSelected")}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.status")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">
+                {exportMessage || t("export.statusIdle")}
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.repository")}</p>
+              <p className="gp-text-secondary mt-1 truncate text-sm">
+                {hasWorkspace
+                  ? (data?.repositoryName ?? workspacePath)
+                  : t("common:status.notSelected")}
+              </p>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("export.filename")}</p>
+              <p className="gp-text-secondary mt-1 break-all text-sm">
+                {hasWorkspace && data
+                  ? `${data.repositoryName}-${activeBranch}-${exportDetailLevel}-${exportScope}-report.*`
+                  : t("common:status.notSelected")}
+              </p>
+            </div>
+          </div>
+        </DetailPanel>
+      ) : null}
     </div>
   );
 }

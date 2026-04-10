@@ -112,6 +112,9 @@ export function SettingsPage() {
   const { t, i18n } = useTranslation(["settings", "common"]);
   const queryClient = useQueryClient();
   const importInputRef = useRef<HTMLInputElement>(null);
+  const [settingsSection, setSettingsSection] = useState<"general" | "repository" | "advanced">(
+    "general"
+  );
   const [settingsMessage, setSettingsMessage] = useState("");
   const [cacheMessage, setCacheMessage] = useState("");
   const { data: databaseSummary } = useLocalDatabaseSummary();
@@ -443,759 +446,815 @@ export function SettingsPage() {
       </div>
 
       <DetailPanel
-        title={t("language.title")}
-        description={t("language.description")}
-        actions={<Badge tone="brand">{t(`language.${currentLanguage}`)}</Badge>}
-      >
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <p className="gp-text-secondary text-sm">{t("language.current")}</p>
-          <Tabs
-            items={translatedLanguageItems}
-            value={currentLanguage}
-            onChange={handleLanguageChange}
-          />
-        </div>
-      </DetailPanel>
-
-      <DetailPanel
-        title={t("repositoryMemory.title")}
-        description={t("repositoryMemory.description")}
-      >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p className="gp-text-secondary text-sm">{t("repositoryMemory.current")}</p>
+        title={t("sections.title")}
+        description={t("sections.description")}
+        actions={
           <Tabs
             items={[
-              { id: "on", label: t("repositoryMemory.on") },
-              { id: "off", label: t("repositoryMemory.off") },
+              { id: "general", label: t("sections.items.general") },
+              { id: "repository", label: t("sections.items.repository") },
+              { id: "advanced", label: t("sections.items.advanced") },
             ]}
-            value={rememberLastRepository ? "on" : "off"}
-            onChange={(value) => handleRememberLastRepository(value === "on")}
+            value={settingsSection}
+            onChange={(value) => setSettingsSection(value)}
           />
+        }
+      >
+        <div className="gp-status-row">
+          <div className="min-w-0">
+            <p className="gp-kicker">{t(`sections.summary.${settingsSection}.title`)}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {t(`sections.summary.${settingsSection}.description`)}
+            </p>
+          </div>
+          <Badge tone="neutral" className="w-fit">
+            {t(`sections.items.${settingsSection}`)}
+          </Badge>
         </div>
       </DetailPanel>
 
-      <DetailPanel title={t("defaults.title")} description={t("defaults.description")}>
-        <div className="mb-4 space-y-4">
-          <div className="gp-status-row">
-            <div className="min-w-0">
-              <p className="gp-kicker">{t("presets.title")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{t("presets.description")}</p>
-            </div>
-            <Badge tone="neutral">
-              {workspacePath ? t("presets.repositoryReady") : t("presets.defaultsOnly")}
-            </Badge>
+      {settingsMessage || cacheMessage ? (
+        <div className="gp-status-row">
+          <div className="min-w-0">
+            <p className="gp-kicker">{t("messages.title")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{settingsMessage || cacheMessage}</p>
           </div>
-          <div className="grid gap-3 xl:grid-cols-3">
-            {settingsPresets.map((preset) => (
-              <div key={preset.id} className="gp-panel min-w-0 p-4">
-                <p className="gp-kicker">{t(`presets.items.${preset.id}.label`)}</p>
-                <p className="gp-text-secondary mt-1 text-sm">
-                  {t(`presets.items.${preset.id}.title`)}
-                </p>
-                <p className="gp-text-muted mt-2 text-xs">
-                  {t(`presets.items.${preset.id}.description`)}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge tone="neutral">
-                    {t(`defaults.analysisWindows.${preset.analysisPeriod}`)}
-                  </Badge>
-                  <Badge tone="neutral">{preset.defaultBranch}</Badge>
-                </div>
-                <div className="mt-3">
-                  <p className="gp-kicker">{t("presets.preview")}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {preset.excludedPaths
-                      .split(",")
-                      .map((path) => path.trim())
-                      .filter(Boolean)
-                      .slice(0, 4)
-                      .map((path) => (
-                        <Badge key={`${preset.id}-${path}`} tone="neutral">
-                          {path}
-                        </Badge>
-                      ))}
-                  </div>
-                  <p className="gp-text-muted mt-2 text-xs">{preset.bugKeywords}</p>
-                </div>
-                <div className="mt-4 flex flex-col gap-2 md:flex-row">
-                  <Button variant="secondary" onClick={() => applyPresetToDefaults(preset)}>
-                    {t("presets.applyDefaults")}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    disabled={!workspacePath}
-                    onClick={() => applyPresetToRepositoryOverride(preset)}
-                  >
-                    {t("presets.applyRepository")}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Badge tone="brand" className="w-fit">
+            {t("messages.recent")}
+          </Badge>
         </div>
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
-          <div className="space-y-4">
-            <div className="gp-panel min-w-0 p-4">
-              <p className="gp-kicker">{t("defaults.analysisWindow")}</p>
-              <div className="mt-3">
-                <Tabs
-                  items={translatedAnalysisWindowItems}
-                  value={analysisPeriod}
-                  onChange={setAnalysisPeriod}
-                />
-              </div>
-            </div>
-            <div className="gp-panel min-w-0 p-4">
-              <p className="gp-kicker">{t("defaults.cacheKey")}</p>
-              <p className="gp-text-secondary mt-2 break-words text-sm">
-                repository + branch + period + HEAD_SHA
-              </p>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="gp-panel min-w-0 p-4">
-              <label className="gp-text-secondary text-sm font-medium" htmlFor="bug-keywords">
-                {t("defaults.bugKeywords")}
-              </label>
-              <Input
-                id="bug-keywords"
-                className="mt-3"
-                value={bugKeywords}
-                onChange={(event) => setBugKeywords(event.target.value)}
-                placeholder="fix, bug, broken"
-                aria-label={t("defaults.bugKeywords")}
+      ) : null}
+
+      {settingsSection === "general" ? (
+        <>
+          <DetailPanel
+            title={t("language.title")}
+            description={t("language.description")}
+            actions={<Badge tone="brand">{t(`language.${currentLanguage}`)}</Badge>}
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <p className="gp-text-secondary text-sm">{t("language.current")}</p>
+              <Tabs
+                items={translatedLanguageItems}
+                value={currentLanguage}
+                onChange={handleLanguageChange}
               />
-              <p className="gp-text-muted mt-2 text-xs">{t("defaults.bugKeywordsHelp")}</p>
             </div>
-            <div className="gp-panel min-w-0 p-4">
-              <p className="gp-kicker">{t("defaults.emergencyPatterns")}</p>
-              <div className="mt-3 space-y-3">
-                {emergencyPatterns.map((item, index) => (
-                  <div
-                    key={index}
-                    className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]"
-                  >
-                    <Input
-                      value={item.pattern}
-                      onChange={(event) =>
-                        setEmergencyPattern(index, { ...item, pattern: event.target.value })
-                      }
-                      placeholder="revert, revert:, reverted"
-                      aria-label={t("defaults.emergencyPattern")}
-                    />
-                    <Input
-                      value={item.signal}
-                      onChange={(event) =>
-                        setEmergencyPattern(index, { ...item, signal: event.target.value })
-                      }
-                      placeholder="Watch release pressure"
-                      aria-label={t("defaults.emergencySignal")}
-                    />
+          </DetailPanel>
+
+          <DetailPanel
+            title={t("repositoryMemory.title")}
+            description={t("repositoryMemory.description")}
+          >
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <p className="gp-text-secondary text-sm">{t("repositoryMemory.current")}</p>
+              <Tabs
+                items={[
+                  { id: "on", label: t("repositoryMemory.on") },
+                  { id: "off", label: t("repositoryMemory.off") },
+                ]}
+                value={rememberLastRepository ? "on" : "off"}
+                onChange={(value) => handleRememberLastRepository(value === "on")}
+              />
+            </div>
+          </DetailPanel>
+
+          <DetailPanel title={t("defaults.title")} description={t("defaults.description")}>
+            <div className="mb-4 space-y-4">
+              <div className="gp-status-row">
+                <div className="min-w-0">
+                  <p className="gp-kicker">{t("presets.title")}</p>
+                  <p className="gp-text-secondary mt-1 text-sm">{t("presets.description")}</p>
+                </div>
+                <Badge tone="neutral">
+                  {workspacePath ? t("presets.repositoryReady") : t("presets.defaultsOnly")}
+                </Badge>
+              </div>
+              <div className="grid gap-3 xl:grid-cols-3">
+                {settingsPresets.map((preset) => (
+                  <div key={preset.id} className="gp-panel min-w-0 p-4">
+                    <p className="gp-kicker">{t(`presets.items.${preset.id}.label`)}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">
+                      {t(`presets.items.${preset.id}.title`)}
+                    </p>
+                    <p className="gp-text-muted mt-2 text-xs">
+                      {t(`presets.items.${preset.id}.description`)}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge tone="neutral">
+                        {t(`defaults.analysisWindows.${preset.analysisPeriod}`)}
+                      </Badge>
+                      <Badge tone="neutral">{preset.defaultBranch}</Badge>
+                    </div>
+                    <div className="mt-3">
+                      <p className="gp-kicker">{t("presets.preview")}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {preset.excludedPaths
+                          .split(",")
+                          .map((path) => path.trim())
+                          .filter(Boolean)
+                          .slice(0, 4)
+                          .map((path) => (
+                            <Badge key={`${preset.id}-${path}`} tone="neutral">
+                              {path}
+                            </Badge>
+                          ))}
+                      </div>
+                      <p className="gp-text-muted mt-2 text-xs">{preset.bugKeywords}</p>
+                    </div>
+                    <div className="mt-4 flex flex-col gap-2 md:flex-row">
+                      <Button variant="secondary" onClick={() => applyPresetToDefaults(preset)}>
+                        {t("presets.applyDefaults")}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        disabled={!workspacePath}
+                        onClick={() => applyPresetToRepositoryOverride(preset)}
+                      >
+                        {t("presets.applyRepository")}
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
-              <p className="gp-text-muted mt-3 text-xs">{t("defaults.emergencyPatternsHelp")}</p>
             </div>
-          </div>
-        </div>
-      </DetailPanel>
-
-      <DetailPanel title={t("filters.title")} description={t("filters.description")}>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="space-y-2">
-            <label className="gp-text-secondary text-sm font-medium" htmlFor="excluded-paths">
-              {t("filters.excludedPaths")}
-            </label>
-            <Input
-              id="excluded-paths"
-              value={excludedPaths}
-              onChange={(event) => setExcludedPaths(event.target.value)}
-              placeholder="dist/, node_modules/, target/"
-              aria-label={t("filters.excludedPaths")}
-            />
-            <p className="gp-text-muted text-xs">{t("filters.excludedPathsHelp")}</p>
-          </div>
-          <div className="space-y-2">
-            <label className="gp-text-secondary text-sm font-medium" htmlFor="default-branch">
-              {t("filters.defaultBranch")}
-            </label>
-            <Input
-              id="default-branch"
-              value={defaultBranch}
-              onChange={(event) => setDefaultBranch(event.target.value)}
-              placeholder="main"
-              aria-label={t("filters.defaultBranch")}
-            />
-            <p className="gp-text-muted text-xs">{t("filters.defaultBranchHelp")}</p>
-          </div>
-        </div>
-        <div className="mt-4 gp-panel p-3">
-          <p className="gp-kicker">{t("filters.preview")}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {excludedPathPreview.length > 0 ? (
-              excludedPathPreview.map((path) => (
-                <Badge key={path} tone="neutral">
-                  {path}
-                </Badge>
-              ))
-            ) : (
-              <p className="gp-text-muted text-sm">{t("filters.previewEmpty")}</p>
-            )}
-          </div>
-        </div>
-      </DetailPanel>
-
-      <DetailPanel
-        title={t("repositoryOverrides.title")}
-        description={t("repositoryOverrides.description")}
-        actions={
-          currentRepositoryOverride ? (
-            <Button variant="secondary" onClick={() => clearRepositoryOverride(workspacePath)}>
-              {t("repositoryOverrides.clear")}
-            </Button>
-          ) : (
-            <Button
-              variant="secondary"
-              disabled={!workspacePath}
-              onClick={enableRepositoryOverride}
-            >
-              {t("repositoryOverrides.enable")}
-            </Button>
-          )
-        }
-      >
-        {workspacePath ? (
-          <div className="space-y-4">
-            <div className="gp-status-row">
-              <div className="min-w-0">
-                <p className="gp-kicker">{t("repositoryOverrides.currentRepository")}</p>
-                <p className="gp-text-secondary mt-1 break-words text-sm">{workspacePath}</p>
-              </div>
-              <Badge tone={currentRepositoryOverride ? "brand" : "neutral"} className="w-fit">
-                {currentRepositoryOverride
-                  ? t("repositoryOverrides.overrideActive")
-                  : t("repositoryOverrides.inheritingDefaults")}
-              </Badge>
-            </div>
-
-            {currentRepositoryOverride ? (
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
               <div className="space-y-4">
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <div className="space-y-2">
-                    <label
-                      className="gp-text-secondary text-sm font-medium"
-                      htmlFor="repository-override-excluded-paths"
-                    >
-                      {t("filters.excludedPaths")}
-                    </label>
-                    <Input
-                      id="repository-override-excluded-paths"
-                      value={currentRepositoryOverride.excludedPaths}
-                      onChange={(event) =>
-                        setRepositoryOverride(workspacePath, {
-                          ...currentRepositoryOverride,
-                          excludedPaths: event.target.value,
-                        })
-                      }
-                      placeholder="dist/, node_modules/, target/"
-                      aria-label={t("repositoryOverrides.excludedPaths")}
+                <div className="gp-panel min-w-0 p-4">
+                  <p className="gp-kicker">{t("defaults.analysisWindow")}</p>
+                  <div className="mt-3">
+                    <Tabs
+                      items={translatedAnalysisWindowItems}
+                      value={analysisPeriod}
+                      onChange={setAnalysisPeriod}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label
-                      className="gp-text-secondary text-sm font-medium"
-                      htmlFor="repository-override-bug-keywords"
-                    >
-                      {t("defaults.bugKeywords")}
-                    </label>
-                    <Input
-                      id="repository-override-bug-keywords"
-                      value={currentRepositoryOverride.bugKeywords}
-                      onChange={(event) =>
-                        setRepositoryOverride(workspacePath, {
-                          ...currentRepositoryOverride,
-                          bugKeywords: event.target.value,
-                        })
-                      }
-                      placeholder="fix, bug, broken"
-                      aria-label={t("repositoryOverrides.bugKeywords")}
-                    />
+                </div>
+                <div className="gp-panel min-w-0 p-4">
+                  <p className="gp-kicker">{t("defaults.cacheKey")}</p>
+                  <p className="gp-text-secondary mt-2 break-words text-sm">
+                    repository + branch + period + HEAD_SHA
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="gp-panel min-w-0 p-4">
+                  <label className="gp-text-secondary text-sm font-medium" htmlFor="bug-keywords">
+                    {t("defaults.bugKeywords")}
+                  </label>
+                  <Input
+                    id="bug-keywords"
+                    className="mt-3"
+                    value={bugKeywords}
+                    onChange={(event) => setBugKeywords(event.target.value)}
+                    placeholder="fix, bug, broken"
+                    aria-label={t("defaults.bugKeywords")}
+                  />
+                  <p className="gp-text-muted mt-2 text-xs">{t("defaults.bugKeywordsHelp")}</p>
+                </div>
+                <div className="gp-panel min-w-0 p-4">
+                  <p className="gp-kicker">{t("defaults.emergencyPatterns")}</p>
+                  <div className="mt-3 space-y-3">
+                    {emergencyPatterns.map((item, index) => (
+                      <div
+                        key={index}
+                        className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]"
+                      >
+                        <Input
+                          value={item.pattern}
+                          onChange={(event) =>
+                            setEmergencyPattern(index, { ...item, pattern: event.target.value })
+                          }
+                          placeholder="revert, revert:, reverted"
+                          aria-label={t("defaults.emergencyPattern")}
+                        />
+                        <Input
+                          value={item.signal}
+                          onChange={(event) =>
+                            setEmergencyPattern(index, { ...item, signal: event.target.value })
+                          }
+                          placeholder="Watch release pressure"
+                          aria-label={t("defaults.emergencySignal")}
+                        />
+                      </div>
+                    ))}
                   </div>
+                  <p className="gp-text-muted mt-3 text-xs">
+                    {t("defaults.emergencyPatternsHelp")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </DetailPanel>
+        </>
+      ) : null}
+
+      {settingsSection === "repository" ? (
+        <>
+          <DetailPanel title={t("filters.title")} description={t("filters.description")}>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="space-y-2">
+                <label className="gp-text-secondary text-sm font-medium" htmlFor="excluded-paths">
+                  {t("filters.excludedPaths")}
+                </label>
+                <Input
+                  id="excluded-paths"
+                  value={excludedPaths}
+                  onChange={(event) => setExcludedPaths(event.target.value)}
+                  placeholder="dist/, node_modules/, target/"
+                  aria-label={t("filters.excludedPaths")}
+                />
+                <p className="gp-text-muted text-xs">{t("filters.excludedPathsHelp")}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="gp-text-secondary text-sm font-medium" htmlFor="default-branch">
+                  {t("filters.defaultBranch")}
+                </label>
+                <Input
+                  id="default-branch"
+                  value={defaultBranch}
+                  onChange={(event) => setDefaultBranch(event.target.value)}
+                  placeholder="main"
+                  aria-label={t("filters.defaultBranch")}
+                />
+                <p className="gp-text-muted text-xs">{t("filters.defaultBranchHelp")}</p>
+              </div>
+            </div>
+            <div className="mt-4 gp-panel p-3">
+              <p className="gp-kicker">{t("filters.preview")}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {excludedPathPreview.length > 0 ? (
+                  excludedPathPreview.map((path) => (
+                    <Badge key={path} tone="neutral">
+                      {path}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="gp-text-muted text-sm">{t("filters.previewEmpty")}</p>
+                )}
+              </div>
+            </div>
+          </DetailPanel>
+
+          <DetailPanel
+            title={t("repositoryOverrides.title")}
+            description={t("repositoryOverrides.description")}
+            actions={
+              currentRepositoryOverride ? (
+                <Button variant="secondary" onClick={() => clearRepositoryOverride(workspacePath)}>
+                  {t("repositoryOverrides.clear")}
+                </Button>
+              ) : (
+                <Button
+                  variant="secondary"
+                  disabled={!workspacePath}
+                  onClick={enableRepositoryOverride}
+                >
+                  {t("repositoryOverrides.enable")}
+                </Button>
+              )
+            }
+          >
+            {workspacePath ? (
+              <div className="space-y-4">
+                <div className="gp-status-row">
+                  <div className="min-w-0">
+                    <p className="gp-kicker">{t("repositoryOverrides.currentRepository")}</p>
+                    <p className="gp-text-secondary mt-1 break-words text-sm">{workspacePath}</p>
+                  </div>
+                  <Badge tone={currentRepositoryOverride ? "brand" : "neutral"} className="w-fit">
+                    {currentRepositoryOverride
+                      ? t("repositoryOverrides.overrideActive")
+                      : t("repositoryOverrides.inheritingDefaults")}
+                  </Badge>
                 </div>
 
-                <div className="space-y-3">
-                  {currentRepositoryOverride.emergencyPatterns.map((item, index) => (
-                    <div
-                      key={index}
-                      className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]"
-                    >
-                      <Input
-                        value={item.pattern}
-                        onChange={(event) =>
-                          setRepositoryOverridePattern(workspacePath, index, {
-                            ...item,
-                            pattern: event.target.value,
-                          })
-                        }
-                        placeholder="revert, revert:, reverted"
-                        aria-label={t("repositoryOverrides.emergencyPattern")}
-                      />
-                      <Input
-                        value={item.signal}
-                        onChange={(event) =>
-                          setRepositoryOverridePattern(workspacePath, index, {
-                            ...item,
-                            signal: event.target.value,
-                          })
-                        }
-                        placeholder="Watch release pressure"
-                        aria-label={t("repositoryOverrides.emergencySignal")}
-                      />
+                {currentRepositoryOverride ? (
+                  <div className="space-y-4">
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="space-y-2">
+                        <label
+                          className="gp-text-secondary text-sm font-medium"
+                          htmlFor="repository-override-excluded-paths"
+                        >
+                          {t("filters.excludedPaths")}
+                        </label>
+                        <Input
+                          id="repository-override-excluded-paths"
+                          value={currentRepositoryOverride.excludedPaths}
+                          onChange={(event) =>
+                            setRepositoryOverride(workspacePath, {
+                              ...currentRepositoryOverride,
+                              excludedPaths: event.target.value,
+                            })
+                          }
+                          placeholder="dist/, node_modules/, target/"
+                          aria-label={t("repositoryOverrides.excludedPaths")}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label
+                          className="gp-text-secondary text-sm font-medium"
+                          htmlFor="repository-override-bug-keywords"
+                        >
+                          {t("defaults.bugKeywords")}
+                        </label>
+                        <Input
+                          id="repository-override-bug-keywords"
+                          value={currentRepositoryOverride.bugKeywords}
+                          onChange={(event) =>
+                            setRepositoryOverride(workspacePath, {
+                              ...currentRepositoryOverride,
+                              bugKeywords: event.target.value,
+                            })
+                          }
+                          placeholder="fix, bug, broken"
+                          aria-label={t("repositoryOverrides.bugKeywords")}
+                        />
+                      </div>
                     </div>
-                  ))}
-                  <p className="gp-text-muted text-xs">{t("repositoryOverrides.help")}</p>
-                </div>
+
+                    <div className="space-y-3">
+                      {currentRepositoryOverride.emergencyPatterns.map((item, index) => (
+                        <div
+                          key={index}
+                          className="grid gap-2 lg:grid-cols-[minmax(140px,0.7fr)_minmax(220px,1.3fr)]"
+                        >
+                          <Input
+                            value={item.pattern}
+                            onChange={(event) =>
+                              setRepositoryOverridePattern(workspacePath, index, {
+                                ...item,
+                                pattern: event.target.value,
+                              })
+                            }
+                            placeholder="revert, revert:, reverted"
+                            aria-label={t("repositoryOverrides.emergencyPattern")}
+                          />
+                          <Input
+                            value={item.signal}
+                            onChange={(event) =>
+                              setRepositoryOverridePattern(workspacePath, index, {
+                                ...item,
+                                signal: event.target.value,
+                              })
+                            }
+                            placeholder="Watch release pressure"
+                            aria-label={t("repositoryOverrides.emergencySignal")}
+                          />
+                        </div>
+                      ))}
+                      <p className="gp-text-muted text-xs">{t("repositoryOverrides.help")}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="gp-text-secondary text-sm">
+                      {t("repositoryOverrides.inheritDescription")}
+                    </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="gp-panel min-w-0 p-3">
+                        <p className="gp-kicker">{t("filters.preview")}</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {repositoryOverridePreview.length > 0 ? (
+                            repositoryOverridePreview.map((path) => (
+                              <Badge key={path} tone="neutral">
+                                {path}
+                              </Badge>
+                            ))
+                          ) : (
+                            <p className="gp-text-muted text-sm">{t("filters.previewEmpty")}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="gp-panel min-w-0 p-3">
+                        <p className="gp-kicker">{t("defaults.bugKeywords")}</p>
+                        <p className="gp-text-secondary mt-1 break-words text-sm">
+                          {effectiveRepositorySettings.bugKeywords}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="gp-text-secondary text-sm">
-                  {t("repositoryOverrides.inheritDescription")}
-                </p>
-                <div className="grid gap-3 md:grid-cols-2">
+                <p className="gp-text-secondary text-sm">{t("repositoryOverrides.empty")}</p>
+                <div className="gp-panel min-w-0 p-3">
+                  <p className="gp-kicker">{t("repositoryOverrides.enableHintTitle")}</p>
+                  <p className="gp-text-secondary mt-2 text-sm">
+                    {t("repositoryOverrides.enableHintDescription")}
+                  </p>
+                  <div className="mt-3">
+                    <Button variant="secondary" onClick={openOverviewAnalysis}>
+                      {t("preview.openOverview")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DetailPanel>
+
+          <DetailPanel
+            title={t("preview.title")}
+            description={t("preview.description")}
+            actions={
+              workspacePath ? (
+                <Button variant="primary" onClick={openOverviewAnalysis}>
+                  {t("preview.openOverview")}
+                </Button>
+              ) : null
+            }
+          >
+            {workspacePath ? (
+              <div className="space-y-4">
+                <div className="gp-status-row">
+                  <div className="min-w-0">
+                    <p className="gp-kicker">{t("preview.currentRepository")}</p>
+                    <p className="gp-text-secondary mt-1 break-words text-sm">{workspacePath}</p>
+                  </div>
+                  <Badge tone={currentRepositoryOverride ? "brand" : "neutral"} className="w-fit">
+                    {t(previewScopeKey)}
+                  </Badge>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                   <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-kicker">{t("filters.preview")}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {repositoryOverridePreview.length > 0 ? (
-                        repositoryOverridePreview.map((path) => (
+                    <p className="gp-kicker">{t("preview.window")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">
+                      {t(`defaults.analysisWindows.${analysisPeriod}`)}
+                    </p>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("preview.analyzedCommits")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">
+                      {matchPreview?.analyzedCommitCount ?? 0}
+                    </p>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("preview.bugKeywordMatches")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">
+                      {matchPreview?.bugKeywordCommitCount ?? 0}
+                    </p>
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("preview.excludedFileMatches")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">
+                      {matchPreview?.excludedFileCount ?? 0}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                  <div className="gp-panel min-w-0 p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="gp-kicker">{t("preview.excludedFiles")}</p>
+                      {isMatchPreviewFetching ? (
+                        <Badge tone="neutral">{t("preview.updating")}</Badge>
+                      ) : null}
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {matchPreview && matchPreview.excludedFiles.length > 0 ? (
+                        matchPreview.excludedFiles.map((path) => (
                           <Badge key={path} tone="neutral">
                             {path}
                           </Badge>
                         ))
                       ) : (
-                        <p className="gp-text-muted text-sm">{t("filters.previewEmpty")}</p>
+                        <p className="gp-text-muted text-sm">{t("preview.excludedFilesEmpty")}</p>
                       )}
                     </div>
                   </div>
+
+                  <div className="space-y-3 xl:hidden">
+                    <p className="gp-kicker">{t("preview.emergencyPatternMatches")}</p>
+                    {matchPreview && matchPreview.emergencyMatches.length > 0 ? (
+                      matchPreview.emergencyMatches.map((row) => (
+                        <div key={row.pattern} className="gp-panel min-w-0 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="gp-text-secondary break-words text-sm">{row.pattern}</p>
+                              <p className="gp-text-muted mt-1 break-words text-xs">{row.signal}</p>
+                            </div>
+                            <Badge tone={row.count > 0 ? "watch" : "neutral"} className="w-fit">
+                              {row.count}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="gp-panel min-w-0 p-3">
+                        <p className="gp-text-muted text-sm">
+                          {t("preview.emergencyMatchesEmpty")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="hidden xl:block">
+                    <Table
+                      columns={[
+                        {
+                          key: "pattern",
+                          header: t("common:table.pattern"),
+                          render: (row) => row.pattern,
+                        },
+                        {
+                          key: "signal",
+                          header: t("common:table.signal"),
+                          render: (row) => row.signal,
+                        },
+                        {
+                          key: "count",
+                          header: t("common:table.count"),
+                          align: "right",
+                          render: (row) => row.count,
+                        },
+                      ]}
+                      rows={matchPreview?.emergencyMatches ?? []}
+                      getRowKey={(row) => row.pattern}
+                      emptyText={t("preview.emergencyMatchesEmpty")}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-4 xl:grid-cols-2">
                   <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-kicker">{t("defaults.bugKeywords")}</p>
-                    <p className="gp-text-secondary mt-1 break-words text-sm">
-                      {effectiveRepositorySettings.bugKeywords}
+                    <p className="gp-kicker">{t("preview.bugKeywordCommits")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">
+                      {t("preview.bugKeywordCommitsDescription")}
                     </p>
+                    {matchPreview && matchPreview.bugKeywordCommits.length > 0 ? (
+                      <div className="mt-3 space-y-3">
+                        {matchPreview.bugKeywordCommits.map((commit) => (
+                          <div
+                            key={`${commit.shortSha}-${commit.subject}`}
+                            className="gp-panel min-w-0 p-3"
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge tone="brand">{commit.shortSha}</Badge>
+                              <Badge tone="watch">{commit.author}</Badge>
+                            </div>
+                            <p className="gp-text-secondary mt-3 break-words text-sm">
+                              {commit.subject}
+                            </p>
+                            <p className="gp-text-muted mt-2 text-xs">{commit.date}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="gp-text-muted mt-3 text-sm">
+                        {t("preview.bugKeywordCommitsEmpty")}
+                      </p>
+                    )}
+                  </div>
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-kicker">{t("preview.emergencyCommitSamples")}</p>
+                    <p className="gp-text-secondary mt-1 text-sm">
+                      {t("preview.emergencyCommitSamplesDescription")}
+                    </p>
+                    {matchPreview && matchPreview.emergencyCommitSamples.length > 0 ? (
+                      <div className="mt-3 space-y-3">
+                        {matchPreview.emergencyCommitSamples.map((sample) => (
+                          <div key={sample.pattern} className="gp-panel min-w-0 p-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge tone="neutral">{sample.pattern}</Badge>
+                              <Badge tone="watch">{sample.signal}</Badge>
+                            </div>
+                            {sample.commits.length > 0 ? (
+                              <div className="mt-3 space-y-2">
+                                {sample.commits.map((commit) => (
+                                  <div
+                                    key={`${sample.pattern}-${commit.shortSha}-${commit.subject}`}
+                                    className="border-t border-gp-border pt-2 first:border-t-0 first:pt-0"
+                                  >
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <Badge tone="brand">{commit.shortSha}</Badge>
+                                      <span className="gp-text-muted text-xs">{commit.date}</span>
+                                    </div>
+                                    <p className="gp-text-secondary mt-2 break-words text-sm">
+                                      {commit.subject}
+                                    </p>
+                                    <p className="gp-text-muted mt-1 text-xs">{commit.author}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="gp-text-muted mt-3 text-sm">
+                                {t("preview.emergencyCommitSamplesEmpty")}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="gp-text-muted mt-3 text-sm">
+                        {t("preview.emergencyCommitSamplesEmpty")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="gp-panel min-w-0 p-3">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0">
+                      <p className="gp-kicker">{t("preview.nextStepTitle")}</p>
+                      <p className="gp-text-secondary mt-1 text-sm">
+                        {t("preview.nextStepDescription")}
+                      </p>
+                    </div>
+                    <Button variant="primary" onClick={openOverviewAnalysis}>
+                      {t("preview.openOverview")}
+                    </Button>
                   </div>
                 </div>
               </div>
+            ) : (
+              <p className="gp-text-secondary text-sm">{t("preview.empty")}</p>
             )}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="gp-text-secondary text-sm">{t("repositoryOverrides.empty")}</p>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("repositoryOverrides.enableHintTitle")}</p>
-              <p className="gp-text-secondary mt-2 text-sm">
-                {t("repositoryOverrides.enableHintDescription")}
-              </p>
-              <div className="mt-3">
-                <Button variant="secondary" onClick={openOverviewAnalysis}>
-                  {t("preview.openOverview")}
+          </DetailPanel>
+        </>
+      ) : null}
+
+      {settingsSection === "advanced" ? (
+        <>
+          <DetailPanel
+            title={t("portable.title")}
+            description={t("portable.description")}
+            actions={
+              <div className="gp-header-actions">
+                <Button variant="secondary" onClick={() => importInputRef.current?.click()}>
+                  {t("portable.import")}
+                </Button>
+                <Button variant="secondary" onClick={exportSettings}>
+                  {t("portable.export")}
                 </Button>
               </div>
-            </div>
-          </div>
-        )}
-      </DetailPanel>
+            }
+          >
+            <input
+              ref={importInputRef}
+              className="hidden"
+              type="file"
+              accept="application/json,.json"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) {
+                  void importSettings(file);
+                }
+              }}
+            />
+            <p className="gp-text-secondary text-sm">
+              {settingsMessage || t("portable.messagePlaceholder")}
+            </p>
+          </DetailPanel>
 
-      <DetailPanel
-        title={t("preview.title")}
-        description={t("preview.description")}
-        actions={
-          workspacePath ? (
-            <Button variant="primary" onClick={openOverviewAnalysis}>
-              {t("preview.openOverview")}
-            </Button>
-          ) : null
-        }
-      >
-        {workspacePath ? (
-          <div className="space-y-4">
-            <div className="gp-status-row">
-              <div className="min-w-0">
-                <p className="gp-kicker">{t("preview.currentRepository")}</p>
-                <p className="gp-text-secondary mt-1 break-words text-sm">{workspacePath}</p>
-              </div>
-              <Badge tone={currentRepositoryOverride ? "brand" : "neutral"} className="w-fit">
-                {t(previewScopeKey)}
+          <DetailPanel
+            title={t("developer.title")}
+            description={t("developer.description")}
+            actions={
+              <Badge tone={developerMode ? "watch" : "neutral"}>
+                {developerMode ? t("developer.on") : t("developer.off")}
               </Badge>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="gp-panel min-w-0 p-3">
-                <p className="gp-kicker">{t("preview.window")}</p>
-                <p className="gp-text-secondary mt-1 text-sm">
-                  {t(`defaults.analysisWindows.${analysisPeriod}`)}
-                </p>
-              </div>
-              <div className="gp-panel min-w-0 p-3">
-                <p className="gp-kicker">{t("preview.analyzedCommits")}</p>
-                <p className="gp-text-secondary mt-1 text-sm">
-                  {matchPreview?.analyzedCommitCount ?? 0}
-                </p>
-              </div>
-              <div className="gp-panel min-w-0 p-3">
-                <p className="gp-kicker">{t("preview.bugKeywordMatches")}</p>
-                <p className="gp-text-secondary mt-1 text-sm">
-                  {matchPreview?.bugKeywordCommitCount ?? 0}
-                </p>
-              </div>
-              <div className="gp-panel min-w-0 p-3">
-                <p className="gp-kicker">{t("preview.excludedFileMatches")}</p>
-                <p className="gp-text-secondary mt-1 text-sm">
-                  {matchPreview?.excludedFileCount ?? 0}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-              <div className="gp-panel min-w-0 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="gp-kicker">{t("preview.excludedFiles")}</p>
-                  {isMatchPreviewFetching ? (
-                    <Badge tone="neutral">{t("preview.updating")}</Badge>
-                  ) : null}
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {matchPreview && matchPreview.excludedFiles.length > 0 ? (
-                    matchPreview.excludedFiles.map((path) => (
-                      <Badge key={path} tone="neutral">
-                        {path}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="gp-text-muted text-sm">{t("preview.excludedFilesEmpty")}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-3 xl:hidden">
-                <p className="gp-kicker">{t("preview.emergencyPatternMatches")}</p>
-                {matchPreview && matchPreview.emergencyMatches.length > 0 ? (
-                  matchPreview.emergencyMatches.map((row) => (
-                    <div key={row.pattern} className="gp-panel min-w-0 p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="gp-text-secondary break-words text-sm">{row.pattern}</p>
-                          <p className="gp-text-muted mt-1 break-words text-xs">{row.signal}</p>
-                        </div>
-                        <Badge tone={row.count > 0 ? "watch" : "neutral"} className="w-fit">
-                          {row.count}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-text-muted text-sm">{t("preview.emergencyMatchesEmpty")}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="hidden xl:block">
-                <Table
-                  columns={[
-                    {
-                      key: "pattern",
-                      header: t("common:table.pattern"),
-                      render: (row) => row.pattern,
-                    },
-                    {
-                      key: "signal",
-                      header: t("common:table.signal"),
-                      render: (row) => row.signal,
-                    },
-                    {
-                      key: "count",
-                      header: t("common:table.count"),
-                      align: "right",
-                      render: (row) => row.count,
-                    },
+            }
+          >
+            <div className="space-y-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <p className="gp-text-secondary text-sm">{t("developer.current")}</p>
+                <Tabs
+                  items={[
+                    { id: "off", label: t("developer.off") },
+                    { id: "on", label: t("developer.on") },
                   ]}
-                  rows={matchPreview?.emergencyMatches ?? []}
-                  getRowKey={(row) => row.pattern}
-                  emptyText={t("preview.emergencyMatchesEmpty")}
+                  value={developerMode ? "on" : "off"}
+                  onChange={(value) => setDeveloperMode(value === "on")}
                 />
               </div>
-            </div>
-            <div className="grid gap-4 xl:grid-cols-2">
               <div className="gp-panel min-w-0 p-3">
-                <p className="gp-kicker">{t("preview.bugKeywordCommits")}</p>
-                <p className="gp-text-secondary mt-1 text-sm">
-                  {t("preview.bugKeywordCommitsDescription")}
-                </p>
-                {matchPreview && matchPreview.bugKeywordCommits.length > 0 ? (
-                  <div className="mt-3 space-y-3">
-                    {matchPreview.bugKeywordCommits.map((commit) => (
-                      <div
-                        key={`${commit.shortSha}-${commit.subject}`}
-                        className="gp-panel min-w-0 p-3"
-                      >
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge tone="brand">{commit.shortSha}</Badge>
-                          <Badge tone="watch">{commit.author}</Badge>
-                        </div>
-                        <p className="gp-text-secondary mt-3 break-words text-sm">
-                          {commit.subject}
-                        </p>
-                        <p className="gp-text-muted mt-2 text-xs">{commit.date}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="gp-text-muted mt-3 text-sm">
-                    {t("preview.bugKeywordCommitsEmpty")}
-                  </p>
-                )}
-              </div>
-              <div className="gp-panel min-w-0 p-3">
-                <p className="gp-kicker">{t("preview.emergencyCommitSamples")}</p>
-                <p className="gp-text-secondary mt-1 text-sm">
-                  {t("preview.emergencyCommitSamplesDescription")}
-                </p>
-                {matchPreview && matchPreview.emergencyCommitSamples.length > 0 ? (
-                  <div className="mt-3 space-y-3">
-                    {matchPreview.emergencyCommitSamples.map((sample) => (
-                      <div key={sample.pattern} className="gp-panel min-w-0 p-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge tone="neutral">{sample.pattern}</Badge>
-                          <Badge tone="watch">{sample.signal}</Badge>
-                        </div>
-                        {sample.commits.length > 0 ? (
-                          <div className="mt-3 space-y-2">
-                            {sample.commits.map((commit) => (
-                              <div
-                                key={`${sample.pattern}-${commit.shortSha}-${commit.subject}`}
-                                className="border-t border-gp-border pt-2 first:border-t-0 first:pt-0"
-                              >
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <Badge tone="brand">{commit.shortSha}</Badge>
-                                  <span className="gp-text-muted text-xs">{commit.date}</span>
-                                </div>
-                                <p className="gp-text-secondary mt-2 break-words text-sm">
-                                  {commit.subject}
-                                </p>
-                                <p className="gp-text-muted mt-1 text-xs">{commit.author}</p>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="gp-text-muted mt-3 text-sm">
-                            {t("preview.emergencyCommitSamplesEmpty")}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="gp-text-muted mt-3 text-sm">
-                    {t("preview.emergencyCommitSamplesEmpty")}
-                  </p>
-                )}
+                <p className="gp-kicker">{t("developer.scopeTitle")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">{t("developer.scopeDescription")}</p>
               </div>
             </div>
-            <div className="gp-panel min-w-0 p-3">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0">
-                  <p className="gp-kicker">{t("preview.nextStepTitle")}</p>
-                  <p className="gp-text-secondary mt-1 text-sm">
-                    {t("preview.nextStepDescription")}
-                  </p>
-                </div>
-                <Button variant="primary" onClick={openOverviewAnalysis}>
-                  {t("preview.openOverview")}
+          </DetailPanel>
+
+          <DetailPanel
+            title={t("cache.title")}
+            description={t("cache.description")}
+            actions={
+              <div className="gp-header-actions">
+                <Button variant="secondary" onClick={() => void openDatabaseDirectory()}>
+                  {t("cache.openFolder")}
+                </Button>
+                <Button variant="secondary" onClick={() => void revealLogFile()}>
+                  {t("cache.openLog")}
+                </Button>
+                {developerMode ? (
+                  <Button variant="secondary" onClick={() => void copyDebugSummary()}>
+                    {t("developer.copy")}
+                  </Button>
+                ) : null}
+                <Button variant="danger" onClick={clearAnalysisCache}>
+                  {t("cache.clear")}
                 </Button>
               </div>
-            </div>
-          </div>
-        ) : (
-          <p className="gp-text-secondary text-sm">{t("preview.empty")}</p>
-        )}
-      </DetailPanel>
-
-      <DetailPanel
-        title={t("portable.title")}
-        description={t("portable.description")}
-        actions={
-          <div className="gp-header-actions">
-            <Button variant="secondary" onClick={() => importInputRef.current?.click()}>
-              {t("portable.import")}
-            </Button>
-            <Button variant="secondary" onClick={exportSettings}>
-              {t("portable.export")}
-            </Button>
-          </div>
-        }
-      >
-        <input
-          ref={importInputRef}
-          className="hidden"
-          type="file"
-          accept="application/json,.json"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) {
-              void importSettings(file);
             }
-          }}
-        />
-        <p className="gp-text-secondary text-sm">
-          {settingsMessage || t("portable.messagePlaceholder")}
-        </p>
-      </DetailPanel>
-
-      <DetailPanel
-        title={t("developer.title")}
-        description={t("developer.description")}
-        actions={
-          <Badge tone={developerMode ? "watch" : "neutral"}>
-            {developerMode ? t("developer.on") : t("developer.off")}
-          </Badge>
-        }
-      >
-        <div className="space-y-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <p className="gp-text-secondary text-sm">{t("developer.current")}</p>
-            <Tabs
-              items={[
-                { id: "off", label: t("developer.off") },
-                { id: "on", label: t("developer.on") },
-              ]}
-              value={developerMode ? "on" : "off"}
-              onChange={(value) => setDeveloperMode(value === "on")}
-            />
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("developer.scopeTitle")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{t("developer.scopeDescription")}</p>
-          </div>
-        </div>
-      </DetailPanel>
-
-      <DetailPanel
-        title={t("cache.title")}
-        description={t("cache.description")}
-        actions={
-          <div className="gp-header-actions">
-            <Button variant="secondary" onClick={() => void openDatabaseDirectory()}>
-              {t("cache.openFolder")}
-            </Button>
-            <Button variant="secondary" onClick={() => void revealLogFile()}>
-              {t("cache.openLog")}
-            </Button>
-            {developerMode ? (
-              <Button variant="secondary" onClick={() => void copyDebugSummary()}>
-                {t("developer.copy")}
-              </Button>
-            ) : null}
-            <Button variant="danger" onClick={clearAnalysisCache}>
-              {t("cache.clear")}
-            </Button>
-          </div>
-        }
-      >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.key")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              repository + branch + period + HEAD_SHA
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.status")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {cacheMessage || t("cache.localQueryCache")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.database")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {databaseSummary?.settingsStored
-                ? t("cache.databaseReady")
-                : t("cache.databaseEmpty")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.cachedRuns")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {databaseSummary?.analysisRunCount ?? 0}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.cachedAnalyses")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {databaseSummary?.analysisCacheCount ?? 0}
-            </p>
-          </div>
-        </div>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.retention")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {t("cache.retentionValue", {
-                runs: databaseSummary?.analysisRunLimit ?? 20,
-                cache: databaseSummary?.analysisCacheLimit ?? 50,
-              })}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.databasePath")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {databaseSummary?.databasePath ?? t("cache.databasePathUnavailable")}
-            </p>
-          </div>
-        </div>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.logPath")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {logSummary?.logPath ?? t("cache.logPathUnavailable")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.logPreview")}</p>
-            {developerMode ? (
-              logSummary?.latestEntries.length ? (
-                <pre className="gp-text-secondary mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs">
-                  {logSummary.latestEntries.slice(-12).join("\n")}
-                </pre>
-              ) : (
-                <p className="gp-text-muted mt-2 text-sm">{t("cache.logPreviewEmpty")}</p>
-              )
-            ) : (
-              <p className="gp-text-muted mt-2 text-sm">{t("developer.enableHint")}</p>
-            )}
-          </div>
-        </div>
-        <div className="mt-3 grid gap-3 xl:grid-cols-2">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.persistedTitle")}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {persistedItems.map((item) => (
-                <Badge key={item} tone="neutral">
-                  {item}
-                </Badge>
-              ))}
+          >
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.key")}</p>
+                <p className="gp-text-secondary mt-1 break-words text-sm">
+                  repository + branch + period + HEAD_SHA
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.status")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {cacheMessage || t("cache.localQueryCache")}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.database")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {databaseSummary?.settingsStored
+                    ? t("cache.databaseReady")
+                    : t("cache.databaseEmpty")}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.cachedRuns")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {databaseSummary?.analysisRunCount ?? 0}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.cachedAnalyses")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {databaseSummary?.analysisCacheCount ?? 0}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("cache.volatileTitle")}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {volatileItems.map((item) => (
-                <Badge key={item} tone="neutral">
-                  {item}
-                </Badge>
-              ))}
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.retention")}</p>
+                <p className="gp-text-secondary mt-1 break-words text-sm">
+                  {t("cache.retentionValue", {
+                    runs: databaseSummary?.analysisRunLimit ?? 20,
+                    cache: databaseSummary?.analysisCacheLimit ?? 50,
+                  })}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.databasePath")}</p>
+                <p className="gp-text-secondary mt-1 break-words text-sm">
+                  {databaseSummary?.databasePath ?? t("cache.databasePathUnavailable")}
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-      </DetailPanel>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.logPath")}</p>
+                <p className="gp-text-secondary mt-1 break-words text-sm">
+                  {logSummary?.logPath ?? t("cache.logPathUnavailable")}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.logPreview")}</p>
+                {developerMode ? (
+                  logSummary?.latestEntries.length ? (
+                    <pre className="gp-text-secondary mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs">
+                      {logSummary.latestEntries.slice(-12).join("\n")}
+                    </pre>
+                  ) : (
+                    <p className="gp-text-muted mt-2 text-sm">{t("cache.logPreviewEmpty")}</p>
+                  )
+                ) : (
+                  <p className="gp-text-muted mt-2 text-sm">{t("developer.enableHint")}</p>
+                )}
+              </div>
+            </div>
+            <div className="mt-3 grid gap-3 xl:grid-cols-2">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.persistedTitle")}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {persistedItems.map((item) => (
+                    <Badge key={item} tone="neutral">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("cache.volatileTitle")}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {volatileItems.map((item) => (
+                    <Badge key={item} tone="neutral">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DetailPanel>
+        </>
+      ) : null}
     </div>
   );
 }

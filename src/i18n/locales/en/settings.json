@@ -3,6 +3,33 @@
   "title": "Analysis settings",
   "description": "GitPulse separates data collection from interpretation when calculating signals.",
   "badge": "Local only",
+  "sections": {
+    "title": "Settings groups",
+    "description": "Move between the main setup areas instead of scanning every setting at once.",
+    "items": {
+      "general": "General",
+      "repository": "Repository",
+      "advanced": "Advanced"
+    },
+    "summary": {
+      "general": {
+        "title": "General defaults",
+        "description": "Language, repository memory, and shared signal defaults live here."
+      },
+      "repository": {
+        "title": "Repository-specific tuning",
+        "description": "Repository scope, overrides, and match preview stay together here."
+      },
+      "advanced": {
+        "title": "Portable and diagnostic tools",
+        "description": "Import, export, developer mode, cache, and local storage details stay here."
+      }
+    }
+  },
+  "messages": {
+    "title": "Recent action",
+    "recent": "Recent"
+  },
   "filters": {
     "title": "Repository scope",
     "description": "Controls which repository content GitPulse should consider when reading Git history.",

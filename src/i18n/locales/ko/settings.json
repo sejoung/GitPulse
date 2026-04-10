@@ -3,6 +3,33 @@
   "title": "분석 기준 설정",
   "description": "GitPulse는 수집과 해석을 분리해서 신호를 계산합니다.",
   "badge": "Local only",
+  "sections": {
+    "title": "설정 그룹",
+    "description": "한 화면에서 모든 설정을 읽기보다, 작업 목적에 맞는 그룹으로 나눠 봅니다.",
+    "items": {
+      "general": "일반",
+      "repository": "저장소",
+      "advanced": "고급"
+    },
+    "summary": {
+      "general": {
+        "title": "일반 기본값",
+        "description": "언어, 저장소 기억, 공통 신호 기본값을 여기에서 다룹니다."
+      },
+      "repository": {
+        "title": "저장소별 조정",
+        "description": "저장소 범위, 오버라이드, 매칭 프리뷰를 여기에서 함께 다룹니다."
+      },
+      "advanced": {
+        "title": "이동과 진단 도구",
+        "description": "설정 가져오기/내보내기, 개발자 모드, 캐시와 저장 정보를 여기에서 다룹니다."
+      }
+    }
+  },
+  "messages": {
+    "title": "최근 작업",
+    "recent": "최근"
+  },
   "filters": {
     "title": "저장소 범위",
     "description": "GitPulse가 Git 이력을 읽을 때 어떤 저장소 범위를 기준으로 볼지 정합니다.",

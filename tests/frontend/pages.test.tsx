@@ -184,6 +184,7 @@ describe("SettingsPage", () => {
     });
 
     renderWithClient(<SettingsPage />);
+    await user.click(screen.getByRole("tab", { name: "Repository" }));
 
     await user.click(screen.getByRole("button", { name: "Enable override" }));
 
@@ -252,6 +253,7 @@ describe("SettingsPage", () => {
     const user = userEvent.setup();
 
     renderWithClient(<SettingsPage />);
+    await user.click(screen.getByRole("tab", { name: "Repository" }));
 
     expect(screen.getByText("Repository required")).toBeInTheDocument();
     expect(
@@ -269,6 +271,7 @@ describe("SettingsPage", () => {
     const user = userEvent.setup();
 
     renderWithClient(<SettingsPage />);
+    await user.click(screen.getByRole("tab", { name: "Advanced" }));
 
     expect(
       screen.getByText("Turn on Developer mode to view recent log lines here.")
@@ -282,6 +285,7 @@ describe("SettingsPage", () => {
   });
 
   it("renders live settings match preview for the current repository", async () => {
+    const user = userEvent.setup();
     useUiStore.setState({
       workspacePath: "/Users/beni/career-ops",
       analysisPeriod: "3m",
@@ -320,6 +324,7 @@ describe("SettingsPage", () => {
     });
 
     renderWithClient(<SettingsPage />);
+    await user.click(screen.getByRole("tab", { name: "Repository" }));
 
     expect(await screen.findByText("Settings match preview")).toBeInTheDocument();
     expect(await screen.findByText("dist/index.js")).toBeInTheDocument();
@@ -350,6 +355,7 @@ describe("SettingsPage", () => {
     });
 
     renderWithClient(<SettingsPage />);
+    await user.click(screen.getByRole("tab", { name: "Repository" }));
 
     await user.click(screen.getAllByRole("button", { name: "Open Overview" })[0]);
 
@@ -360,6 +366,7 @@ describe("SettingsPage", () => {
     const user = userEvent.setup();
 
     renderWithClient(<SettingsPage />);
+    await user.click(screen.getByRole("tab", { name: "Advanced" }));
 
     expect(await screen.findByText("Local database")).toBeInTheDocument();
     expect(
@@ -371,7 +378,9 @@ describe("SettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Show DB file" }));
 
     expect(api.openLocalDatabaseDirectory).toHaveBeenCalledTimes(1);
-    expect(await screen.findByText("Revealed the local database file.")).toBeInTheDocument();
+    expect(
+      (await screen.findAllByText("Revealed the local database file.")).length
+    ).toBeGreaterThan(0);
   });
 
   it("shows recent logs and opens the log file", async () => {
@@ -379,6 +388,7 @@ describe("SettingsPage", () => {
     useUiStore.setState({ developerMode: true });
 
     renderWithClient(<SettingsPage />);
+    await user.click(screen.getByRole("tab", { name: "Advanced" }));
 
     expect(await screen.findByText("Recent log entries")).toBeInTheDocument();
     expect(api.getLogFileSummary).toHaveBeenCalledTimes(1);
@@ -386,7 +396,7 @@ describe("SettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Show log file" }));
 
     expect(api.openLogFile).toHaveBeenCalledTimes(1);
-    expect(await screen.findByText("Revealed the log file.")).toBeInTheDocument();
+    expect((await screen.findAllByText("Revealed the log file.")).length).toBeGreaterThan(0);
   });
 });
 
@@ -569,7 +579,7 @@ describe("OverviewPage branch controls", () => {
 
     renderWithClient(<OverviewPage />);
 
-    expect(await screen.findByText("Analysis history")).toBeInTheDocument();
+    expect((await screen.findAllByText("Analysis history")).length).toBeGreaterThan(0);
     expect(await screen.findByText("Latest HEAD")).toBeInTheDocument();
     expect(useUiStore.getState().analysisRuns[0]).toMatchObject({
       workspacePath: "/repo",
@@ -691,8 +701,8 @@ describe("OverviewPage branch controls", () => {
 
     renderWithClient(<OverviewPage />);
 
-    await screen.findByText("Analysis report export");
-    await user.click(screen.getByRole("button", { name: "Export JSON" }));
+    await user.click(screen.getByRole("tab", { name: "Analysis report export" }));
+    await user.click(await screen.findByRole("button", { name: "Export JSON" }));
 
     expect(createObjectUrl).toHaveBeenCalledTimes(1);
     expect(clickSpy).toHaveBeenCalledTimes(1);
@@ -760,8 +770,8 @@ describe("OverviewPage branch controls", () => {
     });
 
     renderWithClient(<OverviewPage />);
+    await user.click(screen.getByRole("tab", { name: "Analysis report export" }));
 
-    await screen.findByText("Analysis report export");
     await user.click(screen.getByRole("tab", { name: "Summary" }));
     await user.click(screen.getByRole("tab", { name: "Compare snapshot" }));
     await user.click(screen.getByRole("button", { name: "Export JSON" }));
@@ -880,6 +890,7 @@ describe("HotspotsPage", () => {
     expect(screen.getAllByText("fix app shell bug").length).toBeGreaterThan(0);
     expect(screen.getAllByText("refactor app shell").length).toBeGreaterThan(0);
 
+    await user.click(screen.getByRole("button", { name: "Show filters" }));
     await user.click(screen.getByRole("tab", { name: "Keyword matches" }));
 
     expect(screen.getAllByText("fix app shell bug").length).toBeGreaterThan(0);

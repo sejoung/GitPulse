@@ -33,6 +33,8 @@
     "commitEvidence": "Commit evidence",
     "commitEvidenceDescription": "Recent commits for the selected file explain why this file is ranked as a hotspot.",
     "recentCommits": "{{count}} recent commits",
+    "showFilters": "Show filters",
+    "hideFilters": "Hide filters",
     "scope": "Evidence scope",
     "scopeAll": "All commits",
     "scopeMatched": "Keyword matches",

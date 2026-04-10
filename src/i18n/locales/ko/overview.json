@@ -60,6 +60,20 @@
   "chart": {
     "activityTrend": "활동 추세"
   },
+  "secondary": {
+    "title": "보조 도구",
+    "description": "히스토리와 내보내기 도구는 가까이 두되, 기본 분석 흐름을 가리지 않게 정리합니다.",
+    "items": {
+      "history": {
+        "title": "히스토리와 비교",
+        "description": "현재 스냅샷을 이전 실행 기록과 비교할 때 이 영역을 사용합니다."
+      },
+      "export": {
+        "title": "내보내기 옵션",
+        "description": "현재 스냅샷이나 비교 결과를 공유용으로 묶어낼 때 이 영역을 사용합니다."
+      }
+    }
+  },
   "history": {
     "title": "분석 히스토리",
     "description": "최근 분석 실행 기록을 저장해서 현재 신호를 이전 기준과 비교합니다.",
