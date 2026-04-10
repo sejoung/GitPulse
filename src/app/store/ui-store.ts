@@ -35,6 +35,7 @@ export type NavigationItem =
 type UiState = {
   activeItem: NavigationItem;
   language: AppLanguage;
+  developerMode: boolean;
   workspacePath: string;
   selectedBranch: string;
   analysisPeriod: AnalysisPeriod;
@@ -47,6 +48,7 @@ type UiState = {
   analysisRuns: AnalysisRunRecord[];
   setActiveItem: (item: NavigationItem) => void;
   setLanguage: (language: AppLanguage) => void;
+  setDeveloperMode: (enabled: boolean) => void;
   setWorkspacePath: (path: string) => void;
   setSelectedBranch: (branch: string) => void;
   setAnalysisPeriod: (period: UiState["analysisPeriod"]) => void;
@@ -69,6 +71,7 @@ type UiState = {
 
 export type PersistedUiSettings = {
   language: AppLanguage;
+  developerMode: boolean;
   workspacePath: string;
   selectedBranch: string;
   analysisPeriod: AnalysisPeriod;
@@ -147,6 +150,7 @@ export function getEffectiveRepositorySettings(
 export function selectPersistedUiSettings(state: Pick<UiState, keyof PersistedUiSettings>) {
   return {
     language: state.language,
+    developerMode: state.developerMode,
     workspacePath: state.rememberLastRepository ? state.workspacePath : "",
     selectedBranch: state.rememberLastRepository ? state.selectedBranch : "",
     analysisPeriod: state.analysisPeriod,
@@ -165,6 +169,7 @@ export const useUiStore = create<UiState>()(
     (set) => ({
       activeItem: "overview",
       language: "en",
+      developerMode: false,
       workspacePath: "",
       selectedBranch: "",
       analysisPeriod: "1y",
@@ -177,6 +182,7 @@ export const useUiStore = create<UiState>()(
       analysisRuns: [],
       setActiveItem: (activeItem) => set({ activeItem }),
       setLanguage: (language) => set({ language }),
+      setDeveloperMode: (developerMode) => set({ developerMode }),
       setWorkspacePath: (workspacePath) => set({ workspacePath }),
       setSelectedBranch: (selectedBranch) => set({ selectedBranch }),
       setAnalysisPeriod: (analysisPeriod) => set({ analysisPeriod }),
@@ -242,6 +248,7 @@ export const useUiStore = create<UiState>()(
       hydrateFromDatabase: (payload) =>
         set((state) => ({
           language: payload.language ?? state.language,
+          developerMode: payload.developerMode ?? state.developerMode,
           workspacePath: payload.workspacePath ?? state.workspacePath,
           selectedBranch: payload.selectedBranch ?? state.selectedBranch,
           analysisPeriod: normalizeAnalysisPeriod(payload.analysisPeriod ?? state.analysisPeriod),

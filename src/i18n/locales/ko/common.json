@@ -36,7 +36,8 @@
       "title": "디버그 정보",
       "description": "아래 메시지와 스택을 기준으로 문제를 재현하고 디버깅할 수 있습니다.",
       "error": "오류 스택",
-      "componentStack": "컴포넌트 스택"
+      "componentStack": "컴포넌트 스택",
+      "enableDeveloper": "이 화면에서 전체 오류 스택과 컴포넌트 스택을 보려면 Settings에서 개발자 모드를 켜세요."
     }
   },
   "status": {

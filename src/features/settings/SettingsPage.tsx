@@ -20,6 +20,7 @@ type SettingsExport = {
   version: 1;
   language: AppLanguage;
   settings: {
+    developerMode: boolean;
     analysisPeriod: AnalysisPeriod;
     excludedPaths: string;
     defaultBranch: string;
@@ -117,6 +118,7 @@ export function SettingsPage() {
   const { data: logSummary } = useLogFileSummary();
   const workspacePath = useUiStore((state) => state.workspacePath);
   const language = useUiStore((state) => state.language);
+  const developerMode = useUiStore((state) => state.developerMode);
   const excludedPaths = useUiStore((state) => state.excludedPaths);
   const defaultBranch = useUiStore((state) => state.defaultBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
@@ -126,6 +128,7 @@ export function SettingsPage() {
   const repositoryOverrides = useUiStore((state) => state.repositoryOverrides);
   const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);
   const setLanguage = useUiStore((state) => state.setLanguage);
+  const setDeveloperMode = useUiStore((state) => state.setDeveloperMode);
   const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
   const setExcludedPaths = useUiStore((state) => state.setExcludedPaths);
   const setDefaultBranch = useUiStore((state) => state.setDefaultBranch);
@@ -247,11 +250,38 @@ export function SettingsPage() {
     }
   }
 
+  async function copyDebugSummary() {
+    const lines = [
+      `language=${language}`,
+      `developerMode=${developerMode}`,
+      `activeRepository=${workspacePath || "not-selected"}`,
+      `analysisWindow=${analysisPeriod}`,
+      `defaultBranch=${defaultBranch}`,
+      `databasePath=${databaseSummary?.databasePath ?? "unavailable"}`,
+      `analysisRuns=${databaseSummary?.analysisRunCount ?? 0}`,
+      `analysisCache=${databaseSummary?.analysisCacheCount ?? 0}`,
+      `logPath=${logSummary?.logPath ?? "unavailable"}`,
+      `recentLogs=${(logSummary?.latestEntries ?? []).slice(-5).join(" || ") || "none"}`,
+    ];
+
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCacheMessage(t("developer.copied"));
+    } catch (error) {
+      setCacheMessage(
+        error instanceof Error && error.message
+          ? `${t("developer.copyFailed")} ${error.message}`
+          : t("developer.copyFailed")
+      );
+    }
+  }
+
   function exportSettings() {
     const payload: SettingsExport = {
       version: 1,
       language: currentLanguage,
       settings: {
+        developerMode,
         analysisPeriod,
         excludedPaths,
         defaultBranch,
@@ -283,6 +313,8 @@ export function SettingsPage() {
       if (isAnalysisPeriod(importedSettings.analysisPeriod)) {
         setAnalysisPeriod(importedSettings.analysisPeriod);
       }
+
+      setDeveloperMode(importedSettings.developerMode ?? developerMode);
 
       setExcludedPaths(importedSettings.excludedPaths ?? excludedPaths);
       setDefaultBranch(importedSettings.defaultBranch ?? defaultBranch);
@@ -1019,6 +1051,34 @@ export function SettingsPage() {
       </DetailPanel>
 
       <DetailPanel
+        title={t("developer.title")}
+        description={t("developer.description")}
+        actions={
+          <Badge tone={developerMode ? "watch" : "neutral"}>
+            {developerMode ? t("developer.on") : t("developer.off")}
+          </Badge>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="gp-text-secondary text-sm">{t("developer.current")}</p>
+            <Tabs
+              items={[
+                { id: "off", label: t("developer.off") },
+                { id: "on", label: t("developer.on") },
+              ]}
+              value={developerMode ? "on" : "off"}
+              onChange={(value) => setDeveloperMode(value === "on")}
+            />
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("developer.scopeTitle")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{t("developer.scopeDescription")}</p>
+          </div>
+        </div>
+      </DetailPanel>
+
+      <DetailPanel
         title={t("cache.title")}
         description={t("cache.description")}
         actions={
@@ -1029,6 +1089,11 @@ export function SettingsPage() {
             <Button variant="secondary" onClick={() => void revealLogFile()}>
               {t("cache.openLog")}
             </Button>
+            {developerMode ? (
+              <Button variant="secondary" onClick={() => void copyDebugSummary()}>
+                {t("developer.copy")}
+              </Button>
+            ) : null}
             <Button variant="danger" onClick={clearAnalysisCache}>
               {t("cache.clear")}
             </Button>
@@ -1095,12 +1160,16 @@ export function SettingsPage() {
           </div>
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("cache.logPreview")}</p>
-            {logSummary?.latestEntries.length ? (
-              <pre className="gp-text-secondary mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs">
-                {logSummary.latestEntries.slice(-12).join("\n")}
-              </pre>
+            {developerMode ? (
+              logSummary?.latestEntries.length ? (
+                <pre className="gp-text-secondary mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs">
+                  {logSummary.latestEntries.slice(-12).join("\n")}
+                </pre>
+              ) : (
+                <p className="gp-text-muted mt-2 text-sm">{t("cache.logPreviewEmpty")}</p>
+              )
             ) : (
-              <p className="gp-text-muted mt-2 text-sm">{t("cache.logPreviewEmpty")}</p>
+              <p className="gp-text-muted mt-2 text-sm">{t("developer.enableHint")}</p>
             )}
           </div>
         </div>

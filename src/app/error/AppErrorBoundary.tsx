@@ -32,6 +32,7 @@ function AppErrorFallback({
 }) {
   const { t } = useTranslation(["common"]);
   const activeItem = useUiStore((state) => state.activeItem);
+  const developerMode = useUiStore((state) => state.developerMode);
   const setActiveItem = useUiStore((state) => state.setActiveItem);
 
   return (
@@ -90,22 +91,30 @@ function AppErrorFallback({
         title={t("errorBoundary.details.title")}
         description={t("errorBoundary.details.description")}
       >
-        <div className="space-y-3">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("errorBoundary.details.error")}</p>
-            <pre className="gp-text-secondary mt-2 overflow-x-auto whitespace-pre-wrap break-words text-sm">
-              {error.stack ?? error.message}
-            </pre>
-          </div>
-          {componentStack ? (
+        {developerMode ? (
+          <div className="space-y-3">
             <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("errorBoundary.details.componentStack")}</p>
+              <p className="gp-kicker">{t("errorBoundary.details.error")}</p>
               <pre className="gp-text-secondary mt-2 overflow-x-auto whitespace-pre-wrap break-words text-sm">
-                {componentStack.trim()}
+                {error.stack ?? error.message}
               </pre>
             </div>
-          ) : null}
-        </div>
+            {componentStack ? (
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("errorBoundary.details.componentStack")}</p>
+                <pre className="gp-text-secondary mt-2 overflow-x-auto whitespace-pre-wrap break-words text-sm">
+                  {componentStack.trim()}
+                </pre>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-text-secondary text-sm">
+              {t("errorBoundary.details.enableDeveloper")}
+            </p>
+          </div>
+        )}
       </DetailPanel>
     </div>
   );

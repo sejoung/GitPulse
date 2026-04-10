@@ -27,6 +27,7 @@ fn database_round_trips_settings_runs_and_cache_summary() {
         &path,
         PersistedUiSettings {
             language: "en".to_string(),
+            developer_mode: false,
             workspace_path: "/repo".to_string(),
             selected_branch: "main".to_string(),
             analysis_period: "3m".to_string(),

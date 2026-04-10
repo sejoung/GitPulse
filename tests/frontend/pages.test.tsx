@@ -52,6 +52,7 @@ function resetStore() {
   useUiStore.setState({
     activeItem: "overview",
     language: "en",
+    developerMode: false,
     workspacePath: "",
     selectedBranch: "",
     analysisPeriod: "1y",
@@ -168,7 +169,8 @@ describe("SettingsPage", () => {
 
     renderWithClient(<SettingsPage />);
 
-    await user.click(screen.getByRole("tab", { name: "Off" }));
+    const offTabs = screen.getAllByRole("tab", { name: "Off" });
+    await user.click(offTabs[0]);
 
     expect(useUiStore.getState().rememberLastRepository).toBe(false);
     expect(useUiStore.getState().workspacePath).toBe("");
@@ -261,6 +263,22 @@ describe("SettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Open Overview" }));
 
     expect(useUiStore.getState().activeItem).toBe("overview");
+  });
+
+  it("toggles developer mode and reveals debug actions", async () => {
+    const user = userEvent.setup();
+
+    renderWithClient(<SettingsPage />);
+
+    expect(
+      screen.getByText("Turn on Developer mode to view recent log lines here.")
+    ).toBeInTheDocument();
+
+    const onTabs = screen.getAllByRole("tab", { name: "On" });
+    await user.click(onTabs[onTabs.length - 1]);
+
+    expect(useUiStore.getState().developerMode).toBe(true);
+    expect(screen.getByRole("button", { name: "Copy debug summary" })).toBeInTheDocument();
   });
 
   it("renders live settings match preview for the current repository", async () => {
@@ -358,6 +376,7 @@ describe("SettingsPage", () => {
 
   it("shows recent logs and opens the log file", async () => {
     const user = userEvent.setup();
+    useUiStore.setState({ developerMode: true });
 
     renderWithClient(<SettingsPage />);
 

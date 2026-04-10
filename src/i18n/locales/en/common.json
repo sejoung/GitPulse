@@ -36,7 +36,8 @@
       "title": "Debug details",
       "description": "Use the message and stack below to reproduce and debug the issue.",
       "error": "Error stack",
-      "componentStack": "Component stack"
+      "componentStack": "Component stack",
+      "enableDeveloper": "Enable Developer mode in Settings to show the full error stack and component stack on this screen."
     }
   },
   "status": {

@@ -19,6 +19,7 @@ pub struct RepositoryOverrideSettings {
 #[serde(rename_all = "camelCase")]
 pub struct PersistedUiSettings {
     pub language: String,
+    pub developer_mode: bool,
     pub workspace_path: String,
     pub selected_branch: String,
     pub analysis_period: String,

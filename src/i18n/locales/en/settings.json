@@ -170,5 +170,18 @@
     "openLogFailed": "Could not reveal the log file.",
     "clear": "Clear analysis cache",
     "cleared": "Analysis cache was cleared."
+  },
+  "developer": {
+    "title": "Developer mode",
+    "description": "Show technical diagnostics, recent logs, and copyable debug context for support and issue reports.",
+    "current": "Developer mode",
+    "on": "On",
+    "off": "Off",
+    "scopeTitle": "What changes when enabled",
+    "scopeDescription": "GitPulse keeps writing structured log files either way. Developer mode only reveals extra diagnostics in Settings and the error page.",
+    "enableHint": "Turn on Developer mode to view recent log lines here.",
+    "copy": "Copy debug summary",
+    "copied": "Copied the current debug summary.",
+    "copyFailed": "Could not copy the debug summary."
   }
 }
