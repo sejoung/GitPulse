@@ -28,6 +28,15 @@ type SettingsExport = {
   };
 };
 
+type SettingsPreset = {
+  id: "webApp" | "library" | "monorepo";
+  analysisPeriod: AnalysisPeriod;
+  excludedPaths: string;
+  defaultBranch: string;
+  bugKeywords: string;
+  emergencyPatterns: EmergencyPattern[];
+};
+
 const analysisWindowItems = [
   { id: "1y", labelKey: "defaults.analysisWindows.1y" },
   { id: "6m", labelKey: "defaults.analysisWindows.6m" },
@@ -38,6 +47,48 @@ const languageItems = [
   { id: "en", labelKey: "language.en" },
   { id: "ko", labelKey: "language.ko" },
 ] as const;
+
+const settingsPresets: SettingsPreset[] = [
+  {
+    id: "webApp",
+    analysisPeriod: "6m",
+    excludedPaths: "dist/, build/, .next/, node_modules/, coverage/, target/",
+    defaultBranch: "main",
+    bugKeywords: "fix, bug, broken, regression",
+    emergencyPatterns: [
+      { pattern: "revert, reverted", signal: "Rollback activity" },
+      { pattern: "hotfix", signal: "Watch release pressure" },
+      { pattern: "incident, emergency", signal: "Emergency response" },
+      { pattern: "rollback", signal: "Rollback pattern" },
+    ],
+  },
+  {
+    id: "library",
+    analysisPeriod: "1y",
+    excludedPaths: "dist/, coverage/, target/, docs/generated/",
+    defaultBranch: "main",
+    bugKeywords: "fix, bug, regression, panic",
+    emergencyPatterns: [
+      { pattern: "revert, reverted", signal: "Rollback activity" },
+      { pattern: "hotfix", signal: "Watch release pressure" },
+      { pattern: "breaking fix", signal: "Compatibility pressure" },
+      { pattern: "rollback", signal: "Rollback pattern" },
+    ],
+  },
+  {
+    id: "monorepo",
+    analysisPeriod: "3m",
+    excludedPaths: "dist/, build/, node_modules/, target/, .turbo/, coverage/",
+    defaultBranch: "main",
+    bugKeywords: "fix, bug, broken, rollback, flaky",
+    emergencyPatterns: [
+      { pattern: "revert, reverted", signal: "Rollback activity" },
+      { pattern: "hotfix", signal: "Watch release pressure" },
+      { pattern: "incident, emergency", signal: "Emergency response" },
+      { pattern: "rollback", signal: "Rollback pattern" },
+    ],
+  },
+];
 
 function toSupportedLanguage(language: string): AppLanguage {
   return language.startsWith("en") ? "en" : "ko";
@@ -281,6 +332,34 @@ export function SettingsPage() {
     void queryClient.invalidateQueries({ queryKey: ["repository-state"] });
   }
 
+  function applyPresetToDefaults(preset: SettingsPreset) {
+    setAnalysisPeriod(preset.analysisPeriod);
+    setExcludedPaths(preset.excludedPaths);
+    setDefaultBranch(preset.defaultBranch);
+    setBugKeywords(preset.bugKeywords);
+    setEmergencyPatterns(preset.emergencyPatterns);
+    setSettingsMessage(
+      t("presets.appliedDefaults", { preset: t(`presets.items.${preset.id}.title`) })
+    );
+  }
+
+  function applyPresetToRepositoryOverride(preset: SettingsPreset) {
+    if (!workspacePath) {
+      return;
+    }
+
+    setRepositoryOverride(workspacePath, {
+      excludedPaths: preset.excludedPaths,
+      bugKeywords: preset.bugKeywords,
+      emergencyPatterns: preset.emergencyPatterns,
+    });
+    setSettingsMessage(
+      t("presets.appliedRepository", {
+        preset: t(`presets.items.${preset.id}.title`),
+      })
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -348,6 +427,64 @@ export function SettingsPage() {
       </DetailPanel>
 
       <DetailPanel title={t("defaults.title")} description={t("defaults.description")}>
+        <div className="mb-4 space-y-4">
+          <div className="gp-status-row">
+            <div className="min-w-0">
+              <p className="gp-kicker">{t("presets.title")}</p>
+              <p className="gp-text-secondary mt-1 text-sm">{t("presets.description")}</p>
+            </div>
+            <Badge tone="neutral">
+              {workspacePath ? t("presets.repositoryReady") : t("presets.defaultsOnly")}
+            </Badge>
+          </div>
+          <div className="grid gap-3 xl:grid-cols-3">
+            {settingsPresets.map((preset) => (
+              <div key={preset.id} className="gp-panel min-w-0 p-4">
+                <p className="gp-kicker">{t(`presets.items.${preset.id}.label`)}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {t(`presets.items.${preset.id}.title`)}
+                </p>
+                <p className="gp-text-muted mt-2 text-xs">
+                  {t(`presets.items.${preset.id}.description`)}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Badge tone="neutral">
+                    {t(`defaults.analysisWindows.${preset.analysisPeriod}`)}
+                  </Badge>
+                  <Badge tone="neutral">{preset.defaultBranch}</Badge>
+                </div>
+                <div className="mt-3">
+                  <p className="gp-kicker">{t("presets.preview")}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {preset.excludedPaths
+                      .split(",")
+                      .map((path) => path.trim())
+                      .filter(Boolean)
+                      .slice(0, 4)
+                      .map((path) => (
+                        <Badge key={`${preset.id}-${path}`} tone="neutral">
+                          {path}
+                        </Badge>
+                      ))}
+                  </div>
+                  <p className="gp-text-muted mt-2 text-xs">{preset.bugKeywords}</p>
+                </div>
+                <div className="mt-4 flex flex-col gap-2 md:flex-row">
+                  <Button variant="secondary" onClick={() => applyPresetToDefaults(preset)}>
+                    {t("presets.applyDefaults")}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={!workspacePath}
+                    onClick={() => applyPresetToRepositoryOverride(preset)}
+                  >
+                    {t("presets.applyRepository")}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="grid gap-4 xl:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
           <div className="space-y-4">
             <div className="gp-panel min-w-0 p-4">

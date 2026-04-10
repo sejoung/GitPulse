@@ -184,6 +184,55 @@ describe("SettingsPage", () => {
     });
   });
 
+  it("applies a preset to the global defaults", async () => {
+    const user = userEvent.setup();
+
+    renderWithClient(<SettingsPage />);
+
+    await user.click(screen.getAllByRole("button", { name: "Apply to defaults" })[0]);
+
+    expect(useUiStore.getState().analysisPeriod).toBe("6m");
+    expect(useUiStore.getState().excludedPaths).toBe(
+      "dist/, build/, .next/, node_modules/, coverage/, target/"
+    );
+    expect(useUiStore.getState().bugKeywords).toBe("fix, bug, broken, regression");
+    expect(useUiStore.getState().emergencyPatterns[0]).toEqual({
+      pattern: "revert, reverted",
+      signal: "Rollback activity",
+    });
+    expect(
+      screen.getByText("Frontend or service UI preset was applied to the global defaults.")
+    ).toBeInTheDocument();
+  });
+
+  it("applies a preset to the current repository override", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({
+      workspacePath: "/Users/beni/career-ops",
+    });
+
+    renderWithClient(<SettingsPage />);
+
+    const buttons = screen.getAllByRole("button", { name: "Apply to repository" });
+    await user.click(buttons[2]);
+
+    expect(useUiStore.getState().repositoryOverrides["/Users/beni/career-ops"]).toEqual({
+      excludedPaths: "dist/, build/, node_modules/, target/, .turbo/, coverage/",
+      bugKeywords: "fix, bug, broken, rollback, flaky",
+      emergencyPatterns: [
+        { pattern: "revert, reverted", signal: "Rollback activity" },
+        { pattern: "hotfix", signal: "Watch release pressure" },
+        { pattern: "incident, emergency", signal: "Emergency response" },
+        { pattern: "rollback", signal: "Rollback pattern" },
+      ],
+    });
+    expect(
+      screen.getByText(
+        "Multi-package repository preset was applied to the current repository override."
+      )
+    ).toBeInTheDocument();
+  });
+
   it("shows repository override guidance and opens overview when no workspace is selected", async () => {
     const user = userEvent.setup();
 

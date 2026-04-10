@@ -100,6 +100,34 @@
     "emergencyPatternsHelp": "Use commas for aliases in one row, for example: revert, reverted. The row signal is shared by every alias.",
     "cacheKey": "Cache key"
   },
+  "presets": {
+    "title": "Settings presets",
+    "description": "Apply a starting configuration for common repository shapes, then adjust the details below.",
+    "defaultsOnly": "Defaults only",
+    "repositoryReady": "Repository override ready",
+    "preview": "Preset preview",
+    "applyDefaults": "Apply to defaults",
+    "applyRepository": "Apply to repository",
+    "appliedDefaults": "{{preset}} preset was applied to the global defaults.",
+    "appliedRepository": "{{preset}} preset was applied to the current repository override.",
+    "items": {
+      "webApp": {
+        "label": "Web app",
+        "title": "Frontend or service UI",
+        "description": "Shorter window, build output excluded, and release pressure patterns tuned for active product work."
+      },
+      "library": {
+        "label": "Library",
+        "title": "Package or SDK",
+        "description": "Longer history, generated docs excluded, and compatibility-related fixes highlighted."
+      },
+      "monorepo": {
+        "label": "Monorepo",
+        "title": "Multi-package repository",
+        "description": "Short signal window with broader build artifact exclusions for noisy repository roots."
+      }
+    }
+  },
   "cache": {
     "title": "Cache and performance",
     "description": "Analysis results are cached in memory while the app is running.",

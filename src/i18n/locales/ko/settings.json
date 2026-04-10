@@ -100,6 +100,34 @@
     "emergencyPatternsHelp": "한 행에서 쉼표로 alias를 입력할 수 있습니다. 예: revert, reverted. 해당 행의 signal은 모든 alias에 같이 적용됩니다.",
     "cacheKey": "Cache key"
   },
+  "presets": {
+    "title": "설정 프리셋",
+    "description": "자주 쓰는 저장소 유형의 시작값을 한 번에 적용한 뒤, 아래에서 세부 항목을 조정합니다.",
+    "defaultsOnly": "전역 기본값만 적용 가능",
+    "repositoryReady": "저장소 오버라이드에도 적용 가능",
+    "preview": "프리셋 미리보기",
+    "applyDefaults": "기본값에 적용",
+    "applyRepository": "현재 저장소에 적용",
+    "appliedDefaults": "{{preset}} 프리셋을 전역 기본값에 적용했습니다.",
+    "appliedRepository": "{{preset}} 프리셋을 현재 저장소 오버라이드에 적용했습니다.",
+    "items": {
+      "webApp": {
+        "label": "웹 앱",
+        "title": "프론트엔드 또는 서비스 UI",
+        "description": "짧은 분석 기간, 빌드 산출물 제외, 활발한 제품 개발 흐름에 맞춘 release pressure 패턴을 사용합니다."
+      },
+      "library": {
+        "label": "라이브러리",
+        "title": "패키지 또는 SDK",
+        "description": "더 긴 이력, 생성 문서 제외, 호환성 관련 수정 신호를 더 잘 드러내는 기준입니다."
+      },
+      "monorepo": {
+        "label": "모노레포",
+        "title": "멀티 패키지 저장소",
+        "description": "짧은 신호 기간과 넓은 빌드 산출물 제외 기준으로 복잡한 루트 노이즈를 줄입니다."
+      }
+    }
+  },
   "cache": {
     "title": "캐시와 성능",
     "description": "앱이 실행되는 동안 분석 결과를 메모리 캐시에 보관합니다.",
