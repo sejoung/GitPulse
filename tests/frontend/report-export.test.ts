@@ -65,6 +65,7 @@ describe("report-export", () => {
 
     expect(report).toContain("# GitPulse Analysis Report");
     expect(report).toContain("- Repository: career-ops");
+    expect(report).toContain("- Repository path: /repo");
     expect(report).toContain("- Analysis freshness: Stale by 2 commits against origin/main");
     expect(report).toContain("## Hotspots");
     expect(report).toContain("src/app.tsx | changes: 12 | fixes: 3 | risk: watch");

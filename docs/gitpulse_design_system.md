@@ -214,7 +214,7 @@ import { ChartCard } from "../../components/charts";
 ### Detail Panel With Table
 
 ```tsx
-<DetailPanel title="Workspace details" description="Analysis controls for the current repository.">
+<DetailPanel title="Repository details" description="Analysis controls for the current repository.">
   <Table
     columns={[
       { key: "path", header: "File", render: (row) => row.path },
@@ -249,6 +249,45 @@ import { ChartCard } from "../../components/charts";
 
 ---
 
+## Interaction Patterns
+
+These patterns are now implemented in the app and should be reused.
+
+### Overview and Settings Flow
+
+- `Overview` is the execution surface for repository selection, branch control, remote checks, and analysis refresh.
+- `Settings` is the configuration surface for signal defaults, repository scope, repository overrides, and persistence visibility.
+- When a user needs to move between the two, use direct actions such as `Open settings`, `Adjust settings`, or `Open Overview`.
+
+### Summary Panels
+
+- Use `gp-panel` for compact summary blocks that show one label and one short value.
+- Use `gp-status-row` for two-part status layouts where the left side explains the current state and the right side shows a `Badge`.
+- Use `gp-header-actions` whenever a panel header needs more than one action or mixed controls such as a button plus tabs.
+
+### Editable Settings Layout
+
+- Do not place interactive form fields inside dense data tables.
+- For editable settings, prefer `DetailPanel` + `gp-panel` groups with:
+  - a kicker or label
+  - one input group
+  - one short help line
+- Keep dense side-by-side settings layouts at `xl` and below that collapse to a single column.
+
+### Inline Feedback
+
+- Short-lived action feedback in settings should appear inline inside the owning section.
+- Use plain supporting text for these messages and clear them automatically after a short delay.
+- Do not add toast UI until the product needs cross-page notifications.
+
+### Terminology
+
+- In user-facing English copy, prefer `repository` over `workspace`.
+- In user-facing Korean copy, prefer `저장소`.
+- Internal variable and API names may still use `workspacePath` where that matches the data model, but visible labels and descriptions should use the repository terminology.
+
+---
+
 ## Implementation Rules
 
 - Prefer components from `src/components/ui`, `src/components/layout`, and `src/components/charts`.
@@ -258,6 +297,9 @@ import { ChartCard } from "../../components/charts";
 - Use direct `bg-gp-*`, `text-gp-*`, and `border-gp-*` tokens only when a semantic class does not exist yet.
 - Do not introduce a new color without adding it to the GitPulse color system first.
 - Use risk tones only for actual health, warning, risk, or critical signals.
+- Use tables for read-heavy structured data, not for editable settings forms.
+- When a section depends on repository selection, explain the blocked reason in the section body instead of only disabling the action.
+- For primary user journeys, provide a direct adjacent action to the next step rather than expecting sidebar navigation.
 
 ---
 

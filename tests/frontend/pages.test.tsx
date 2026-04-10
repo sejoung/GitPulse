@@ -270,6 +270,31 @@ describe("SettingsPage", () => {
 });
 
 describe("OverviewPage branch controls", () => {
+  it("opens settings from the overview header", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({ workspacePath: "/repo", activeItem: "overview" });
+
+    renderWithClient(<OverviewPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Open settings" }));
+
+    expect(useUiStore.getState().activeItem).toBe("settings");
+  });
+
+  it("opens settings from repository details", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main", activeItem: "overview" });
+    api.getGitBranches.mockResolvedValue([
+      { name: "main", label: "main", kind: "local", current: true },
+    ]);
+
+    renderWithClient(<OverviewPage />);
+
+    await user.click(await screen.findByRole("button", { name: "Adjust settings" }));
+
+    expect(useUiStore.getState().activeItem).toBe("settings");
+  });
+
   it("disables the no-branches placeholder option", async () => {
     useUiStore.setState({ workspacePath: "/repo" });
     api.getGitBranches.mockResolvedValue([]);

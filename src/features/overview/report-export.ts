@@ -83,7 +83,7 @@ export function buildAnalysisReportJson(input: AnalysisReportInput) {
       generatedAt: input.generatedAt,
       repository: {
         name: input.repositoryName,
-        workspacePath: input.workspacePath,
+        repositoryPath: input.workspacePath,
         branch: input.branch,
         headSha: input.headSha,
         shortHeadSha: input.shortHeadSha,
@@ -152,7 +152,7 @@ export function buildAnalysisReportMarkdown(input: AnalysisReportInput) {
     "## Repository",
     `- Generated at: ${input.generatedAt}`,
     `- Repository: ${input.repositoryName}`,
-    `- Workspace: ${input.workspacePath}`,
+    `- Repository path: ${input.workspacePath}`,
     `- Branch: ${input.branch}`,
     `- HEAD: ${input.shortHeadSha ?? "Not analyzed"}`,
     `- Analysis window: ${input.period}`,
