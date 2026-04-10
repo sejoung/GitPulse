@@ -134,7 +134,7 @@ docs/
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 24+
 - npm
 - Rust stable
 - Tauri system prerequisites for your OS
