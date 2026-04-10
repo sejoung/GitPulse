@@ -94,5 +94,23 @@
       "dirty": "Local changes are present, so refresh and pull actions may not reflect a clean branch state.",
       "pull_failed": "Remote updates could not be applied, so this analysis may still be stale."
     }
+  },
+  "export": {
+    "title": "Analysis report export",
+    "description": "Download the current repository analysis as Markdown or JSON for review and sharing.",
+    "markdown": "Export Markdown",
+    "json": "Export JSON",
+    "includes": "Included sections",
+    "includesValue": "Overview, hotspots, ownership, activity, delivery risk, and analysis settings.",
+    "format": "Output formats",
+    "formatValue": "Markdown for review notes, JSON for automation or archival.",
+    "repository": "Report target",
+    "status": "Export status",
+    "statusIdle": "Choose a format to download the current analysis.",
+    "empty": "Run analysis before exporting a report.",
+    "success": {
+      "md": "Markdown report downloaded.",
+      "json": "JSON report downloaded."
+    }
   }
 }

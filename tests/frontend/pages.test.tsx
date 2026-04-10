@@ -329,6 +329,56 @@ describe("OverviewPage branch controls", () => {
       deliveryRiskLevel: "medium",
     });
   });
+
+  it("exports the current analysis as JSON", async () => {
+    const user = userEvent.setup();
+    const createObjectUrl = vi.fn(() => "blob:gitpulse-report");
+    const revokeObjectUrl = vi.fn();
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => undefined);
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: createObjectUrl,
+      revokeObjectURL: revokeObjectUrl,
+    });
+    useUiStore.setState({ workspacePath: "/repo", selectedBranch: "main" });
+    api.getGitBranches.mockResolvedValue([
+      { name: "main", label: "main", kind: "local", current: true },
+    ]);
+    api.getOverviewAnalysis.mockResolvedValue({
+      repositoryName: "repo",
+      totalCommits: 24,
+      hotspotCount: 5,
+      contributorCount: 3,
+      deliveryRiskLevel: "medium",
+    });
+    api.getOwnershipAnalysis.mockResolvedValue([
+      { name: "Beni", commits: 10, share: "50%", recentKey: "status.active", risk: "healthy" },
+    ]);
+    api.getDeliveryRiskAnalysis.mockResolvedValue([
+      {
+        event: "revert",
+        count: 1,
+        signal: "Normal recovery",
+        signalKey: "signals.normalRecovery",
+        risk: "healthy",
+      },
+    ]);
+
+    renderWithClient(<OverviewPage />);
+
+    await screen.findByText("Analysis report export");
+    await user.click(screen.getByRole("button", { name: "Export JSON" }));
+
+    expect(createObjectUrl).toHaveBeenCalledTimes(1);
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectUrl).toHaveBeenCalledWith("blob:gitpulse-report");
+    expect(await screen.findByText("JSON report downloaded.")).toBeInTheDocument();
+
+    clickSpy.mockRestore();
+    vi.unstubAllGlobals();
+  });
 });
 
 describe("ActivityPage", () => {

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUiStore } from "../../app/store/ui-store";
@@ -17,7 +17,9 @@ import {
 import { formatCount } from "../../lib/format";
 import { useOverviewAnalysis } from "./useOverviewAnalysis";
 import { useActivityAnalysis } from "../activity/useActivityAnalysis";
+import { useDeliveryRiskAnalysis } from "../delivery-risk/useDeliveryRiskAnalysis";
 import { useHotspotsAnalysis } from "../hotspots/useHotspotsAnalysis";
+import { useOwnershipAnalysis } from "../ownership/useOwnershipAnalysis";
 import { useWorkspacePrompt } from "../workspace/useWorkspacePrompt";
 import {
   useCheckoutGitBranch,
@@ -27,6 +29,11 @@ import {
   usePullGitRemoteUpdates,
 } from "./useGitBranches";
 import type { GitRemoteStatus } from "../../domains/metrics/overview";
+import {
+  buildAnalysisReportJson,
+  buildAnalysisReportMarkdown,
+  downloadAnalysisReport,
+} from "./report-export";
 
 const periodTabs = [
   { id: "1y", labelKey: "settings:defaults.analysisWindows.1y" },
@@ -73,6 +80,7 @@ function freshnessTone(status?: GitRemoteStatus["status"]) {
 export function OverviewPage() {
   const { t } = useTranslation(["overview", "common", "settings"]);
   const queryClient = useQueryClient();
+  const [exportMessage, setExportMessage] = useState("");
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
@@ -125,6 +133,12 @@ export function OverviewPage() {
     workspacePath,
     activeBranch,
     analysisPeriod
+  );
+  const { data: ownershipRows = [] } = useOwnershipAnalysis(workspacePath, activeBranch);
+  const { data: deliveryRows = [] } = useDeliveryRiskAnalysis(
+    workspacePath,
+    activeBranch,
+    emergencyPatterns
   );
   const translatedPeriodTabs = periodTabs.map((item) => ({
     id: item.id,
@@ -194,6 +208,41 @@ export function OverviewPage() {
     void queryClient.invalidateQueries({ queryKey: ["activity"] });
     void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
     void queryClient.invalidateQueries({ queryKey: ["repository-state"] });
+  }
+
+  function exportReport(format: "json" | "md") {
+    if (!workspacePath || !activeBranch || !data) {
+      setExportMessage(t("export.empty"));
+      return;
+    }
+
+    const generatedAt = new Date().toISOString();
+    const reportInput = {
+      generatedAt,
+      workspacePath,
+      repositoryName: data.repositoryName,
+      branch: activeBranch,
+      headSha: repositoryState?.headSha ?? null,
+      shortHeadSha: repositoryState?.shortHeadSha ?? null,
+      period: analysisPeriod,
+      remoteStatus: remoteStatus ?? null,
+      excludedPaths,
+      bugKeywords,
+      emergencyPatterns,
+      overview: data,
+      hotspots: hotspotRows,
+      ownership: ownershipRows,
+      activity: activityRows,
+      deliveryRisk: deliveryRows,
+    };
+
+    const contents =
+      format === "json"
+        ? buildAnalysisReportJson(reportInput)
+        : buildAnalysisReportMarkdown(reportInput);
+
+    downloadAnalysisReport(data.repositoryName, activeBranch, format, contents);
+    setExportMessage(t(`export.success.${format}`));
   }
 
   useEffect(() => {
@@ -586,6 +635,54 @@ export function OverviewPage() {
           getRowKey={(row) => `${row.workspacePath}:${row.branch}:${row.headSha}:${row.period}`}
           emptyText={hasWorkspace ? t("history.empty") : initialEmptyText}
         />
+      </DetailPanel>
+
+      <DetailPanel
+        title={t("export.title")}
+        description={t("export.description")}
+        actions={
+          <div className="gp-header-actions">
+            <Button
+              variant="secondary"
+              disabled={!data || !hasWorkspace}
+              onClick={() => exportReport("md")}
+            >
+              {t("export.markdown")}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!data || !hasWorkspace}
+              onClick={() => exportReport("json")}
+            >
+              {t("export.json")}
+            </Button>
+          </div>
+        }
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.includes")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{t("export.includesValue")}</p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.format")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">{t("export.formatValue")}</p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.repository")}</p>
+            <p className="gp-text-secondary mt-1 truncate text-sm">
+              {hasWorkspace
+                ? (data?.repositoryName ?? workspacePath)
+                : t("common:status.notSelected")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("export.status")}</p>
+            <p className="gp-text-secondary mt-1 text-sm">
+              {exportMessage || t("export.statusIdle")}
+            </p>
+          </div>
+        </div>
       </DetailPanel>
 
       <ChartCard
