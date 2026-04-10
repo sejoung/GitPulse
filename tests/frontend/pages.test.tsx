@@ -182,6 +182,23 @@ describe("SettingsPage", () => {
     });
   });
 
+  it("shows repository override guidance and opens overview when no workspace is selected", async () => {
+    const user = userEvent.setup();
+
+    renderWithClient(<SettingsPage />);
+
+    expect(screen.getByText("Repository required")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Choose a repository in Overview first. Repository override settings are scoped to the currently selected repository."
+      )
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Open Overview" }));
+
+    expect(useUiStore.getState().activeItem).toBe("overview");
+  });
+
   it("renders live settings match preview for the current repository", async () => {
     useUiStore.setState({
       workspacePath: "/Users/beni/career-ops",
@@ -217,6 +234,20 @@ describe("SettingsPage", () => {
         { pattern: "rollback", signal: "Rollback pattern" },
       ],
     });
+  });
+
+  it("lets the user jump from preview to overview", async () => {
+    const user = userEvent.setup();
+    useUiStore.setState({
+      workspacePath: "/Users/beni/career-ops",
+      activeItem: "settings",
+    });
+
+    renderWithClient(<SettingsPage />);
+
+    await user.click(screen.getAllByRole("button", { name: "Open Overview" })[0]);
+
+    expect(useUiStore.getState().activeItem).toBe("overview");
   });
 
   it("shows local database retention and opens the database folder", async () => {

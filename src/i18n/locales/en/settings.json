@@ -47,7 +47,10 @@
     "emergencyPatternMatches": "Emergency pattern matches",
     "emergencyMatchesEmpty": "No emergency pattern rows are available yet.",
     "updating": "Updating",
-    "empty": "Select a repository before previewing settings matches."
+    "empty": "Select a repository before previewing settings matches.",
+    "openOverview": "Open Overview",
+    "nextStepTitle": "Next step",
+    "nextStepDescription": "Review these settings in Overview and refresh the analysis from there."
   },
   "repositoryOverrides": {
     "title": "Repository override",
@@ -63,7 +66,9 @@
     "emergencyPattern": "Repository emergency pattern",
     "emergencySignal": "Repository emergency signal",
     "help": "These values apply only to the selected repository. Empty rows still fall back to the global defaults.",
-    "empty": "Select a repository before setting repository-specific analysis defaults."
+    "empty": "Select a repository before setting repository-specific analysis defaults.",
+    "enableHintTitle": "Repository required",
+    "enableHintDescription": "Choose a repository in Overview first. Repository override settings are scoped to the currently selected repository."
   },
   "language": {
     "title": "Language",

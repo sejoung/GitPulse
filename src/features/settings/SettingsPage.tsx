@@ -83,6 +83,7 @@ export function SettingsPage() {
   const setRepositoryOverride = useUiStore((state) => state.setRepositoryOverride);
   const setRepositoryOverridePattern = useUiStore((state) => state.setRepositoryOverridePattern);
   const clearRepositoryOverride = useUiStore((state) => state.clearRepositoryOverride);
+  const setActiveItem = useUiStore((state) => state.setActiveItem);
   const currentLanguage = language;
   const translatedAnalysisWindowItems = analysisWindowItems.map((item) => ({
     id: item.id,
@@ -244,6 +245,16 @@ export function SettingsPage() {
       bugKeywords,
       emergencyPatterns,
     });
+  }
+
+  function openOverviewAnalysis() {
+    setActiveItem("overview");
+    void queryClient.invalidateQueries({ queryKey: ["overview"] });
+    void queryClient.invalidateQueries({ queryKey: ["hotspots"] });
+    void queryClient.invalidateQueries({ queryKey: ["ownership"] });
+    void queryClient.invalidateQueries({ queryKey: ["activity"] });
+    void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
+    void queryClient.invalidateQueries({ queryKey: ["repository-state"] });
   }
 
   return (
@@ -567,11 +578,34 @@ export function SettingsPage() {
             )}
           </div>
         ) : (
-          <p className="gp-text-secondary text-sm">{t("repositoryOverrides.empty")}</p>
+          <div className="space-y-3">
+            <p className="gp-text-secondary text-sm">{t("repositoryOverrides.empty")}</p>
+            <div className="gp-panel min-w-0 p-3">
+              <p className="gp-kicker">{t("repositoryOverrides.enableHintTitle")}</p>
+              <p className="gp-text-secondary mt-2 text-sm">
+                {t("repositoryOverrides.enableHintDescription")}
+              </p>
+              <div className="mt-3">
+                <Button variant="secondary" onClick={openOverviewAnalysis}>
+                  {t("preview.openOverview")}
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </DetailPanel>
 
-      <DetailPanel title={t("preview.title")} description={t("preview.description")}>
+      <DetailPanel
+        title={t("preview.title")}
+        description={t("preview.description")}
+        actions={
+          workspacePath ? (
+            <Button variant="primary" onClick={openOverviewAnalysis}>
+              {t("preview.openOverview")}
+            </Button>
+          ) : null
+        }
+      >
         {workspacePath ? (
           <div className="space-y-4">
             <div className="gp-status-row">
@@ -679,6 +713,19 @@ export function SettingsPage() {
                   getRowKey={(row) => row.pattern}
                   emptyText={t("preview.emergencyMatchesEmpty")}
                 />
+              </div>
+            </div>
+            <div className="gp-panel min-w-0 p-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0">
+                  <p className="gp-kicker">{t("preview.nextStepTitle")}</p>
+                  <p className="gp-text-secondary mt-1 text-sm">
+                    {t("preview.nextStepDescription")}
+                  </p>
+                </div>
+                <Button variant="primary" onClick={openOverviewAnalysis}>
+                  {t("preview.openOverview")}
+                </Button>
               </div>
             </div>
           </div>
