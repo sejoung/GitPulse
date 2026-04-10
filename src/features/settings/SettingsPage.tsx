@@ -2,6 +2,7 @@ import { useDeferredValue, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import type {
+  AppLanguage,
   AnalysisPeriod,
   EmergencyPattern,
   RepositoryOverrideSettings,
@@ -13,10 +14,9 @@ import { openLocalDatabaseDirectory } from "../../services/tauri/local-database"
 import { useLocalDatabaseSummary } from "./useLocalDatabaseSummary";
 import { useSettingsMatchPreview } from "./useSettingsMatchPreview";
 
-type Language = "ko" | "en";
 type SettingsExport = {
   version: 1;
-  language: Language;
+  language: AppLanguage;
   settings: {
     analysisPeriod: AnalysisPeriod;
     excludedPaths: string;
@@ -39,7 +39,7 @@ const languageItems = [
   { id: "en", labelKey: "language.en" },
 ] as const;
 
-function toSupportedLanguage(language: string): Language {
+function toSupportedLanguage(language: string): AppLanguage {
   return language.startsWith("en") ? "en" : "ko";
 }
 
@@ -62,6 +62,7 @@ export function SettingsPage() {
   const [cacheMessage, setCacheMessage] = useState("");
   const { data: databaseSummary } = useLocalDatabaseSummary();
   const workspacePath = useUiStore((state) => state.workspacePath);
+  const language = useUiStore((state) => state.language);
   const excludedPaths = useUiStore((state) => state.excludedPaths);
   const defaultBranch = useUiStore((state) => state.defaultBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
@@ -70,6 +71,7 @@ export function SettingsPage() {
   const rememberLastRepository = useUiStore((state) => state.rememberLastRepository);
   const repositoryOverrides = useUiStore((state) => state.repositoryOverrides);
   const setWorkspacePath = useUiStore((state) => state.setWorkspacePath);
+  const setLanguage = useUiStore((state) => state.setLanguage);
   const setSelectedBranch = useUiStore((state) => state.setSelectedBranch);
   const setExcludedPaths = useUiStore((state) => state.setExcludedPaths);
   const setDefaultBranch = useUiStore((state) => state.setDefaultBranch);
@@ -81,7 +83,7 @@ export function SettingsPage() {
   const setRepositoryOverride = useUiStore((state) => state.setRepositoryOverride);
   const setRepositoryOverridePattern = useUiStore((state) => state.setRepositoryOverridePattern);
   const clearRepositoryOverride = useUiStore((state) => state.clearRepositoryOverride);
-  const currentLanguage = toSupportedLanguage(i18n.resolvedLanguage ?? i18n.language);
+  const currentLanguage = language;
   const translatedAnalysisWindowItems = analysisWindowItems.map((item) => ({
     id: item.id,
     label: t(item.labelKey),
@@ -173,9 +175,10 @@ export function SettingsPage() {
     { key: t("defaults.cacheKey"), value: "workspace + branch + period + HEAD_SHA" },
   ];
 
-  function handleLanguageChange(language: Language) {
-    window.localStorage.setItem(languageStorageKey, language);
-    void i18n.changeLanguage(language);
+  function handleLanguageChange(nextLanguage: AppLanguage) {
+    setLanguage(nextLanguage);
+    window.localStorage.setItem(languageStorageKey, nextLanguage);
+    void i18n.changeLanguage(nextLanguage);
   }
 
   function clearAnalysisCache() {
@@ -741,6 +744,39 @@ export function SettingsPage() {
             <p className="gp-text-secondary mt-1 break-words text-sm">
               {databaseSummary?.databasePath ?? t("cache.databasePathUnavailable")}
             </p>
+          </div>
+        </div>
+        <div className="mt-3 grid gap-3 xl:grid-cols-2">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.persistedTitle")}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                t("cache.persistedItems.language"),
+                t("cache.persistedItems.workspace"),
+                t("cache.persistedItems.branch"),
+                t("cache.persistedItems.analysisDefaults"),
+                t("cache.persistedItems.repositoryOverrides"),
+                t("cache.persistedItems.analysisHistory"),
+              ].map((item) => (
+                <Badge key={item} tone="neutral">
+                  {item}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.volatileTitle")}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {[
+                t("cache.volatileItems.activePage"),
+                t("cache.volatileItems.loadingState"),
+                t("cache.volatileItems.toastMessage"),
+              ].map((item) => (
+                <Badge key={item} tone="neutral">
+                  {item}
+                </Badge>
+              ))}
+            </div>
           </div>
         </div>
       </DetailPanel>

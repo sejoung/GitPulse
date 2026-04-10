@@ -18,6 +18,7 @@ pub struct RepositoryOverrideSettings {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PersistedUiSettings {
+    pub language: String,
     pub workspace_path: String,
     pub selected_branch: String,
     pub analysis_period: String,

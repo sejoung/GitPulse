@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type AnalysisPeriod = "3m" | "6m" | "1y";
+export type AppLanguage = "ko" | "en";
 export type EmergencyPattern = {
   pattern: string;
   signal: string;
@@ -33,6 +34,7 @@ export type NavigationItem =
 
 type UiState = {
   activeItem: NavigationItem;
+  language: AppLanguage;
   workspacePath: string;
   selectedBranch: string;
   analysisPeriod: AnalysisPeriod;
@@ -44,6 +46,7 @@ type UiState = {
   repositoryOverrides: Record<string, RepositoryOverrideSettings>;
   analysisRuns: AnalysisRunRecord[];
   setActiveItem: (item: NavigationItem) => void;
+  setLanguage: (language: AppLanguage) => void;
   setWorkspacePath: (path: string) => void;
   setSelectedBranch: (branch: string) => void;
   setAnalysisPeriod: (period: UiState["analysisPeriod"]) => void;
@@ -65,6 +68,7 @@ type UiState = {
 };
 
 export type PersistedUiSettings = {
+  language: AppLanguage;
   workspacePath: string;
   selectedBranch: string;
   analysisPeriod: AnalysisPeriod;
@@ -80,6 +84,7 @@ export type PersistedUiSettings = {
 type PersistedUiState = Partial<Omit<PersistedUiSettings, "analysisPeriod">> & {
   analysisPeriod?: AnalysisPeriod | "30d" | "90d" | "all";
   emergencyKeywords?: string;
+  language?: AppLanguage;
 };
 
 const defaultEmergencyPatterns: EmergencyPattern[] = [
@@ -141,6 +146,7 @@ export function getEffectiveRepositorySettings(
 
 export function selectPersistedUiSettings(state: Pick<UiState, keyof PersistedUiSettings>) {
   return {
+    language: state.language,
     workspacePath: state.rememberLastRepository ? state.workspacePath : "",
     selectedBranch: state.rememberLastRepository ? state.selectedBranch : "",
     analysisPeriod: state.analysisPeriod,
@@ -158,6 +164,7 @@ export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
       activeItem: "overview",
+      language: "en",
       workspacePath: "",
       selectedBranch: "",
       analysisPeriod: "1y",
@@ -169,6 +176,7 @@ export const useUiStore = create<UiState>()(
       repositoryOverrides: {},
       analysisRuns: [],
       setActiveItem: (activeItem) => set({ activeItem }),
+      setLanguage: (language) => set({ language }),
       setWorkspacePath: (workspacePath) => set({ workspacePath }),
       setSelectedBranch: (selectedBranch) => set({ selectedBranch }),
       setAnalysisPeriod: (analysisPeriod) => set({ analysisPeriod }),
@@ -233,6 +241,7 @@ export const useUiStore = create<UiState>()(
         }),
       hydrateFromDatabase: (payload) =>
         set((state) => ({
+          language: payload.language ?? state.language,
           workspacePath: payload.workspacePath ?? state.workspacePath,
           selectedBranch: payload.selectedBranch ?? state.selectedBranch,
           analysisPeriod: normalizeAnalysisPeriod(payload.analysisPeriod ?? state.analysisPeriod),
@@ -253,6 +262,7 @@ export const useUiStore = create<UiState>()(
         const state = persistedState as PersistedUiState;
 
         return {
+          language: state.language ?? "en",
           workspacePath: state.workspacePath ?? "",
           selectedBranch: state.selectedBranch ?? "",
           analysisPeriod: normalizeAnalysisPeriod(state.analysisPeriod),

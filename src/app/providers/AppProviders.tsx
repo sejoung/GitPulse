@@ -8,6 +8,7 @@ import {
   saveLocalDatabaseAnalysisRuns,
   saveLocalDatabaseSettings,
 } from "../../services/tauri/local-database";
+import i18n, { languageStorageKey } from "../../i18n/config";
 
 export function AppProviders({ children }: PropsWithChildren) {
   const [queryClient] = useState(() => new QueryClient());
@@ -36,6 +37,12 @@ export function AppProviders({ children }: PropsWithChildren) {
           ...(snapshot.settings ?? {}),
           analysisRuns: snapshot.analysisRuns,
         });
+        if (snapshot.settings?.language) {
+          window.localStorage.setItem(languageStorageKey, snapshot.settings.language);
+          if (i18n.resolvedLanguage !== snapshot.settings.language) {
+            void i18n.changeLanguage(snapshot.settings.language);
+          }
+        }
       })
       .catch(() => {
         if (!active) {

@@ -20,6 +20,7 @@ import koWorkspace from "./locales/ko/workspace.json";
 
 export const defaultNS = "common";
 export const languageStorageKey = "gitpulse.language";
+export const defaultLanguage = "en";
 export const resources = {
   en: {
     common: enCommon,
@@ -50,8 +51,8 @@ const savedLanguage =
 
 void i18n.use(initReactI18next).init({
   resources,
-  lng: savedLanguage ?? "en",
-  fallbackLng: "en",
+  lng: savedLanguage ?? defaultLanguage,
+  fallbackLng: defaultLanguage,
   supportedLngs: ["ko", "en"],
   defaultNS,
   ns: [

@@ -46,7 +46,9 @@ describe("local-database api", () => {
       analysisRunLimit: 20,
       analysisCacheLimit: 50,
     });
-    await expect(saveLocalDatabaseSettings({ workspacePath: "/repo" })).resolves.toBeUndefined();
+    await expect(
+      saveLocalDatabaseSettings({ language: "en", workspacePath: "/repo" })
+    ).resolves.toBeUndefined();
     await expect(saveLocalDatabaseAnalysisRuns([])).resolves.toBeUndefined();
     await expect(
       upsertLocalDatabaseAnalysisCache({
@@ -72,7 +74,11 @@ describe("local-database api", () => {
     invokeMock.mockResolvedValue(undefined);
 
     await loadLocalDatabase();
-    await saveLocalDatabaseSettings({ workspacePath: "/repo", analysisPeriod: "3m" });
+    await saveLocalDatabaseSettings({
+      language: "en",
+      workspacePath: "/repo",
+      analysisPeriod: "3m",
+    });
     await saveLocalDatabaseAnalysisRuns([
       {
         workspacePath: "/repo",
@@ -104,7 +110,7 @@ describe("local-database api", () => {
 
     expect(invokeMock).toHaveBeenCalledWith("load_local_database");
     expect(invokeMock).toHaveBeenCalledWith("save_local_database_settings", {
-      settings: { workspacePath: "/repo", analysisPeriod: "3m" },
+      settings: { language: "en", workspacePath: "/repo", analysisPeriod: "3m" },
     });
     expect(invokeMock).toHaveBeenCalledWith("save_local_database_analysis_runs", {
       runs: [

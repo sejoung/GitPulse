@@ -44,6 +44,7 @@ function resetStore() {
   window.localStorage.clear();
   useUiStore.setState({
     activeItem: "overview",
+    language: "en",
     workspacePath: "",
     selectedBranch: "",
     analysisPeriod: "1y",
