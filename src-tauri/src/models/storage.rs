@@ -79,6 +79,23 @@ pub struct LocalDatabaseSummary {
     pub analysis_cache_limit: u32,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LogEntryInput {
+    pub level: String,
+    pub source: String,
+    pub message: String,
+    pub context: Option<String>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct LogFileSummary {
+    pub log_path: String,
+    pub log_directory: String,
+    pub latest_entries: Vec<String>,
+}
+
 #[derive(Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LocalDatabaseFile {

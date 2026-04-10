@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { AnalysisRunRecord, PersistedUiSettings } from "../../app/store/ui-store";
+import { appendAppLog } from "./app-log";
 
 export type AnalysisCacheEntry = {
   workspacePath: string;
@@ -33,6 +34,28 @@ function isTauriRuntime() {
   return "__TAURI_INTERNALS__" in window;
 }
 
+async function invokeLogged<T>(
+  command: string,
+  payload?: Record<string, unknown>,
+  options?: { logSuccess?: boolean }
+) {
+  try {
+    const result = await invoke<T>(command, payload);
+    if (options?.logSuccess) {
+      void appendAppLog("info", `tauri:${command}`, "Command completed", payload).catch(
+        () => undefined
+      );
+    }
+    return result;
+  } catch (error) {
+    void appendAppLog("error", `tauri:${command}`, "Command failed", {
+      payload,
+      error: error instanceof Error ? error.message : String(error),
+    }).catch(() => undefined);
+    throw error;
+  }
+}
+
 export async function loadLocalDatabase() {
   if (!isTauriRuntime()) {
     return {
@@ -41,7 +64,7 @@ export async function loadLocalDatabase() {
     } satisfies LocalDatabaseSnapshot;
   }
 
-  return invoke<LocalDatabaseSnapshot>("load_local_database");
+  return invokeLogged<LocalDatabaseSnapshot>("load_local_database");
 }
 
 export async function saveLocalDatabaseSettings(settings: Partial<PersistedUiSettings>) {
@@ -49,7 +72,7 @@ export async function saveLocalDatabaseSettings(settings: Partial<PersistedUiSet
     return;
   }
 
-  await invoke("save_local_database_settings", { settings });
+  await invokeLogged("save_local_database_settings", { settings }, { logSuccess: true });
 }
 
 export async function saveLocalDatabaseAnalysisRuns(runs: AnalysisRunRecord[]) {
@@ -57,7 +80,7 @@ export async function saveLocalDatabaseAnalysisRuns(runs: AnalysisRunRecord[]) {
     return;
   }
 
-  await invoke("save_local_database_analysis_runs", { runs });
+  await invokeLogged("save_local_database_analysis_runs", { runs });
 }
 
 export async function upsertLocalDatabaseAnalysisCache(entry: AnalysisCacheEntry) {
@@ -65,7 +88,7 @@ export async function upsertLocalDatabaseAnalysisCache(entry: AnalysisCacheEntry
     return;
   }
 
-  await invoke("upsert_local_database_analysis_cache", { entry });
+  await invokeLogged("upsert_local_database_analysis_cache", { entry });
 }
 
 export async function getLocalDatabaseSummary() {
@@ -81,7 +104,7 @@ export async function getLocalDatabaseSummary() {
     } satisfies LocalDatabaseSummary;
   }
 
-  return invoke<LocalDatabaseSummary>("get_local_database_summary");
+  return invokeLogged<LocalDatabaseSummary>("get_local_database_summary");
 }
 
 export async function openLocalDatabaseDirectory() {
@@ -89,5 +112,5 @@ export async function openLocalDatabaseDirectory() {
     return;
   }
 
-  await invoke("open_local_database_directory");
+  await invokeLogged("open_local_database_directory", undefined, { logSuccess: true });
 }

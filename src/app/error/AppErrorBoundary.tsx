@@ -3,6 +3,7 @@ import { Component } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../store/ui-store";
 import { Badge, Button, DetailPanel, PageHeader } from "../../components/ui";
+import { appendAppLog, openLogFile } from "../../services/tauri/app-log";
 
 type BoundaryState = {
   error: Error | null;
@@ -47,6 +48,9 @@ function AppErrorFallback({
         description={t("errorBoundary.summary.description")}
         actions={
           <div className="gp-header-actions">
+            <Button variant="secondary" onClick={() => void openLogFile()}>
+              {t("errorBoundary.actions.showLog")}
+            </Button>
             <Button
               variant="secondary"
               onClick={() => {
@@ -127,6 +131,10 @@ class BoundaryRoot extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    void appendAppLog("error", "frontend:render", "Render error captured", {
+      error: error.message,
+      componentStack: errorInfo.componentStack ?? "",
+    }).catch(() => undefined);
     this.setState({
       error,
       componentStack: errorInfo.componentStack ?? "",
@@ -145,6 +153,10 @@ class BoundaryRoot extends Component<
   }
 
   handleWindowError = (event: ErrorEvent) => {
+    void appendAppLog("error", "frontend:window", "Window error captured", {
+      message: event.message,
+      error: event.error instanceof Error ? event.error.message : String(event.error ?? ""),
+    }).catch(() => undefined);
     this.setState({
       error: normalizeUnknownError(event.error ?? event.message),
       componentStack: "",
@@ -153,6 +165,10 @@ class BoundaryRoot extends Component<
   };
 
   handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+    void appendAppLog("error", "frontend:promise", "Unhandled promise rejection captured", {
+      reason:
+        event.reason instanceof Error ? event.reason.message : String(event.reason ?? "unknown"),
+    }).catch(() => undefined);
     this.setState({
       error: normalizeUnknownError(event.reason),
       componentStack: "",

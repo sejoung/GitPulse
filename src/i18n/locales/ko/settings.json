@@ -142,6 +142,10 @@
     "retentionValue": "최근 분석 실행 {{runs}}개와 분석 캐시 {{cache}}개까지만 유지합니다.",
     "databasePath": "DB 경로",
     "databasePathUnavailable": "현재 실행 환경에서는 DB 경로를 표시할 수 없습니다.",
+    "logPath": "로그 경로",
+    "logPathUnavailable": "현재 실행 환경에서는 로그 경로를 표시할 수 없습니다.",
+    "logPreview": "최근 로그",
+    "logPreviewEmpty": "아직 기록된 로그가 없습니다.",
     "localQueryCache": "현재 세션의 로컬 query cache를 사용 중입니다.",
     "persistedTitle": "로컬 DB에 저장됨",
     "volatileTitle": "저장하지 않음",
@@ -161,6 +165,9 @@
     "openFolder": "DB 파일 보기",
     "openedFolder": "로컬 DB 파일 위치를 표시했습니다.",
     "openFolderFailed": "로컬 DB 파일 위치를 표시하지 못했습니다.",
+    "openLog": "로그 파일 보기",
+    "openedLog": "로그 파일 위치를 표시했습니다.",
+    "openLogFailed": "로그 파일 위치를 표시하지 못했습니다.",
     "clear": "분석 캐시 초기화",
     "cleared": "분석 캐시를 초기화했습니다."
   }

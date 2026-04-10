@@ -8,6 +8,7 @@ import {
   saveLocalDatabaseAnalysisRuns,
   saveLocalDatabaseSettings,
 } from "../../services/tauri/local-database";
+import { appendAppLog } from "../../services/tauri/app-log";
 import i18n, { languageStorageKey } from "../../i18n/config";
 
 export function AppProviders({ children }: PropsWithChildren) {
@@ -45,6 +46,9 @@ export function AppProviders({ children }: PropsWithChildren) {
         }
       })
       .catch(() => {
+        void appendAppLog("error", "frontend:database", "Failed to hydrate local database").catch(
+          () => undefined
+        );
         if (!active) {
           return;
         }
@@ -67,7 +71,11 @@ export function AppProviders({ children }: PropsWithChildren) {
       return;
     }
 
-    void saveLocalDatabaseSettings(settingsPayload).catch(() => undefined);
+    void saveLocalDatabaseSettings(settingsPayload).catch((error) => {
+      void appendAppLog("error", "frontend:database", "Failed to save local settings", {
+        error: error instanceof Error ? error.message : String(error),
+      }).catch(() => undefined);
+    });
   }, [databaseHydrated, settingsPayload]);
 
   useEffect(() => {
@@ -75,7 +83,11 @@ export function AppProviders({ children }: PropsWithChildren) {
       return;
     }
 
-    void saveLocalDatabaseAnalysisRuns(analysisRuns).catch(() => undefined);
+    void saveLocalDatabaseAnalysisRuns(analysisRuns).catch((error) => {
+      void appendAppLog("error", "frontend:database", "Failed to save analysis runs", {
+        error: error instanceof Error ? error.message : String(error),
+      }).catch(() => undefined);
+    });
   }, [analysisRuns, databaseHydrated]);
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;

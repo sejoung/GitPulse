@@ -12,6 +12,7 @@ import type {
   SettingsMatchPreview,
 } from "../../domains/metrics/overview";
 import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
+import { appendAppLog } from "./app-log";
 
 type AnalysisParams = {
   workspacePath: string;
@@ -23,6 +24,28 @@ type AnalysisParams = {
 
 function isTauriRuntime() {
   return "__TAURI_INTERNALS__" in window;
+}
+
+async function invokeLogged<T>(
+  command: string,
+  payload: Record<string, unknown>,
+  options?: { logSuccess?: boolean }
+) {
+  try {
+    const result = await invoke<T>(command, payload);
+    if (options?.logSuccess) {
+      void appendAppLog("info", `tauri:${command}`, "Command completed", payload).catch(
+        () => undefined
+      );
+    }
+    return result;
+  } catch (error) {
+    void appendAppLog("error", `tauri:${command}`, "Command failed", {
+      payload,
+      error: error instanceof Error ? error.message : String(error),
+    }).catch(() => undefined);
+    throw error;
+  }
 }
 
 export function getOverviewAnalysis({
@@ -42,7 +65,7 @@ export function getOverviewAnalysis({
     });
   }
 
-  return invoke<OverviewAnalysis>("get_overview_analysis", {
+  return invokeLogged<OverviewAnalysis>("get_overview_analysis", {
     workspacePath,
     period,
     excludedPaths,
@@ -61,7 +84,7 @@ export function getHotspotsAnalysis({
     return Promise.resolve<HotspotFile[]>([]);
   }
 
-  return invoke<HotspotFile[]>("get_hotspots_analysis", {
+  return invokeLogged<HotspotFile[]>("get_hotspots_analysis", {
     workspacePath,
     period,
     excludedPaths,
@@ -79,7 +102,7 @@ export function getHotspotCommitDetails({
     return Promise.resolve<HotspotCommit[]>([]);
   }
 
-  return invoke<HotspotCommit[]>("get_hotspot_commit_details", {
+  return invokeLogged<HotspotCommit[]>("get_hotspot_commit_details", {
     workspacePath,
     period,
     bugKeywords,
@@ -92,7 +115,7 @@ export function getOwnershipAnalysis(workspacePath: string) {
     return Promise.resolve<OwnershipContributor[]>([]);
   }
 
-  return invoke<OwnershipContributor[]>("get_ownership_analysis", { workspacePath });
+  return invokeLogged<OwnershipContributor[]>("get_ownership_analysis", { workspacePath });
 }
 
 export function getActivityAnalysis(workspacePath: string, period: AnalysisPeriod = "1y") {
@@ -100,7 +123,7 @@ export function getActivityAnalysis(workspacePath: string, period: AnalysisPerio
     return Promise.resolve<ActivityPoint[]>([]);
   }
 
-  return invoke<ActivityPoint[]>("get_activity_analysis", { workspacePath, period });
+  return invokeLogged<ActivityPoint[]>("get_activity_analysis", { workspacePath, period });
 }
 
 export function getDeliveryRiskAnalysis(
@@ -111,7 +134,7 @@ export function getDeliveryRiskAnalysis(
     return Promise.resolve<DeliveryEvent[]>([]);
   }
 
-  return invoke<DeliveryEvent[]>("get_delivery_risk_analysis", {
+  return invokeLogged<DeliveryEvent[]>("get_delivery_risk_analysis", {
     workspacePath,
     emergencyPatterns,
   });
@@ -136,7 +159,7 @@ export function getSettingsMatchPreview({
     });
   }
 
-  return invoke<SettingsMatchPreview>("get_settings_match_preview", {
+  return invokeLogged<SettingsMatchPreview>("get_settings_match_preview", {
     workspacePath,
     period,
     excludedPaths,
@@ -150,7 +173,7 @@ export function getGitBranches(workspacePath: string) {
     return Promise.resolve<GitBranch[]>([]);
   }
 
-  return invoke<GitBranch[]>("list_git_branches", { workspacePath });
+  return invokeLogged<GitBranch[]>("list_git_branches", { workspacePath });
 }
 
 export function getGitRepositoryState(workspacePath: string) {
@@ -163,7 +186,7 @@ export function getGitRepositoryState(workspacePath: string) {
     });
   }
 
-  return invoke<GitRepositoryState>("get_git_repository_state", { workspacePath });
+  return invokeLogged<GitRepositoryState>("get_git_repository_state", { workspacePath });
 }
 
 export function checkoutGitBranch(workspacePath: string, branchName: string) {
@@ -171,7 +194,11 @@ export function checkoutGitBranch(workspacePath: string, branchName: string) {
     return Promise.resolve(branchName);
   }
 
-  return invoke<string>("checkout_git_branch", { workspacePath, branchName });
+  return invokeLogged<string>(
+    "checkout_git_branch",
+    { workspacePath, branchName },
+    { logSuccess: true }
+  );
 }
 
 export function checkGitRemoteStatus(workspacePath: string) {
@@ -185,7 +212,11 @@ export function checkGitRemoteStatus(workspacePath: string) {
     });
   }
 
-  return invoke<GitRemoteStatus>("check_git_remote_status", { workspacePath });
+  return invokeLogged<GitRemoteStatus>(
+    "check_git_remote_status",
+    { workspacePath },
+    { logSuccess: true }
+  );
 }
 
 export function pullGitRemoteUpdates(workspacePath: string) {
@@ -199,5 +230,9 @@ export function pullGitRemoteUpdates(workspacePath: string) {
     });
   }
 
-  return invoke<GitRemoteStatus>("pull_git_remote_updates", { workspacePath });
+  return invokeLogged<GitRemoteStatus>(
+    "pull_git_remote_updates",
+    { workspacePath },
+    { logSuccess: true }
+  );
 }

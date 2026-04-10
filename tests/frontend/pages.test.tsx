@@ -16,6 +16,7 @@ const api = vi.hoisted(() => ({
   checkGitRemoteStatus: vi.fn(),
   checkoutGitBranch: vi.fn(),
   getLocalDatabaseSummary: vi.fn(),
+  getLogFileSummary: vi.fn(),
   getActivityAnalysis: vi.fn(),
   getDeliveryRiskAnalysis: vi.fn(),
   getGitBranches: vi.fn(),
@@ -25,6 +26,7 @@ const api = vi.hoisted(() => ({
   getOverviewAnalysis: vi.fn(),
   getOwnershipAnalysis: vi.fn(),
   openLocalDatabaseDirectory: vi.fn(),
+  openLogFile: vi.fn(),
   getSettingsMatchPreview: vi.fn(),
   pullGitRemoteUpdates: vi.fn(),
   upsertLocalDatabaseAnalysisCache: vi.fn(),
@@ -38,6 +40,11 @@ vi.mock("../../src/services/tauri/local-database", () => ({
   saveLocalDatabaseSettings: vi.fn(),
   saveLocalDatabaseAnalysisRuns: vi.fn(),
   upsertLocalDatabaseAnalysisCache: api.upsertLocalDatabaseAnalysisCache,
+}));
+vi.mock("../../src/services/tauri/app-log", () => ({
+  getLogFileSummary: api.getLogFileSummary,
+  openLogFile: api.openLogFile,
+  appendAppLog: vi.fn(),
 }));
 
 function resetStore() {
@@ -98,6 +105,11 @@ beforeEach(async () => {
     analysisRunLimit: 20,
     analysisCacheLimit: 50,
   });
+  api.getLogFileSummary.mockResolvedValue({
+    logPath: "/mock-data/logs/gitpulse.log",
+    logDirectory: "/mock-data/logs",
+    latestEntries: ["[1712700000000] ERROR frontend:test - sample failure"],
+  });
   api.getGitBranches.mockResolvedValue([]);
   api.getGitRepositoryState.mockResolvedValue({
     branch: "main",
@@ -121,6 +133,7 @@ beforeEach(async () => {
     message: null,
   });
   api.openLocalDatabaseDirectory.mockResolvedValue(undefined);
+  api.openLogFile.mockResolvedValue(undefined);
   api.upsertLocalDatabaseAnalysisCache.mockResolvedValue(undefined);
 });
 
@@ -341,6 +354,20 @@ describe("SettingsPage", () => {
 
     expect(api.openLocalDatabaseDirectory).toHaveBeenCalledTimes(1);
     expect(await screen.findByText("Revealed the local database file.")).toBeInTheDocument();
+  });
+
+  it("shows recent logs and opens the log file", async () => {
+    const user = userEvent.setup();
+
+    renderWithClient(<SettingsPage />);
+
+    expect(await screen.findByText("Recent log entries")).toBeInTheDocument();
+    expect(api.getLogFileSummary).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole("button", { name: "Show log file" }));
+
+    expect(api.openLogFile).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("Revealed the log file.")).toBeInTheDocument();
   });
 });
 

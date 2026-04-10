@@ -108,7 +108,7 @@ describe("local-database api", () => {
     await getLocalDatabaseSummary();
     await openLocalDatabaseDirectory();
 
-    expect(invokeMock).toHaveBeenCalledWith("load_local_database");
+    expect(invokeMock).toHaveBeenCalledWith("load_local_database", undefined);
     expect(invokeMock).toHaveBeenCalledWith("save_local_database_settings", {
       settings: { language: "en", workspacePath: "/repo", analysisPeriod: "3m" },
     });
@@ -142,7 +142,17 @@ describe("local-database api", () => {
         deliveryRiskLevel: "medium",
       },
     });
-    expect(invokeMock).toHaveBeenCalledWith("get_local_database_summary");
-    expect(invokeMock).toHaveBeenCalledWith("open_local_database_directory");
+    expect(invokeMock).toHaveBeenCalledWith("get_local_database_summary", undefined);
+    expect(invokeMock).toHaveBeenCalledWith("open_local_database_directory", undefined);
+    expect(invokeMock).toHaveBeenCalledWith("append_log_entry", {
+      entry: {
+        level: "info",
+        source: "tauri:save_local_database_settings",
+        message: "Command completed",
+        context: JSON.stringify({
+          settings: { language: "en", workspacePath: "/repo", analysisPeriod: "3m" },
+        }),
+      },
+    });
   });
 });

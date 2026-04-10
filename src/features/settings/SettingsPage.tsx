@@ -11,7 +11,9 @@ import { useUiStore } from "../../app/store/ui-store";
 import { Badge, Button, DetailPanel, Input, PageHeader, Table, Tabs } from "../../components/ui";
 import { languageStorageKey } from "../../i18n/config";
 import { openLocalDatabaseDirectory } from "../../services/tauri/local-database";
+import { openLogFile } from "../../services/tauri/app-log";
 import { useLocalDatabaseSummary } from "./useLocalDatabaseSummary";
+import { useLogFileSummary } from "./useLogFileSummary";
 import { useSettingsMatchPreview } from "./useSettingsMatchPreview";
 
 type SettingsExport = {
@@ -112,6 +114,7 @@ export function SettingsPage() {
   const [settingsMessage, setSettingsMessage] = useState("");
   const [cacheMessage, setCacheMessage] = useState("");
   const { data: databaseSummary } = useLocalDatabaseSummary();
+  const { data: logSummary } = useLogFileSummary();
   const workspacePath = useUiStore((state) => state.workspacePath);
   const language = useUiStore((state) => state.language);
   const excludedPaths = useUiStore((state) => state.excludedPaths);
@@ -227,6 +230,19 @@ export function SettingsPage() {
         error instanceof Error && error.message
           ? `${t("cache.openFolderFailed")} ${error.message}`
           : t("cache.openFolderFailed")
+      );
+    }
+  }
+
+  async function revealLogFile() {
+    try {
+      await openLogFile();
+      setCacheMessage(t("cache.openedLog"));
+    } catch (error) {
+      setCacheMessage(
+        error instanceof Error && error.message
+          ? `${t("cache.openLogFailed")} ${error.message}`
+          : t("cache.openLogFailed")
       );
     }
   }
@@ -1010,6 +1026,9 @@ export function SettingsPage() {
             <Button variant="secondary" onClick={() => void openDatabaseDirectory()}>
               {t("cache.openFolder")}
             </Button>
+            <Button variant="secondary" onClick={() => void revealLogFile()}>
+              {t("cache.openLog")}
+            </Button>
             <Button variant="danger" onClick={clearAnalysisCache}>
               {t("cache.clear")}
             </Button>
@@ -1065,6 +1084,24 @@ export function SettingsPage() {
             <p className="gp-text-secondary mt-1 break-words text-sm">
               {databaseSummary?.databasePath ?? t("cache.databasePathUnavailable")}
             </p>
+          </div>
+        </div>
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.logPath")}</p>
+            <p className="gp-text-secondary mt-1 break-words text-sm">
+              {logSummary?.logPath ?? t("cache.logPathUnavailable")}
+            </p>
+          </div>
+          <div className="gp-panel min-w-0 p-3">
+            <p className="gp-kicker">{t("cache.logPreview")}</p>
+            {logSummary?.latestEntries.length ? (
+              <pre className="gp-text-secondary mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-xs">
+                {logSummary.latestEntries.slice(-12).join("\n")}
+              </pre>
+            ) : (
+              <p className="gp-text-muted mt-2 text-sm">{t("cache.logPreviewEmpty")}</p>
+            )}
           </div>
         </div>
         <div className="mt-3 grid gap-3 xl:grid-cols-2">

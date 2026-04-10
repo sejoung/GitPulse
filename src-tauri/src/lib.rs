@@ -26,7 +26,10 @@ pub fn run() {
             commands::storage::save_local_database_analysis_runs,
             commands::storage::upsert_local_database_analysis_cache,
             commands::storage::get_local_database_summary,
-            commands::storage::open_local_database_directory
+            commands::storage::open_local_database_directory,
+            commands::storage::append_log_entry,
+            commands::storage::get_log_file_summary,
+            commands::storage::open_log_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running GitPulse");

@@ -2,9 +2,10 @@ use tauri::AppHandle;
 
 use crate::models::storage::{
     AnalysisCacheEntry, AnalysisRunRecord, LocalDatabaseSnapshot, LocalDatabaseSummary,
-    PersistedUiSettings,
+    LogEntryInput, LogFileSummary, PersistedUiSettings,
 };
 use crate::storage::database;
+use crate::storage::log;
 
 #[tauri::command]
 pub fn load_local_database(app_handle: AppHandle) -> Result<LocalDatabaseSnapshot, String> {
@@ -43,4 +44,19 @@ pub fn get_local_database_summary(app_handle: AppHandle) -> Result<LocalDatabase
 #[tauri::command]
 pub fn open_local_database_directory(app_handle: AppHandle) -> Result<(), String> {
     database::open_database_directory(&app_handle)
+}
+
+#[tauri::command]
+pub fn append_log_entry(app_handle: AppHandle, entry: LogEntryInput) -> Result<(), String> {
+    log::append_entry(&app_handle, entry)
+}
+
+#[tauri::command]
+pub fn get_log_file_summary(app_handle: AppHandle) -> Result<LogFileSummary, String> {
+    log::summary(&app_handle)
+}
+
+#[tauri::command]
+pub fn open_log_file(app_handle: AppHandle) -> Result<(), String> {
+    log::open_log_file(&app_handle)
 }
