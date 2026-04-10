@@ -266,6 +266,13 @@ These patterns are now implemented in the app and should be reused.
 - At minimum, show the current repository and branch. Add analysis window, configured filters, or visible row counts when they materially explain the page result.
 - When a page depends on settings interpretation, include an `Open settings` action in the panel header instead of creating a separate settings callout elsewhere.
 
+### Error States
+
+- Runtime failures should render a full-page error surface inside the existing app shell rather than collapsing to a blank screen.
+- Use `PageHeader` + `DetailPanel` + `gp-panel` blocks for error summary and debug details.
+- The error page should show the current page, failure type, error message, and stack information when available.
+- Keep recovery actions close to the summary: `Retry page` first, and an escape action such as `Go to overview` when the current page may remain broken.
+
 ### Summary Panels
 
 - Use `gp-panel` for compact summary blocks that show one label and one short value.

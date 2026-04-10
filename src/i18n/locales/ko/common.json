@@ -14,6 +14,30 @@
     "browse": "찾아보기",
     "openSettings": "설정 열기"
   },
+  "errorBoundary": {
+    "kicker": "애플리케이션 오류",
+    "title": "GitPulse에서 예상하지 못한 오류가 발생했습니다",
+    "description": "현재 페이지 렌더링을 완료하지 못했습니다. 아래 정보를 보고 실패 원인을 바로 확인할 수 있습니다.",
+    "badge": "디버깅 필요",
+    "actions": {
+      "goOverview": "개요로 이동",
+      "retry": "페이지 다시 시도"
+    },
+    "summary": {
+      "title": "오류 요약",
+      "description": "다시 시도하기 전에 현재 페이지와 오류 유형을 먼저 확인합니다.",
+      "page": "현재 페이지",
+      "type": "오류 유형",
+      "message": "오류 메시지",
+      "render": "렌더 오류"
+    },
+    "details": {
+      "title": "디버그 정보",
+      "description": "아래 메시지와 스택을 기준으로 문제를 재현하고 디버깅할 수 있습니다.",
+      "error": "오류 스택",
+      "componentStack": "컴포넌트 스택"
+    }
+  },
   "status": {
     "notSelected": "선택 안 됨",
     "healthy": "양호",

@@ -14,6 +14,30 @@
     "browse": "Browse",
     "openSettings": "Open settings"
   },
+  "errorBoundary": {
+    "kicker": "Application error",
+    "title": "GitPulse hit an unexpected error",
+    "description": "The current page could not finish rendering. Use the details below to inspect the failure.",
+    "badge": "Debug required",
+    "actions": {
+      "goOverview": "Go to overview",
+      "retry": "Retry page"
+    },
+    "summary": {
+      "title": "Failure summary",
+      "description": "Capture the current page and error type before retrying.",
+      "page": "Current page",
+      "type": "Failure type",
+      "message": "Error message",
+      "render": "Render error"
+    },
+    "details": {
+      "title": "Debug details",
+      "description": "Use the message and stack below to reproduce and debug the issue.",
+      "error": "Error stack",
+      "componentStack": "Component stack"
+    }
+  },
   "status": {
     "notSelected": "Not selected",
     "healthy": "healthy",

@@ -1,3 +1,4 @@
+import { AppErrorBoundary } from "../error/AppErrorBoundary";
 import { AppShell } from "../../components/layout/AppShell";
 import { useUiStore } from "../store/ui-store";
 import { ActivityPage } from "../../features/activity/ActivityPage";
@@ -30,7 +31,9 @@ function ActivePage() {
 export function AppRouter() {
   return (
     <AppShell>
-      <ActivePage />
+      <AppErrorBoundary>
+        <ActivePage />
+      </AppErrorBoundary>
     </AppShell>
   );
 }
