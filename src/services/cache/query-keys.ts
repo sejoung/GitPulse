@@ -39,4 +39,19 @@ export const queryKeys = {
     ["activity", workspacePath, branch, period] as const,
   deliveryRisk: (workspacePath: string, branch: string, emergencyPatterns: string) =>
     ["delivery-risk", workspacePath, branch, emergencyPatterns] as const,
+  settingsMatchPreview: (
+    workspacePath: string,
+    period: string,
+    excludedPaths: string,
+    bugKeywords: string,
+    emergencyPatterns: string
+  ) =>
+    [
+      "settings-match-preview",
+      workspacePath,
+      period,
+      excludedPaths,
+      bugKeywords,
+      emergencyPatterns,
+    ] as const,
 };

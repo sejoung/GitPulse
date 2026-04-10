@@ -5,6 +5,7 @@ import {
   getActivityAnalysis,
   getHotspotCommitDetails,
   getOverviewAnalysis,
+  getSettingsMatchPreview,
   pullGitRemoteUpdates,
 } from "../../src/services/tauri/analysis-api";
 
@@ -55,6 +56,21 @@ describe("analysis-api runtime guards", () => {
       behind: 0,
       message: null,
     });
+    await expect(
+      getSettingsMatchPreview({
+        workspacePath: "/repo",
+        period: "3m",
+        excludedPaths: "dist/",
+        bugKeywords: "fix,bug",
+        emergencyPatterns: [],
+      })
+    ).resolves.toEqual({
+      analyzedCommitCount: 0,
+      bugKeywordCommitCount: 0,
+      excludedFileCount: 0,
+      excludedFiles: [],
+      emergencyMatches: [],
+    });
 
     expect(invokeMock).not.toHaveBeenCalled();
   });
@@ -102,6 +118,33 @@ describe("analysis-api runtime guards", () => {
       period: "6m",
       bugKeywords: "fix,bug",
       filePath: "src/app.tsx",
+    });
+  });
+
+  it("passes settings preview inputs through to the native command", async () => {
+    setTauriRuntime(true);
+    invokeMock.mockResolvedValue({
+      analyzedCommitCount: 8,
+      bugKeywordCommitCount: 2,
+      excludedFileCount: 1,
+      excludedFiles: ["dist/index.js"],
+      emergencyMatches: [{ pattern: "revert", signal: "Normal recovery", count: 1 }],
+    });
+
+    await getSettingsMatchPreview({
+      workspacePath: "/repo",
+      period: "6m",
+      excludedPaths: "dist/",
+      bugKeywords: "fix,bug",
+      emergencyPatterns: [{ pattern: "revert, reverted", signal: "Rollback activity" }],
+    });
+
+    expect(invokeMock).toHaveBeenCalledWith("get_settings_match_preview", {
+      workspacePath: "/repo",
+      period: "6m",
+      excludedPaths: "dist/",
+      bugKeywords: "fix,bug",
+      emergencyPatterns: [{ pattern: "revert, reverted", signal: "Rollback activity" }],
     });
   });
 });

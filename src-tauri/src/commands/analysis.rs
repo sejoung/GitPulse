@@ -1,10 +1,11 @@
 use crate::analysis::overview::{
     build_activity_analysis, build_delivery_risk_analysis, build_hotspot_commit_details,
     build_hotspots_analysis, build_overview_analysis, build_ownership_analysis,
+    build_settings_match_preview,
 };
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
-    OverviewAnalysis, OwnershipContributor,
+    OverviewAnalysis, OwnershipContributor, SettingsMatchPreview,
 };
 
 #[tauri::command]
@@ -73,4 +74,21 @@ pub fn get_delivery_risk_analysis(
     emergency_patterns: Option<Vec<EmergencyPatternConfig>>,
 ) -> Vec<DeliveryEvent> {
     build_delivery_risk_analysis(workspace_path.as_deref(), emergency_patterns.as_deref())
+}
+
+#[tauri::command]
+pub fn get_settings_match_preview(
+    workspace_path: Option<String>,
+    period: Option<String>,
+    excluded_paths: Option<String>,
+    bug_keywords: Option<String>,
+    emergency_patterns: Option<Vec<EmergencyPatternConfig>>,
+) -> SettingsMatchPreview {
+    build_settings_match_preview(
+        workspace_path.as_deref(),
+        period.as_deref(),
+        excluded_paths.as_deref(),
+        bug_keywords.as_deref(),
+        emergency_patterns.as_deref(),
+    )
 }

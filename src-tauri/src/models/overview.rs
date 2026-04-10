@@ -57,6 +57,24 @@ pub struct DeliveryEvent {
     pub risk: String,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SettingsPatternMatch {
+    pub pattern: String,
+    pub signal: String,
+    pub count: u32,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SettingsMatchPreview {
+    pub analyzed_commit_count: u32,
+    pub bug_keyword_commit_count: u32,
+    pub excluded_file_count: u32,
+    pub excluded_files: Vec<String>,
+    pub emergency_matches: Vec<SettingsPatternMatch>,
+}
+
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EmergencyPatternConfig {

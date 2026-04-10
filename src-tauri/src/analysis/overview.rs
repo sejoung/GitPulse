@@ -4,7 +4,7 @@ use std::process::Command;
 
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
-    OverviewAnalysis, OwnershipContributor,
+    OverviewAnalysis, OwnershipContributor, SettingsMatchPreview, SettingsPatternMatch,
 };
 
 fn is_git_workspace(workspace_path: &str) -> bool {
@@ -218,6 +218,28 @@ fn count_commits(workspace_path: &str, period: Option<&str>) -> u32 {
 
     run_git(workspace_path, &args)
         .and_then(|output| output.trim().parse::<u32>().ok())
+        .unwrap_or(0)
+}
+
+fn count_matching_commits(workspace_path: &str, period: Option<&str>, grep_pattern: &str) -> u32 {
+    let mut args = vec!["log", "--format=%H", "-i", "-E"];
+    let since;
+
+    if let Some(period_since) = since_arg(period).or(Some("1 year ago")) {
+        since = format!("--since={period_since}");
+        args.push(&since);
+    }
+
+    let grep_arg = format!("--grep={grep_pattern}");
+    args.push(&grep_arg);
+
+    run_git(workspace_path, &args)
+        .map(|output| {
+            output
+                .lines()
+                .filter(|line| !line.trim().is_empty())
+                .count() as u32
+        })
         .unwrap_or(0)
 }
 
@@ -549,6 +571,54 @@ pub fn build_overview_analysis(
         hotspot_count: hotspots.len() as u32,
         contributor_count: ownership.len() as u32,
         delivery_risk_level: delivery_risk_level.to_string(),
+    }
+}
+
+pub fn build_settings_match_preview(
+    workspace_path: Option<&str>,
+    period: Option<&str>,
+    excluded_paths: Option<&str>,
+    bug_keywords: Option<&str>,
+    emergency_patterns: Option<&[EmergencyPatternConfig]>,
+) -> SettingsMatchPreview {
+    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+        return SettingsMatchPreview {
+            analyzed_commit_count: 0,
+            bug_keyword_commit_count: 0,
+            excluded_file_count: 0,
+            excluded_files: Vec::new(),
+            emergency_matches: Vec::new(),
+        };
+    };
+
+    let excluded_paths = split_csv(excluded_paths);
+    let all_file_counts = collect_file_counts(workspace_path, period, &[], None);
+    let mut excluded_files: Vec<(String, u32)> = all_file_counts
+        .into_iter()
+        .filter(|(path, _)| is_excluded_path(path, &excluded_paths))
+        .collect();
+    excluded_files.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+
+    let bug_pattern = keyword_pattern(bug_keywords, &["fix", "bug", "broken"]);
+    let emergency_matches = build_delivery_risk_analysis(Some(workspace_path), emergency_patterns)
+        .into_iter()
+        .map(|row| SettingsPatternMatch {
+            pattern: row.event,
+            signal: row.signal,
+            count: row.count,
+        })
+        .collect();
+
+    SettingsMatchPreview {
+        analyzed_commit_count: count_commits(workspace_path, period),
+        bug_keyword_commit_count: count_matching_commits(workspace_path, period, &bug_pattern),
+        excluded_file_count: excluded_files.len() as u32,
+        excluded_files: excluded_files
+            .into_iter()
+            .take(5)
+            .map(|(path, _)| path)
+            .collect(),
+        emergency_matches,
     }
 }
 

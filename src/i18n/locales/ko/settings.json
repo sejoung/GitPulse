@@ -30,6 +30,25 @@
     "on": "켬",
     "off": "끔"
   },
+  "preview": {
+    "title": "설정 매칭 프리뷰",
+    "description": "분석을 다시 실행하기 전에 현재 저장소 설정이 실제 Git 이력에 어떻게 매칭되는지 미리 확인합니다.",
+    "currentRepository": "현재 저장소",
+    "scope": {
+      "globalDefaults": "전역 기본값",
+      "repositoryOverride": "저장소 오버라이드"
+    },
+    "window": "프리뷰 기간",
+    "analyzedCommits": "분석 대상 커밋",
+    "bugKeywordMatches": "Bug keyword 매칭 수",
+    "excludedFileMatches": "제외 파일 매칭 수",
+    "excludedFiles": "제외 경로에 걸리는 파일",
+    "excludedFilesEmpty": "이 기간에는 제외 경로에 매칭되는 변경 파일이 없습니다.",
+    "emergencyPatternMatches": "Emergency pattern 매칭",
+    "emergencyMatchesEmpty": "아직 표시할 emergency pattern 행이 없습니다.",
+    "updating": "업데이트 중",
+    "empty": "설정 매칭 프리뷰를 보려면 먼저 저장소를 선택하세요."
+  },
   "repositoryOverrides": {
     "title": "저장소별 오버라이드",
     "description": "현재 저장소에만 적용할 분석 기본값을 따로 설정합니다.",

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useDeferredValue, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import type {
@@ -9,6 +9,7 @@ import type {
 import { useUiStore } from "../../app/store/ui-store";
 import { Badge, Button, DetailPanel, Input, PageHeader, Table, Tabs } from "../../components/ui";
 import { languageStorageKey } from "../../i18n/config";
+import { useSettingsMatchPreview } from "./useSettingsMatchPreview";
 
 type Language = "ko" | "en";
 type SettingsExport = {
@@ -94,6 +95,22 @@ export function SettingsPage() {
     emergencyPatterns: currentRepositoryOverride?.emergencyPatterns ?? emergencyPatterns,
   };
   const repositoryOverridePreview = parseList(effectiveRepositorySettings.excludedPaths);
+  const deferredPreviewPeriod = useDeferredValue(analysisPeriod);
+  const deferredPreviewExcludedPaths = useDeferredValue(effectiveRepositorySettings.excludedPaths);
+  const deferredPreviewBugKeywords = useDeferredValue(effectiveRepositorySettings.bugKeywords);
+  const deferredPreviewEmergencyPatterns = useDeferredValue(
+    effectiveRepositorySettings.emergencyPatterns
+  );
+  const { data: matchPreview, isFetching: isMatchPreviewFetching } = useSettingsMatchPreview(
+    workspacePath,
+    deferredPreviewPeriod,
+    deferredPreviewExcludedPaths,
+    deferredPreviewBugKeywords,
+    deferredPreviewEmergencyPatterns
+  );
+  const previewScopeKey = currentRepositoryOverride
+    ? "preview.scope.repositoryOverride"
+    : "preview.scope.globalDefaults";
   const settingsRows = [
     {
       key: t("defaults.analysisWindow"),
@@ -469,6 +486,122 @@ export function SettingsPage() {
             onChange={(value) => handleRememberLastRepository(value === "on")}
           />
         </div>
+      </DetailPanel>
+
+      <DetailPanel title={t("preview.title")} description={t("preview.description")}>
+        {workspacePath ? (
+          <div className="space-y-4">
+            <div className="gp-status-row">
+              <div className="min-w-0">
+                <p className="gp-kicker">{t("preview.currentRepository")}</p>
+                <p className="gp-text-secondary mt-1 break-words text-sm">{workspacePath}</p>
+              </div>
+              <Badge tone={currentRepositoryOverride ? "brand" : "neutral"} className="w-fit">
+                {t(previewScopeKey)}
+              </Badge>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("preview.window")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {t(`defaults.analysisWindows.${analysisPeriod}`)}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("preview.analyzedCommits")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {matchPreview?.analyzedCommitCount ?? 0}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("preview.bugKeywordMatches")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {matchPreview?.bugKeywordCommitCount ?? 0}
+                </p>
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("preview.excludedFileMatches")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {matchPreview?.excludedFileCount ?? 0}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className="gp-panel min-w-0 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="gp-kicker">{t("preview.excludedFiles")}</p>
+                  {isMatchPreviewFetching ? (
+                    <Badge tone="neutral">{t("preview.updating")}</Badge>
+                  ) : null}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {matchPreview && matchPreview.excludedFiles.length > 0 ? (
+                    matchPreview.excludedFiles.map((path) => (
+                      <Badge key={path} tone="neutral">
+                        {path}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="gp-text-muted text-sm">{t("preview.excludedFilesEmpty")}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3 xl:hidden">
+                <p className="gp-kicker">{t("preview.emergencyPatternMatches")}</p>
+                {matchPreview && matchPreview.emergencyMatches.length > 0 ? (
+                  matchPreview.emergencyMatches.map((row) => (
+                    <div key={row.pattern} className="gp-panel min-w-0 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="gp-text-secondary break-words text-sm">{row.pattern}</p>
+                          <p className="gp-text-muted mt-1 break-words text-xs">{row.signal}</p>
+                        </div>
+                        <Badge tone={row.count > 0 ? "watch" : "neutral"} className="w-fit">
+                          {row.count}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="gp-panel min-w-0 p-3">
+                    <p className="gp-text-muted text-sm">{t("preview.emergencyMatchesEmpty")}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="hidden xl:block">
+                <Table
+                  columns={[
+                    {
+                      key: "pattern",
+                      header: t("common:table.pattern"),
+                      render: (row) => row.pattern,
+                    },
+                    {
+                      key: "signal",
+                      header: t("common:table.signal"),
+                      render: (row) => row.signal,
+                    },
+                    {
+                      key: "count",
+                      header: t("common:table.count"),
+                      align: "right",
+                      render: (row) => row.count,
+                    },
+                  ]}
+                  rows={matchPreview?.emergencyMatches ?? []}
+                  getRowKey={(row) => row.pattern}
+                  emptyText={t("preview.emergencyMatchesEmpty")}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="gp-text-secondary text-sm">{t("preview.empty")}</p>
+        )}
       </DetailPanel>
 
       <DetailPanel

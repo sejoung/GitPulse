@@ -23,6 +23,7 @@ const api = vi.hoisted(() => ({
   getHotspotsAnalysis: vi.fn(),
   getOverviewAnalysis: vi.fn(),
   getOwnershipAnalysis: vi.fn(),
+  getSettingsMatchPreview: vi.fn(),
   pullGitRemoteUpdates: vi.fn(),
 }));
 
@@ -67,6 +68,13 @@ beforeEach(async () => {
   api.getActivityAnalysis.mockResolvedValue([]);
   api.getOwnershipAnalysis.mockResolvedValue([]);
   api.getDeliveryRiskAnalysis.mockResolvedValue([]);
+  api.getSettingsMatchPreview.mockResolvedValue({
+    analyzedCommitCount: 0,
+    bugKeywordCommitCount: 0,
+    excludedFileCount: 0,
+    excludedFiles: [],
+    emergencyMatches: [],
+  });
   api.getGitBranches.mockResolvedValue([]);
   api.getGitRepositoryState.mockResolvedValue({
     branch: "main",
@@ -140,6 +148,43 @@ describe("SettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Enable override" }));
 
     expect(useUiStore.getState().repositoryOverrides["/Users/beni/career-ops"]).toEqual({
+      excludedPaths: "dist/, node_modules/, target/",
+      bugKeywords: "fix, bug, broken",
+      emergencyPatterns: [
+        { pattern: "revert", signal: "Normal recovery" },
+        { pattern: "hotfix", signal: "Watch release pressure" },
+        { pattern: "emergency", signal: "Emergency response" },
+        { pattern: "rollback", signal: "Rollback pattern" },
+      ],
+    });
+  });
+
+  it("renders live settings match preview for the current repository", async () => {
+    useUiStore.setState({
+      workspacePath: "/Users/beni/career-ops",
+      analysisPeriod: "3m",
+    });
+    api.getSettingsMatchPreview.mockResolvedValue({
+      analyzedCommitCount: 18,
+      bugKeywordCommitCount: 4,
+      excludedFileCount: 2,
+      excludedFiles: ["dist/index.js", "target/debug/app"],
+      emergencyMatches: [
+        { pattern: "revert, reverted", signal: "Rollback activity", count: 2 },
+        { pattern: "hotfix", signal: "Watch release pressure", count: 1 },
+      ],
+    });
+
+    renderWithClient(<SettingsPage />);
+
+    expect(await screen.findByText("Settings match preview")).toBeInTheDocument();
+    expect(await screen.findByText("dist/index.js")).toBeInTheDocument();
+    expect(screen.getByText("target/debug/app")).toBeInTheDocument();
+    expect(screen.getAllByText("revert, reverted").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rollback activity").length).toBeGreaterThan(0);
+    expect(api.getSettingsMatchPreview).toHaveBeenCalledWith({
+      workspacePath: "/Users/beni/career-ops",
+      period: "3m",
       excludedPaths: "dist/, node_modules/, target/",
       bugKeywords: "fix, bug, broken",
       emergencyPatterns: [

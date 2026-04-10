@@ -43,6 +43,20 @@ export type DeliveryEvent = {
   risk: "healthy" | "watch" | "risky";
 };
 
+export type SettingsPatternMatch = {
+  pattern: string;
+  signal: string;
+  count: number;
+};
+
+export type SettingsMatchPreview = {
+  analyzedCommitCount: number;
+  bugKeywordCommitCount: number;
+  excludedFileCount: number;
+  excludedFiles: string[];
+  emergencyMatches: SettingsPatternMatch[];
+};
+
 export type GitBranch = {
   name: string;
   label: string;

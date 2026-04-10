@@ -30,6 +30,25 @@
     "on": "On",
     "off": "Off"
   },
+  "preview": {
+    "title": "Settings match preview",
+    "description": "Preview how the current repository settings map onto real Git history before running analysis again.",
+    "currentRepository": "Current repository",
+    "scope": {
+      "globalDefaults": "Global defaults",
+      "repositoryOverride": "Repository override"
+    },
+    "window": "Preview window",
+    "analyzedCommits": "Analyzed commits",
+    "bugKeywordMatches": "Bug keyword matches",
+    "excludedFileMatches": "Excluded file matches",
+    "excludedFiles": "Matched excluded files",
+    "excludedFilesEmpty": "No changed files match the excluded paths in this window.",
+    "emergencyPatternMatches": "Emergency pattern matches",
+    "emergencyMatchesEmpty": "No emergency pattern rows are available yet.",
+    "updating": "Updating",
+    "empty": "Select a repository before previewing settings matches."
+  },
   "repositoryOverrides": {
     "title": "Repository override",
     "description": "Override selected analysis defaults for the current repository only.",

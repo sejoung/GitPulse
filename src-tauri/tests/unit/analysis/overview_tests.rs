@@ -154,6 +154,54 @@ fn hotspot_commit_details_returns_recent_file_commits_with_keyword_matches() {
     let _ = fs::remove_dir_all(repo);
 }
 
+#[test]
+fn settings_match_preview_counts_keywords_exclusions_and_patterns() {
+    let repo = init_temp_repo("settings-preview");
+    commit_file(
+        &repo,
+        "src/app.rs",
+        "first change",
+        "fix app shell bug",
+        "2099-03-15T00:00:00+0000",
+    );
+    commit_file(
+        &repo,
+        "dist/index.js",
+        "bundle output",
+        "build dist bundle",
+        "2099-04-10T00:00:00+0000",
+    );
+    commit_file(
+        &repo,
+        "src/app.rs",
+        "rollback",
+        "reverted app shell",
+        "2099-04-18T00:00:00+0000",
+    );
+
+    let preview = build_settings_match_preview(
+        repo.to_str(),
+        Some("3m"),
+        Some("dist/, target/"),
+        Some("fix, bug"),
+        Some(&[EmergencyPatternConfig {
+            pattern: "revert, reverted".to_string(),
+            signal: "Rollback activity".to_string(),
+        }]),
+    );
+
+    assert_eq!(preview.analyzed_commit_count, 3);
+    assert_eq!(preview.bug_keyword_commit_count, 1);
+    assert_eq!(preview.excluded_file_count, 1);
+    assert_eq!(preview.excluded_files, vec!["dist/index.js".to_string()]);
+    assert_eq!(preview.emergency_matches.len(), 1);
+    assert_eq!(preview.emergency_matches[0].pattern, "revert, reverted");
+    assert_eq!(preview.emergency_matches[0].signal, "Rollback activity");
+    assert_eq!(preview.emergency_matches[0].count, 1);
+
+    let _ = fs::remove_dir_all(repo);
+}
+
 fn init_temp_repo(name: &str) -> PathBuf {
     let repo = std::env::temp_dir().join(format!("gitpulse-{name}-{}", std::process::id()));
     let _ = fs::remove_dir_all(&repo);

@@ -9,6 +9,7 @@ import type {
   HotspotFile,
   OverviewAnalysis,
   OwnershipContributor,
+  SettingsMatchPreview,
 } from "../../domains/metrics/overview";
 import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
 
@@ -112,6 +113,32 @@ export function getDeliveryRiskAnalysis(
 
   return invoke<DeliveryEvent[]>("get_delivery_risk_analysis", {
     workspacePath,
+    emergencyPatterns,
+  });
+}
+
+export function getSettingsMatchPreview({
+  workspacePath,
+  period = "1y",
+  excludedPaths,
+  bugKeywords,
+  emergencyPatterns,
+}: AnalysisParams) {
+  if (!isTauriRuntime() || !workspacePath) {
+    return Promise.resolve<SettingsMatchPreview>({
+      analyzedCommitCount: 0,
+      bugKeywordCommitCount: 0,
+      excludedFileCount: 0,
+      excludedFiles: [],
+      emergencyMatches: [],
+    });
+  }
+
+  return invoke<SettingsMatchPreview>("get_settings_match_preview", {
+    workspacePath,
+    period,
+    excludedPaths,
+    bugKeywords,
     emergencyPatterns,
   });
 }
