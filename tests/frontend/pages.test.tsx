@@ -86,6 +86,8 @@ beforeEach(async () => {
     excludedFileCount: 0,
     excludedFiles: [],
     emergencyMatches: [],
+    bugKeywordCommits: [],
+    emergencyCommitSamples: [],
   });
   api.getLocalDatabaseSummary.mockResolvedValue({
     settingsStored: true,
@@ -213,6 +215,28 @@ describe("SettingsPage", () => {
         { pattern: "revert, reverted", signal: "Rollback activity", count: 2 },
         { pattern: "hotfix", signal: "Watch release pressure", count: 1 },
       ],
+      bugKeywordCommits: [
+        {
+          shortSha: "abc1234",
+          date: "2026-04-10",
+          author: "Beni",
+          subject: "fix app shell bug",
+        },
+      ],
+      emergencyCommitSamples: [
+        {
+          pattern: "revert, reverted",
+          signal: "Rollback activity",
+          commits: [
+            {
+              shortSha: "def5678",
+              date: "2026-04-11",
+              author: "Beni",
+              subject: "reverted app shell",
+            },
+          ],
+        },
+      ],
     });
 
     renderWithClient(<SettingsPage />);
@@ -220,6 +244,8 @@ describe("SettingsPage", () => {
     expect(await screen.findByText("Settings match preview")).toBeInTheDocument();
     expect(await screen.findByText("dist/index.js")).toBeInTheDocument();
     expect(screen.getByText("target/debug/app")).toBeInTheDocument();
+    expect(screen.getByText("fix app shell bug")).toBeInTheDocument();
+    expect(screen.getByText("reverted app shell")).toBeInTheDocument();
     expect(screen.getAllByText("revert, reverted").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Rollback activity").length).toBeGreaterThan(0);
     expect(api.getSettingsMatchPreview).toHaveBeenCalledWith({

@@ -131,6 +131,8 @@ export function getSettingsMatchPreview({
       excludedFileCount: 0,
       excludedFiles: [],
       emergencyMatches: [],
+      bugKeywordCommits: [],
+      emergencyCommitSamples: [],
     });
   }
 

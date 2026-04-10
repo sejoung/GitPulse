@@ -4,7 +4,8 @@ use std::process::Command;
 
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
-    OverviewAnalysis, OwnershipContributor, SettingsMatchPreview, SettingsPatternMatch,
+    OverviewAnalysis, OwnershipContributor, SettingsMatchPreview, SettingsPatternCommitSample,
+    SettingsPatternMatch, SettingsPreviewCommit,
 };
 
 fn is_git_workspace(workspace_path: &str) -> bool {
@@ -588,6 +589,8 @@ pub fn build_settings_match_preview(
             excluded_file_count: 0,
             excluded_files: Vec::new(),
             emergency_matches: Vec::new(),
+            bug_keyword_commits: Vec::new(),
+            emergency_commit_samples: Vec::new(),
         };
     };
 
@@ -600,12 +603,40 @@ pub fn build_settings_match_preview(
     excluded_files.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
 
     let bug_pattern = keyword_pattern(bug_keywords, &["fix", "bug", "broken"]);
-    let emergency_matches = build_delivery_risk_analysis(Some(workspace_path), emergency_patterns)
-        .into_iter()
-        .map(|row| SettingsPatternMatch {
-            pattern: row.event,
-            signal: row.signal,
-            count: row.count,
+    let bug_keywords = split_keywords(bug_keywords, &["fix", "bug", "broken"]);
+    let preview_commits = collect_preview_commits(workspace_path, period);
+    let bug_keyword_commits: Vec<SettingsPreviewCommit> = preview_commits
+        .iter()
+        .filter(|commit| commit_matches_keywords(&commit.subject, &bug_keywords))
+        .take(5)
+        .cloned()
+        .collect();
+    let emergency_patterns = normalized_emergency_patterns(emergency_patterns);
+    let emergency_matches =
+        build_delivery_risk_analysis(Some(workspace_path), Some(&emergency_patterns))
+            .into_iter()
+            .map(|row| SettingsPatternMatch {
+                pattern: row.event,
+                signal: row.signal,
+                count: row.count,
+            })
+            .collect();
+    let emergency_commit_samples = emergency_patterns
+        .iter()
+        .map(|pattern| {
+            let aliases = split_csv(Some(pattern.pattern.as_str()));
+            let commits = preview_commits
+                .iter()
+                .filter(|commit| commit_matches_keywords(&commit.subject, &aliases))
+                .take(3)
+                .cloned()
+                .collect();
+
+            SettingsPatternCommitSample {
+                pattern: pattern.pattern.clone(),
+                signal: pattern.signal.clone(),
+                commits,
+            }
         })
         .collect();
 
@@ -619,7 +650,41 @@ pub fn build_settings_match_preview(
             .map(|(path, _)| path)
             .collect(),
         emergency_matches,
+        bug_keyword_commits,
+        emergency_commit_samples,
     }
+}
+
+fn collect_preview_commits(
+    workspace_path: &str,
+    period: Option<&str>,
+) -> Vec<SettingsPreviewCommit> {
+    let since = since_arg(period).unwrap_or("1 year ago");
+    let since = format!("--since={since}");
+    let Some(output) = run_git(
+        workspace_path,
+        &[
+            "log",
+            "--format=%h%x1f%ad%x1f%an%x1f%s",
+            "--date=short",
+            &since,
+        ],
+    ) else {
+        return Vec::new();
+    };
+
+    output
+        .lines()
+        .filter_map(|line| {
+            let mut fields = line.split('\x1f');
+            Some(SettingsPreviewCommit {
+                short_sha: fields.next()?.to_string(),
+                date: fields.next()?.to_string(),
+                author: fields.next()?.to_string(),
+                subject: fields.next()?.to_string(),
+            })
+        })
+        .collect()
 }
 
 #[cfg(test)]

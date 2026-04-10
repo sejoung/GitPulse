@@ -49,12 +49,27 @@ export type SettingsPatternMatch = {
   count: number;
 };
 
+export type SettingsPreviewCommit = {
+  shortSha: string;
+  date: string;
+  author: string;
+  subject: string;
+};
+
+export type SettingsPatternCommitSample = {
+  pattern: string;
+  signal: string;
+  commits: SettingsPreviewCommit[];
+};
+
 export type SettingsMatchPreview = {
   analyzedCommitCount: number;
   bugKeywordCommitCount: number;
   excludedFileCount: number;
   excludedFiles: string[];
   emergencyMatches: SettingsPatternMatch[];
+  bugKeywordCommits: SettingsPreviewCommit[];
+  emergencyCommitSamples: SettingsPatternCommitSample[];
 };
 
 export type GitBranch = {

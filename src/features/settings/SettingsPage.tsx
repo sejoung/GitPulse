@@ -739,6 +739,82 @@ export function SettingsPage() {
                 />
               </div>
             </div>
+            <div className="grid gap-4 xl:grid-cols-2">
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("preview.bugKeywordCommits")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {t("preview.bugKeywordCommitsDescription")}
+                </p>
+                {matchPreview && matchPreview.bugKeywordCommits.length > 0 ? (
+                  <div className="mt-3 space-y-3">
+                    {matchPreview.bugKeywordCommits.map((commit) => (
+                      <div
+                        key={`${commit.shortSha}-${commit.subject}`}
+                        className="gp-panel min-w-0 p-3"
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge tone="brand">{commit.shortSha}</Badge>
+                          <Badge tone="watch">{commit.author}</Badge>
+                        </div>
+                        <p className="gp-text-secondary mt-3 break-words text-sm">
+                          {commit.subject}
+                        </p>
+                        <p className="gp-text-muted mt-2 text-xs">{commit.date}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="gp-text-muted mt-3 text-sm">
+                    {t("preview.bugKeywordCommitsEmpty")}
+                  </p>
+                )}
+              </div>
+              <div className="gp-panel min-w-0 p-3">
+                <p className="gp-kicker">{t("preview.emergencyCommitSamples")}</p>
+                <p className="gp-text-secondary mt-1 text-sm">
+                  {t("preview.emergencyCommitSamplesDescription")}
+                </p>
+                {matchPreview && matchPreview.emergencyCommitSamples.length > 0 ? (
+                  <div className="mt-3 space-y-3">
+                    {matchPreview.emergencyCommitSamples.map((sample) => (
+                      <div key={sample.pattern} className="gp-panel min-w-0 p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge tone="neutral">{sample.pattern}</Badge>
+                          <Badge tone="watch">{sample.signal}</Badge>
+                        </div>
+                        {sample.commits.length > 0 ? (
+                          <div className="mt-3 space-y-2">
+                            {sample.commits.map((commit) => (
+                              <div
+                                key={`${sample.pattern}-${commit.shortSha}-${commit.subject}`}
+                                className="border-t border-gp-border pt-2 first:border-t-0 first:pt-0"
+                              >
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge tone="brand">{commit.shortSha}</Badge>
+                                  <span className="gp-text-muted text-xs">{commit.date}</span>
+                                </div>
+                                <p className="gp-text-secondary mt-2 break-words text-sm">
+                                  {commit.subject}
+                                </p>
+                                <p className="gp-text-muted mt-1 text-xs">{commit.author}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="gp-text-muted mt-3 text-sm">
+                            {t("preview.emergencyCommitSamplesEmpty")}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="gp-text-muted mt-3 text-sm">
+                    {t("preview.emergencyCommitSamplesEmpty")}
+                  </p>
+                )}
+              </div>
+            </div>
             <div className="gp-panel min-w-0 p-3">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">

@@ -271,7 +271,7 @@ export function HotspotsPage() {
                           { id: "matched", label: t("details.scopeMatched") },
                         ]}
                         value={commitScope}
-                        onChange={(value) => setCommitScope(value as "all" | "matched")}
+                        onChange={(value) => setCommitScope(value)}
                       />
                     </div>
                   </div>

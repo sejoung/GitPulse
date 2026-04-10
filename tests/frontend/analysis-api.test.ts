@@ -67,6 +67,8 @@ describe("analysis-api runtime guards", () => {
     ).resolves.toEqual({
       analyzedCommitCount: 0,
       bugKeywordCommitCount: 0,
+      bugKeywordCommits: [],
+      emergencyCommitSamples: [],
       excludedFileCount: 0,
       excludedFiles: [],
       emergencyMatches: [],
@@ -129,6 +131,8 @@ describe("analysis-api runtime guards", () => {
       excludedFileCount: 1,
       excludedFiles: ["dist/index.js"],
       emergencyMatches: [{ pattern: "revert", signal: "Normal recovery", count: 1 }],
+      bugKeywordCommits: [],
+      emergencyCommitSamples: [],
     });
 
     await getSettingsMatchPreview({

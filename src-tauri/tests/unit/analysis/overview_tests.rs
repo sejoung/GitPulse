@@ -194,10 +194,18 @@ fn settings_match_preview_counts_keywords_exclusions_and_patterns() {
     assert_eq!(preview.bug_keyword_commit_count, 1);
     assert_eq!(preview.excluded_file_count, 1);
     assert_eq!(preview.excluded_files, vec!["dist/index.js".to_string()]);
+    assert_eq!(preview.bug_keyword_commits.len(), 1);
+    assert_eq!(preview.bug_keyword_commits[0].subject, "fix app shell bug");
     assert_eq!(preview.emergency_matches.len(), 1);
     assert_eq!(preview.emergency_matches[0].pattern, "revert, reverted");
     assert_eq!(preview.emergency_matches[0].signal, "Rollback activity");
     assert_eq!(preview.emergency_matches[0].count, 1);
+    assert_eq!(preview.emergency_commit_samples.len(), 1);
+    assert_eq!(preview.emergency_commit_samples[0].commits.len(), 1);
+    assert_eq!(
+        preview.emergency_commit_samples[0].commits[0].subject,
+        "reverted app shell"
+    );
 
     let _ = fs::remove_dir_all(repo);
 }

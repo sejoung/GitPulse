@@ -65,6 +65,23 @@ pub struct SettingsPatternMatch {
     pub count: u32,
 }
 
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SettingsPreviewCommit {
+    pub short_sha: String,
+    pub date: String,
+    pub author: String,
+    pub subject: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SettingsPatternCommitSample {
+    pub pattern: String,
+    pub signal: String,
+    pub commits: Vec<SettingsPreviewCommit>,
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SettingsMatchPreview {
@@ -73,6 +90,8 @@ pub struct SettingsMatchPreview {
     pub excluded_file_count: u32,
     pub excluded_files: Vec<String>,
     pub emergency_matches: Vec<SettingsPatternMatch>,
+    pub bug_keyword_commits: Vec<SettingsPreviewCommit>,
+    pub emergency_commit_samples: Vec<SettingsPatternCommitSample>,
 }
 
 #[derive(Clone, Deserialize)]

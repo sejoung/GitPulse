@@ -150,8 +150,12 @@ export function OverviewPage() {
   const repositoryHistory = analysisRuns.filter((run) => run.workspacePath === workspacePath);
   const latestRecordedRun = repositoryHistory[0];
   const previousRecordedRun = repositoryHistory[1];
+  const effectiveComparisonHeadSha =
+    comparisonHeadSha && repositoryHistory.some((run) => run.headSha === comparisonHeadSha)
+      ? comparisonHeadSha
+      : (previousRecordedRun?.headSha ?? "");
   const comparisonRun =
-    repositoryHistory.find((run) => run.headSha === comparisonHeadSha) ??
+    repositoryHistory.find((run) => run.headSha === effectiveComparisonHeadSha) ??
     previousRecordedRun ??
     null;
   const commitDelta =
@@ -289,17 +293,6 @@ export function OverviewPage() {
       setSelectedBranch(currentBranch);
     }
   }, [currentBranch, selectedBranch, setSelectedBranch]);
-
-  useEffect(() => {
-    if (!comparisonHeadSha && previousRecordedRun?.headSha) {
-      setComparisonHeadSha(previousRecordedRun.headSha);
-      return;
-    }
-
-    if (comparisonHeadSha && !repositoryHistory.some((run) => run.headSha === comparisonHeadSha)) {
-      setComparisonHeadSha(previousRecordedRun?.headSha ?? "");
-    }
-  }, [comparisonHeadSha, previousRecordedRun?.headSha, repositoryHistory]);
 
   useEffect(() => {
     resetRemoteStatus();
