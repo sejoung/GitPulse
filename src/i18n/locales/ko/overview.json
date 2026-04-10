@@ -2,12 +2,12 @@
   "kicker": "GitPulse",
   "title": "코드 뒤에 숨은 신호",
   "description": "Git 히스토리에서 변화, 소유권, 활동 흐름, 배포 안정성의 신호를 읽습니다.",
-  "badge": "Overview",
-  "error": "Overview 분석을 불러오지 못했습니다.",
+  "badge": "개요",
+  "error": "개요 분석을 불러오지 못했습니다.",
   "stats": {
-    "repository": "Repository",
+    "repository": "저장소",
     "commits": "Commits",
-    "hotspots": "Hotspots",
+    "hotspots": "핫스팟",
     "risk": "Risk",
     "analyzedHistory": "분석된 이력",
     "highChangeFiles": "변경 빈도가 높은 파일",
@@ -58,7 +58,7 @@
     }
   },
   "chart": {
-    "activityTrend": "Activity trend"
+    "activityTrend": "활동 추세"
   },
   "history": {
     "title": "분석 히스토리",
@@ -66,7 +66,7 @@
     "latestRun": "최근 실행",
     "latestHead": "최근 HEAD",
     "commitDelta": "커밋 변화량",
-    "hotspotDelta": "Hotspot 변화량",
+    "hotspotDelta": "핫스팟 변화량",
     "recordedAt": "기록 시각",
     "noPreviousRun": "이전 기록 없음",
     "empty": "아직 저장된 분석 히스토리가 없습니다.",
@@ -145,7 +145,7 @@
     "json": "JSON 내보내기",
     "includes": "포함 내용",
     "includesValueSummary": "저장소 요약, 최신성, 현재 설정, 필요 시 스냅샷 비교를 포함합니다.",
-    "includesValueFull": "Overview, hotspots, ownership, activity, delivery risk, 현재 설정, 필요 시 스냅샷 비교를 포함합니다.",
+    "includesValueFull": "개요, 핫스팟, 소유권, 활동, 배포 위험, 현재 설정, 필요 시 스냅샷 비교를 포함합니다.",
     "format": "출력 형식",
     "formatValueCurrent": "Markdown은 검토 문서용, JSON은 자동화나 보관용입니다.",
     "formatValueCompare": "현재 스냅샷과 선택한 기준 스냅샷 비교를 함께 포함합니다.",

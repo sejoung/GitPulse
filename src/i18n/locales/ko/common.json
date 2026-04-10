@@ -1,12 +1,12 @@
 {
   "appName": "GitPulse",
   "nav": {
-    "overview": "Overview",
-    "hotspots": "Hotspots",
-    "ownership": "Ownership",
-    "activity": "Activity",
-    "deliveryRisk": "Delivery Risk",
-    "settings": "Settings"
+    "overview": "개요",
+    "hotspots": "핫스팟",
+    "ownership": "소유권",
+    "activity": "활동",
+    "deliveryRisk": "배포 위험",
+    "settings": "설정"
   },
   "actions": {
     "selectWorkspace": "저장소 선택",
@@ -16,38 +16,39 @@
   },
   "status": {
     "notSelected": "선택 안 됨",
-    "healthy": "healthy",
-    "watch": "watch",
-    "risky": "risky",
-    "critical": "critical",
-    "low": "low",
-    "steady": "steady",
+    "healthy": "양호",
+    "watch": "주의",
+    "risky": "위험",
+    "critical": "치명적",
+    "low": "낮음",
+    "steady": "안정적",
     "ready": "준비됨",
     "notAnalyzed": "분석 전",
     "active": "활동 중",
     "quiet": "조용함"
   },
   "table": {
-    "file": "File",
-    "changes": "Changes",
-    "fixCommits": "Fix commits",
-    "signal": "Signal",
-    "risk": "Risk",
-    "question": "Question",
-    "signalSource": "Signal source",
-    "contributor": "Contributor",
-    "commits": "Commits",
-    "share": "Share",
-    "recent": "Recent",
-    "month": "Month",
-    "pattern": "Pattern",
-    "count": "Count",
-    "setting": "Setting",
-    "value": "Value"
+    "file": "파일",
+    "changes": "변경 수",
+    "fixCommits": "수정 커밋",
+    "signal": "신호",
+    "risk": "위험도",
+    "question": "질문",
+    "signalSource": "신호 기준",
+    "contributor": "기여자",
+    "commits": "커밋 수",
+    "share": "비율",
+    "recent": "최근 상태",
+    "month": "월",
+    "pattern": "패턴",
+    "count": "횟수",
+    "setting": "설정",
+    "value": "값"
   },
   "empty": {
     "chart": "Git 이력 신호가 여기에 표시됩니다.",
     "selectWorkspace": "저장소를 선택하면 분석 결과가 표시됩니다.",
+    "selectWorkspaceDetail": "이 페이지의 분석 기준과 결과를 불러오려면 먼저 저장소를 선택하세요.",
     "hotspots": "아직 hotspot 데이터가 없습니다.",
     "activity": "아직 활동 데이터가 없습니다.",
     "ownership": "아직 contributor 데이터가 없습니다.",
@@ -61,7 +62,7 @@
   "signals": {
     "normalRecovery": "정상 복구",
     "watchReleasePressure": "릴리스 압박 관찰",
-    "noRollbackPattern": "rollback 패턴 없음",
-    "noEmergencyPattern": "emergency 패턴 없음"
+    "noRollbackPattern": "롤백 패턴 없음",
+    "noEmergencyPattern": "긴급 패턴 없음"
   }
 }

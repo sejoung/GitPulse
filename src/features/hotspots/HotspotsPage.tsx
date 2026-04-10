@@ -435,6 +435,9 @@ export function HotspotsPage() {
         {hotspotRows.length === 0 ? (
           <EmptyState
             title={hasWorkspace ? t("common:empty.hotspots") : t("common:empty.selectWorkspace")}
+            description={
+              hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
+            }
           />
         ) : (
           <div className="space-y-3">

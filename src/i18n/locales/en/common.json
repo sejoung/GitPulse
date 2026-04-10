@@ -48,6 +48,7 @@
   "empty": {
     "chart": "Git history signals will appear here.",
     "selectWorkspace": "Select a repository to see analysis results.",
+    "selectWorkspaceDetail": "Choose a repository to load the analysis context and results for this page.",
     "hotspots": "No hotspot data yet.",
     "activity": "No activity data yet.",
     "ownership": "No contributor data yet.",

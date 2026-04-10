@@ -4,7 +4,7 @@
   "description": "GitPulse는 수집과 해석을 분리해서 신호를 계산합니다.",
   "badge": "Local only",
   "filters": {
-    "title": "Repository scope",
+    "title": "저장소 범위",
     "description": "GitPulse가 Git 이력을 읽을 때 어떤 저장소 범위를 기준으로 볼지 정합니다.",
     "excludedPaths": "제외할 경로",
     "excludedPathsHelp": "변경 파일 순위에서 제외할 경로를 쉼표로 입력합니다. 예: dist/, node_modules/, target/.",
@@ -40,23 +40,23 @@
     },
     "window": "프리뷰 기간",
     "analyzedCommits": "분석 대상 커밋",
-    "bugKeywordMatches": "Bug keyword 매칭 수",
+    "bugKeywordMatches": "버그 키워드 매칭 수",
     "excludedFileMatches": "제외 파일 매칭 수",
     "excludedFiles": "제외 경로에 걸리는 파일",
     "excludedFilesEmpty": "이 기간에는 제외 경로에 매칭되는 변경 파일이 없습니다.",
     "bugKeywordCommits": "Bug keyword 커밋 샘플",
     "bugKeywordCommitsDescription": "현재 bug keywords에 매칭되는 최근 커밋입니다.",
     "bugKeywordCommitsEmpty": "이 기간에는 현재 bug keywords에 매칭되는 커밋이 없습니다.",
-    "emergencyPatternMatches": "Emergency pattern 매칭",
+    "emergencyPatternMatches": "긴급 패턴 매칭",
     "emergencyMatchesEmpty": "아직 표시할 emergency pattern 행이 없습니다.",
     "emergencyCommitSamples": "Emergency 커밋 샘플",
     "emergencyCommitSamplesDescription": "각 emergency pattern 행에 매칭되는 최근 커밋입니다.",
     "emergencyCommitSamplesEmpty": "아직 표시할 emergency pattern 커밋 샘플이 없습니다.",
     "updating": "업데이트 중",
     "empty": "설정 매칭 프리뷰를 보려면 먼저 저장소를 선택하세요.",
-    "openOverview": "Overview 열기",
+    "openOverview": "개요 열기",
     "nextStepTitle": "다음 단계",
-    "nextStepDescription": "이 설정을 기준으로 Overview에서 분석을 다시 확인하세요."
+    "nextStepDescription": "이 설정을 기준으로 개요 화면에서 분석을 다시 확인하세요."
   },
   "repositoryOverrides": {
     "title": "저장소별 오버라이드",
@@ -68,13 +68,13 @@
     "inheritingDefaults": "전역 기본값 사용 중",
     "inheritDescription": "이 저장소는 현재 아래 전역 기본값을 그대로 사용합니다.",
     "excludedPaths": "저장소 제외 경로",
-    "bugKeywords": "저장소 Bug keywords",
-    "emergencyPattern": "저장소 Emergency pattern",
-    "emergencySignal": "저장소 Emergency signal",
+    "bugKeywords": "저장소 버그 키워드",
+    "emergencyPattern": "저장소 긴급 패턴",
+    "emergencySignal": "저장소 긴급 신호",
     "help": "여기 값은 현재 저장소에만 적용됩니다. 비어 있는 행은 전역 기본값을 계속 따릅니다.",
     "empty": "저장소별 분석 기본값을 설정하려면 먼저 저장소를 선택하세요.",
     "enableHintTitle": "저장소 선택 필요",
-    "enableHintDescription": "먼저 Overview에서 저장소를 선택하세요. 저장소별 오버라이드는 현재 선택된 저장소에만 적용됩니다."
+    "enableHintDescription": "먼저 개요 화면에서 저장소를 선택하세요. 저장소별 오버라이드는 현재 선택된 저장소에만 적용됩니다."
   },
   "language": {
     "title": "Language",
@@ -84,19 +84,19 @@
     "en": "English"
   },
   "defaults": {
-    "title": "Signal defaults",
+    "title": "신호 기본값",
     "description": "초기 Git 분석에 사용하는 기본 기준입니다.",
-    "analysisWindow": "Analysis window",
+    "analysisWindow": "분석 기간",
     "analysisWindows": {
       "1y": "1년",
       "6m": "6개월",
       "3m": "3개월"
     },
-    "bugKeywords": "Bug keywords",
-    "bugKeywordsHelp": "쉼표로 구분합니다. Hotspots의 fix overlap 계산에 사용됩니다.",
-    "emergencyPatterns": "Emergency patterns",
-    "emergencyPattern": "Emergency pattern",
-    "emergencySignal": "Emergency signal",
+    "bugKeywords": "버그 키워드",
+    "bugKeywordsHelp": "쉼표로 구분합니다. 핫스팟의 수정 커밋 중첩 계산에 사용됩니다.",
+    "emergencyPatterns": "긴급 패턴",
+    "emergencyPattern": "긴급 패턴",
+    "emergencySignal": "긴급 신호",
     "emergencyPatternsHelp": "한 행에서 쉼표로 alias를 입력할 수 있습니다. 예: revert, reverted. 해당 행의 signal은 모든 alias에 같이 적용됩니다.",
     "cacheKey": "Cache key"
   },

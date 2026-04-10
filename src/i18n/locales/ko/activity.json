@@ -1,12 +1,12 @@
 {
-  "kicker": "Activity Trend",
+  "kicker": "활동 추세",
   "title": "프로젝트가 가속 중인가, 정체 중인가",
   "description": "월별 커밋 리듬은 팀의 동력과 릴리스 패턴을 보여줍니다.",
-  "badge": "Monthly rhythm",
+  "badge": "월별 리듬",
   "stats": {
-    "currentMonth": "Current month",
-    "trend": "Trend",
-    "signal": "Signal",
+    "currentMonth": "이번 달",
+    "trend": "추세",
+    "signal": "신호",
     "comparedWithPreviousMonth": "이전 달 대비",
     "noDeclinePattern": "감소 패턴 없음"
   },
@@ -19,11 +19,11 @@
     "rows": "표시 월 수"
   },
   "chart": {
-    "title": "Monthly commit trend",
+    "title": "월별 커밋 추이",
     "description": "일정한 리듬은 건강한 프로젝트 신호입니다."
   },
   "table": {
-    "title": "Monthly commits",
+    "title": "월별 커밋",
     "description": "Git 이력에서 추출한 월별 활동량입니다."
   }
 }

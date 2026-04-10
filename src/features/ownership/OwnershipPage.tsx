@@ -161,6 +161,9 @@ export function OwnershipPage() {
         {contributorRows.length === 0 ? (
           <EmptyState
             title={hasWorkspace ? t("common:empty.ownership") : t("common:empty.selectWorkspace")}
+            description={
+              hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
+            }
           />
         ) : (
           <div className="space-y-3">

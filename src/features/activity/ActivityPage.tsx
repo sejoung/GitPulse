@@ -126,6 +126,9 @@ export function ActivityPage() {
         {activityRows.length === 0 || !hasWorkspace ? (
           <EmptyState
             title={hasWorkspace ? t("common:empty.activity") : t("common:empty.selectWorkspace")}
+            description={
+              hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
+            }
           />
         ) : (
           <div className="flex h-56 gap-3">
