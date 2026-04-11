@@ -57,10 +57,7 @@ console.log("  Updated src-tauri/tauri.conf.json");
 // 4. Update src-tauri/Cargo.toml
 const cargoPath = resolve(root, "src-tauri", "Cargo.toml");
 let cargo = readFileSync(cargoPath, "utf-8");
-cargo = cargo.replace(
-  /^version\s*=\s*"[^"]*"/m,
-  `version = "${newVersion}"`,
-);
+cargo = cargo.replace(/^version\s*=\s*"[^"]*"/m, `version = "${newVersion}"`);
 writeFileSync(cargoPath, cargo);
 console.log("  Updated src-tauri/Cargo.toml");
 
