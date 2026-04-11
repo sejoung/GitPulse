@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "tauri": "tauri",
     "dev": "tauri dev",
     "dev:vite": "vite --host 127.0.0.1 --port 1420",
     "build": "tauri build",
-    "build:release": "tauri build",
     "build:vite": "tsc && vite build",
     "check": "npm run format:check && npm run lint && npm run build:vite && cargo gp-check && npm test",
     "format": "prettier --write .",
