@@ -24,6 +24,7 @@ export default tseslint.config(
       "postcss.config.js",
       "src-tauri/target",
       "scripts",
+      "pages",
     ],
   },
   js.configs.recommended,

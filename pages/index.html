@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitPulse — Download</title>
+  <meta name="description" content="Download GitPulse — a local-first desktop app for reading repository signals from Git history.">
+  <meta property="og:title" content="GitPulse — Download">
+  <meta property="og:description" content="A local-first desktop app for understanding code churn, ownership, activity, and delivery pressure from Git history.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0B1220;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1F2937;
+      --brand-blue: #3B82F6;
+      --brand-cyan: #22D3EE;
+      --text-primary: #F9FAFB;
+      --text-secondary: #9CA3AF;
+      --text-muted: #6B7280;
+      --border: #1F2937;
+      --border-divider: #374151;
+      --risk-watch: #EAB308;
+      --risk-healthy: #22C55E;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-primary: #FFFFFF;
+        --bg-secondary: #F9FAFB;
+        --bg-tertiary: #F3F4F6;
+        --text-primary: #111827;
+        --text-secondary: #6B7280;
+        --text-muted: #9CA3AF;
+        --border: #E5E7EB;
+        --border-divider: #D1D5DB;
+      }
+    }
+
+    body {
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.6;
+    }
+
+    a { color: var(--brand-cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 800px;
+      width: 100%;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .header-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 16px; }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    .lang-toggle {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-divider);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .lang-toggle:hover { border-color: var(--brand-blue); }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-divider);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: border-color 0.2s;
+    }
+
+    .github-link:hover { border-color: var(--brand-blue); text-decoration: none; color: var(--text-primary); }
+
+    .github-link svg { width: 16px; height: 16px; fill: currentColor; }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 64px 0 40px;
+    }
+
+    .hero-logo {
+      width: 280px;
+      margin-bottom: 16px;
+    }
+
+    .hero-tagline {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .hero-version {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .version-badge {
+      display: inline-block;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-divider);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brand-cyan);
+    }
+
+    /* ── Download Section ── */
+    .download-section { padding: 0 0 48px; }
+
+    .primary-download {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-divider);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .primary-download .os-icon { font-size: 48px; margin-bottom: 12px; }
+
+    .primary-download .os-label {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan));
+      color: #fff;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.2s, transform 0.1s;
+      text-decoration: none;
+    }
+
+    .download-btn:hover { opacity: 0.9; text-decoration: none; color: #fff; }
+    .download-btn:active { transform: scale(0.98); }
+
+    .download-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+    .download-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .primary-download .file-info {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Other platforms ── */
+    .other-platforms-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .platform-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .platform-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .platform-card:hover { border-color: var(--brand-blue); text-decoration: none; }
+
+    .platform-card.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .platform-card .os-icon { font-size: 28px; flex-shrink: 0; }
+
+    .platform-card .platform-info { display: flex; flex-direction: column; }
+
+    .platform-card .platform-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .platform-card .platform-file {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Security Section ── */
+    .security-section { padding-bottom: 48px; }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .security-tabs {
+      display: inline-flex;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+
+    .security-tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .security-tab.active {
+      background: var(--bg-tertiary);
+      color: var(--brand-cyan);
+    }
+
+    .security-tab:hover:not(.active) { color: var(--text-primary); }
+
+    .security-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .security-content[hidden] { display: none; }
+
+    .security-step {
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .security-step:last-child { border-bottom: none; }
+
+    .step-number {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan));
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .step-content h4 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .step-content p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .step-content code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: 'SF Mono', Consolas, monospace;
+    }
+
+    /* ── Mobile Banner ── */
+    .mobile-banner {
+      display: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-divider);
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .mobile-banner .mobile-icon { font-size: 48px; margin-bottom: 12px; }
+
+    .mobile-banner p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .mobile-banner a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .mobile-banner { display: block; }
+      .primary-download { display: none; }
+      .platform-grid { display: none; }
+      .other-platforms-title { display: none; }
+    }
+
+    /* ── Loading / Error ── */
+    .loading {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-divider);
+      border-top-color: var(--brand-cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-fallback {
+      text-align: center;
+      padding: 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .error-fallback p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .fallback-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-divider);
+      color: var(--text-primary);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: border-color 0.2s;
+    }
+
+    .fallback-btn:hover { border-color: var(--brand-blue); text-decoration: none; }
+
+    /* ── Footer ── */
+    footer {
+      width: 100%;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .footer-inner a { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="header-left">
+        <svg class="logo-icon" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="hgrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="100%" stop-color="#22D3EE"/>
+            </linearGradient>
+          </defs>
+          <g stroke="url(#hgrad)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 96H40L55 96L70 68L85 128L105 38L125 96H145"/>
+            <path d="M145 96L165 68L165 128L185 96"/>
+          </g>
+          <g fill="url(#hgrad)">
+            <circle cx="145" cy="96" r="9"/>
+            <circle cx="165" cy="68" r="9"/>
+            <circle cx="165" cy="128" r="9"/>
+            <circle cx="185" cy="96" r="9"/>
+          </g>
+        </svg>
+        <span class="header-title">GitPulse</span>
+      </div>
+      <div class="header-right">
+        <button class="lang-toggle" id="langToggle" onclick="toggleLang()">한국어</button>
+        <a class="github-link" href="https://github.com/sejoung/GitPulse" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <svg class="hero-logo" viewBox="0 0 900 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logograd" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3B82F6"/>
+            <stop offset="100%" stop-color="#22D3EE"/>
+          </linearGradient>
+        </defs>
+        <g transform="translate(180,10)">
+          <g stroke="url(#logograd)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 96H70L90 96L110 60L130 140L160 30L190 96H210"/>
+            <path d="M210 96L250 60L250 130L290 96"/>
+          </g>
+          <g fill="url(#logograd)">
+            <circle cx="210" cy="96" r="12"/>
+            <circle cx="250" cy="60" r="12"/>
+            <circle cx="250" cy="130" r="12"/>
+            <circle cx="290" cy="96" r="12"/>
+          </g>
+        </g>
+        <text x="450" y="125" font-family="Inter, Arial, sans-serif" font-size="72" fill="var(--text-primary)" font-weight="700" text-anchor="middle">GitPulse</text>
+        <text x="450" y="170" font-family="Inter, Arial, sans-serif" font-size="24" fill="var(--text-secondary)" text-anchor="middle" data-i18n="tagline">See the signals behind your code.</text>
+      </svg>
+      <div class="hero-version" id="versionInfo">
+        <div class="spinner"></div>
+      </div>
+    </section>
+
+    <!-- Mobile Banner -->
+    <div class="mobile-banner" id="mobileBanner">
+      <div class="mobile-icon">&#128187;</div>
+      <p data-i18n="mobileNotice">GitPulse is a desktop application. Please visit this page from your computer to download.</p>
+      <a href="https://github.com/sejoung/GitPulse/releases" target="_blank" rel="noopener" data-i18n="viewReleases">View all releases on GitHub &rarr;</a>
+    </div>
+
+    <!-- Download Section -->
+    <section class="download-section" id="downloadSection">
+      <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <p data-i18n="loading">Loading latest release...</p>
+      </div>
+
+      <div id="downloadContent" style="display:none">
+        <!-- Primary download (auto-detected OS) -->
+        <div class="primary-download" id="primaryDownload">
+          <div class="os-icon" id="primaryIcon"></div>
+          <div class="os-label" id="primaryLabel"></div>
+          <a class="download-btn" id="primaryBtn" href="#">
+            <svg viewBox="0 0 20 20"><path d="M10 3a1 1 0 011 1v8.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V4a1 1 0 011-1z"/><path d="M3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/></svg>
+            <span data-i18n="downloadFor">Download for</span> <span id="primaryOS"></span>
+          </a>
+          <div class="file-info" id="primaryFile"></div>
+        </div>
+
+        <!-- Other platforms -->
+        <div class="other-platforms-title" data-i18n="otherPlatforms">Other platforms</div>
+        <div class="platform-grid" id="platformGrid"></div>
+      </div>
+
+      <div id="errorState" style="display:none" class="error-fallback">
+        <p data-i18n="fetchError">Could not fetch the latest release information.</p>
+        <a class="fallback-btn" href="https://github.com/sejoung/GitPulse/releases" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          <span data-i18n="goToReleases">Go to GitHub Releases</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Security Section -->
+    <section class="security-section" id="securitySection">
+      <h2 class="section-title" data-i18n="securityTitle">First launch instructions</h2>
+
+      <div class="security-tabs">
+        <button class="security-tab active" onclick="showSecurityTab('macos')" id="tabMacos">macOS</button>
+        <button class="security-tab" onclick="showSecurityTab('windows')" id="tabWindows">Windows</button>
+        <button class="security-tab" onclick="showSecurityTab('linux')" id="tabLinux">Linux</button>
+      </div>
+
+      <!-- macOS -->
+      <div class="security-content" id="securityMacos">
+        <div class="security-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4 data-i18n="macStep1Title">Open the downloaded .dmg file</h4>
+            <p data-i18n="macStep1Desc">Double-click the .dmg file and drag GitPulse into the Applications folder.</p>
+          </div>
+        </div>
+        <div class="security-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4 data-i18n="macStep2Title">"App can't be opened" warning</h4>
+            <p data-i18n="macStep2Desc">macOS may block the app because it's from an unidentified developer. This is normal for open-source apps distributed outside the App Store.</p>
+          </div>
+        </div>
+        <div class="security-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4 data-i18n="macStep3Title">Allow the app to run</h4>
+            <p data-i18n="macStep3Desc">Go to <strong>System Settings &gt; Privacy &amp; Security</strong>, scroll down to find the blocked app message, then click <strong>"Open Anyway"</strong>. Alternatively, right-click the app and select <strong>"Open"</strong>.</p>
+          </div>
+        </div>
+        <div class="security-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h4 data-i18n="macStep4Title">Or use the terminal</h4>
+            <p data-i18n="macStep4Desc">You can also remove the quarantine attribute via terminal:<br><code>xattr -d com.apple.quarantine /Applications/GitPulse.app</code></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Windows -->
+      <div class="security-content" id="securityWindows" hidden>
+        <div class="security-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4 data-i18n="winStep1Title">Run the installer</h4>
+            <p data-i18n="winStep1Desc">Double-click the downloaded .msi or .exe file to start the installation.</p>
+          </div>
+        </div>
+        <div class="security-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4 data-i18n="winStep2Title">"Windows protected your PC" warning</h4>
+            <p data-i18n="winStep2Desc">Windows SmartScreen may show a warning because the app is not yet widely recognized. This is normal for new open-source software.</p>
+          </div>
+        </div>
+        <div class="security-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4 data-i18n="winStep3Title">Allow the app to run</h4>
+            <p data-i18n="winStep3Desc">Click <strong>"More info"</strong>, then click <strong>"Run anyway"</strong> to proceed with the installation.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linux -->
+      <div class="security-content" id="securityLinux" hidden>
+        <div class="security-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4 data-i18n="linStep1Title">Install the package</h4>
+            <p data-i18n="linStep1Desc">For .deb: <code>sudo dpkg -i gitpulse_*.deb</code><br>For .AppImage: make it executable with <code>chmod +x GitPulse_*.AppImage</code></p>
+          </div>
+        </div>
+        <div class="security-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4 data-i18n="linStep2Title">Launch the app</h4>
+            <p data-i18n="linStep2Desc">Run GitPulse from your application menu or execute the AppImage directly from the terminal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <span>GitPulse &mdash; <a href="https://github.com/sejoung/GitPulse" target="_blank" rel="noopener">Open Source</a> &middot; <a href="https://github.com/sejoung/GitPulse/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a></span>
+    </div>
+  </footer>
+
+  <script>
+    // ── i18n ──
+    const REPO = 'sejoung/GitPulse';
+
+    const i18n = {
+      en: {
+        tagline: 'See the signals behind your code.',
+        mobileNotice: 'GitPulse is a desktop application. Please visit this page from your computer to download.',
+        viewReleases: 'View all releases on GitHub \u2192',
+        loading: 'Loading latest release...',
+        downloadFor: 'Download for',
+        otherPlatforms: 'Other platforms',
+        fetchError: 'Could not fetch the latest release information.',
+        goToReleases: 'Go to GitHub Releases',
+        securityTitle: 'First launch instructions',
+        macStep1Title: 'Open the downloaded .dmg file',
+        macStep1Desc: 'Double-click the .dmg file and drag GitPulse into the Applications folder.',
+        macStep2Title: '\u201CApp can\u2019t be opened\u201D warning',
+        macStep2Desc: 'macOS may block the app because it\u2019s from an unidentified developer. This is normal for open-source apps distributed outside the App Store.',
+        macStep3Title: 'Allow the app to run',
+        macStep3Desc: 'Go to <strong>System Settings &gt; Privacy &amp; Security</strong>, scroll down to find the blocked app message, then click <strong>\u201COpen Anyway\u201D</strong>. Alternatively, right-click the app and select <strong>\u201COpen\u201D</strong>.',
+        macStep4Title: 'Or use the terminal',
+        macStep4Desc: 'You can also remove the quarantine attribute via terminal:<br><code>xattr -d com.apple.quarantine /Applications/GitPulse.app</code>',
+        winStep1Title: 'Run the installer',
+        winStep1Desc: 'Double-click the downloaded .msi or .exe file to start the installation.',
+        winStep2Title: '\u201CWindows protected your PC\u201D warning',
+        winStep2Desc: 'Windows SmartScreen may show a warning because the app is not yet widely recognized. This is normal for new open-source software.',
+        winStep3Title: 'Allow the app to run',
+        winStep3Desc: 'Click <strong>\u201CMore info\u201D</strong>, then click <strong>\u201CRun anyway\u201D</strong> to proceed with the installation.',
+        linStep1Title: 'Install the package',
+        linStep1Desc: 'For .deb: <code>sudo dpkg -i gitpulse_*.deb</code><br>For .AppImage: make it executable with <code>chmod +x GitPulse_*.AppImage</code>',
+        linStep2Title: 'Launch the app',
+        linStep2Desc: 'Run GitPulse from your application menu or execute the AppImage directly from the terminal.',
+        releasedOn: 'Released',
+        noRelease: 'No release available yet.',
+      },
+      ko: {
+        tagline: '\uCF54\uB4DC \uBCC0\uACBD \uD750\uB984\uC5D0\uC11C \uC2E0\uD638\uB97C \uC77D\uC5B4\uBCF4\uC138\uC694.',
+        mobileNotice: 'GitPulse\uB294 \uB370\uC2A4\uD06C\uD1B1 \uC571\uC785\uB2C8\uB2E4. \uCEF4\uD4E8\uD130\uC5D0\uC11C \uC811\uC18D\uD574 \uC8FC\uC138\uC694.',
+        viewReleases: 'GitHub\uC5D0\uC11C \uBAA8\uB4E0 \uB9B4\uB9AC\uC988 \uBCF4\uAE30 \u2192',
+        loading: '\uCD5C\uC2E0 \uB9B4\uB9AC\uC988\uB97C \uBD88\uB7EC\uC624\uB294 \uC911...',
+        downloadFor: '',
+        otherPlatforms: '\uB2E4\uB978 \uD50C\uB7AB\uD3FC',
+        fetchError: '\uCD5C\uC2E0 \uB9B4\uB9AC\uC988 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC62C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.',
+        goToReleases: 'GitHub Releases\uB85C \uC774\uB3D9',
+        securityTitle: '\uCC98\uC74C \uC2E4\uD589 \uC548\uB0B4',
+        macStep1Title: '\uB2E4\uC6B4\uB85C\uB4DC\uD55C .dmg \uD30C\uC77C \uC5F4\uAE30',
+        macStep1Desc: '.dmg \uD30C\uC77C\uC744 \uB354\uBE14 \uD074\uB9AD\uD558\uACE0 GitPulse\uB97C Applications \uD3F4\uB354\uB85C \uB4DC\uB798\uADF8\uD558\uC138\uC694.',
+        macStep2Title: '\u201C\uC571\uC744 \uC5F4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4\u201D \uACBD\uACE0',
+        macStep2Desc: '\uD655\uC778\uB418\uC9C0 \uC54A\uC740 \uAC1C\uBC1C\uC790\uB85C \uC778\uD574 macOS\uAC00 \uC571\uC744 \uCC28\uB2E8\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4. App Store \uC678\uBD80\uC5D0\uC11C \uBC30\uD3EC\uB418\uB294 \uC624\uD508\uC18C\uC2A4 \uC571\uC5D0\uC11C\uB294 \uC815\uC0C1\uC801\uC778 \uD604\uC0C1\uC785\uB2C8\uB2E4.',
+        macStep3Title: '\uC571 \uC2E4\uD589 \uD5C8\uC6A9',
+        macStep3Desc: '<strong>\uC2DC\uC2A4\uD15C \uC124\uC815 &gt; \uAC1C\uC778 \uC815\uBCF4 \uBCF4\uD638 \uBC0F \uBCF4\uC548</strong>\uC73C\uB85C \uC774\uB3D9\uD558\uC5EC \uCC28\uB2E8\uB41C \uC571 \uBA54\uC2DC\uC9C0\uB97C \uCC3E\uC740 \uD6C4 <strong>\u201C\uADF8\uB798\uB3C4 \uC5F4\uAE30\u201D</strong>\uB97C \uD074\uB9AD\uD558\uC138\uC694. \uB610\uB294 \uC571\uC744 \uC6B0\uD074\uB9AD\uD558\uACE0 <strong>\u201C\uC5F4\uAE30\u201D</strong>\uB97C \uC120\uD0DD\uD558\uC138\uC694.',
+        macStep4Title: '\uB610\uB294 \uD130\uBBF8\uB110 \uC0AC\uC6A9',
+        macStep4Desc: '\uD130\uBBF8\uB110\uC5D0\uC11C \uACA9\uB9AC \uC18D\uC131\uC744 \uC81C\uAC70\uD560 \uC218\uB3C4 \uC788\uC2B5\uB2C8\uB2E4:<br><code>xattr -d com.apple.quarantine /Applications/GitPulse.app</code>',
+        winStep1Title: '\uC124\uCE58 \uD504\uB85C\uADF8\uB7A8 \uC2E4\uD589',
+        winStep1Desc: '\uB2E4\uC6B4\uB85C\uB4DC\uD55C .msi \uB610\uB294 .exe \uD30C\uC77C\uC744 \uB354\uBE14 \uD074\uB9AD\uD558\uC5EC \uC124\uCE58\uB97C \uC2DC\uC791\uD558\uC138\uC694.',
+        winStep2Title: '\u201CWindows\uAC00 PC\uB97C \uBCF4\uD638\uD588\uC2B5\uB2C8\uB2E4\u201D \uACBD\uACE0',
+        winStep2Desc: 'Windows SmartScreen\uC774 \uACBD\uACE0\uB97C \uD45C\uC2DC\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C\uC6B4 \uC624\uD508\uC18C\uC2A4 \uC18C\uD504\uD2B8\uC6E8\uC5B4\uC5D0\uC11C\uB294 \uC815\uC0C1\uC801\uC778 \uD604\uC0C1\uC785\uB2C8\uB2E4.',
+        winStep3Title: '\uC571 \uC2E4\uD589 \uD5C8\uC6A9',
+        winStep3Desc: '<strong>\u201C\uCD94\uAC00 \uC815\uBCF4\u201D</strong>\uB97C \uD074\uB9AD\uD55C \uD6C4 <strong>\u201C\uC2E4\uD589\u201D</strong>\uC744 \uD074\uB9AD\uD558\uC5EC \uC124\uCE58\uB97C \uC9C4\uD589\uD558\uC138\uC694.',
+        linStep1Title: '\uD328\uD0A4\uC9C0 \uC124\uCE58',
+        linStep1Desc: '.deb: <code>sudo dpkg -i gitpulse_*.deb</code><br>.AppImage: <code>chmod +x GitPulse_*.AppImage</code>\uB85C \uC2E4\uD589 \uAD8C\uD55C\uC744 \uBD80\uC5EC\uD558\uC138\uC694.',
+        linStep2Title: '\uC571 \uC2E4\uD589',
+        linStep2Desc: '\uC560\uD50C\uB9AC\uCF00\uC774\uC158 \uBA54\uB274\uC5D0\uC11C GitPulse\uB97C \uC2E4\uD589\uD558\uAC70\uB098 \uD130\uBBF8\uB110\uC5D0\uC11C AppImage\uB97C \uC9C1\uC811 \uC2E4\uD589\uD558\uC138\uC694.',
+        releasedOn: '\uBC30\uD3EC\uC77C',
+        noRelease: '\uC544\uC9C1 \uB9B4\uB9AC\uC988\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4.',
+      }
+    };
+
+    // Detect language
+    let currentLang = (navigator.language || '').startsWith('ko') ? 'ko' : 'en';
+
+    function applyI18n() {
+      const strings = i18n[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (strings[key] !== undefined) el.innerHTML = strings[key];
+      });
+      document.getElementById('langToggle').textContent = currentLang === 'en' ? '한국어' : 'English';
+      document.documentElement.lang = currentLang;
+    }
+
+    function toggleLang() {
+      currentLang = currentLang === 'en' ? 'ko' : 'en';
+      applyI18n();
+      renderDownloadUI();
+    }
+
+    // ── OS Detection ──
+    function detectOS() {
+      const ua = navigator.userAgent;
+      if (/Macintosh|Mac OS X/i.test(ua)) return 'macos';
+      if (/Windows/i.test(ua)) return 'windows';
+      if (/Linux/i.test(ua)) return 'linux';
+      return 'unknown';
+    }
+
+    const osInfo = {
+      macos:   { icon: '\uD83C\uDF4E', label: 'macOS',   labelKo: 'macOS',   extensions: ['.dmg'] },
+      windows: { icon: '\uD83E\uDE9F', label: 'Windows', labelKo: 'Windows', extensions: ['.msi', '.exe'] },
+      linux:   { icon: '\uD83D\uDC27', label: 'Linux',   labelKo: 'Linux',   extensions: ['.deb', '.AppImage'] },
+    };
+
+    // ── Release Fetch ──
+    let releaseData = null;
+
+    async function fetchRelease() {
+      try {
+        const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
+        if (!res.ok) throw new Error(res.status);
+        return await res.json();
+      } catch {
+        // Try fetching all releases and find first non-prerelease
+        try {
+          const res = await fetch(`https://api.github.com/repos/${REPO}/releases`);
+          if (!res.ok) throw new Error(res.status);
+          const releases = await res.json();
+          return releases.find(r => !r.prerelease && !r.draft) || releases[0] || null;
+        } catch {
+          return null;
+        }
+      }
+    }
+
+    function findAsset(assets, os) {
+      const exts = osInfo[os].extensions;
+      for (const ext of exts) {
+        const asset = assets.find(a => a.name.endsWith(ext));
+        if (asset) return asset;
+      }
+      return null;
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : 'en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
+    // ── Render ──
+    function renderDownloadUI() {
+      if (!releaseData) return;
+
+      const strings = i18n[currentLang];
+      const detectedOS = detectOS();
+      const assets = releaseData.assets || [];
+      const version = releaseData.tag_name;
+      const date = releaseData.published_at;
+
+      // Version info
+      document.getElementById('versionInfo').innerHTML =
+        `<span class="version-badge">${version}</span>` +
+        (date ? ` <span>${strings.releasedOn} ${formatDate(date)}</span>` : '');
+
+      // Primary download
+      const primaryOS = osInfo[detectedOS] ? detectedOS : 'macos';
+      const info = osInfo[primaryOS];
+      const asset = findAsset(assets, primaryOS);
+
+      document.getElementById('primaryIcon').textContent = info.icon;
+      document.getElementById('primaryLabel').textContent = currentLang === 'ko' ? info.labelKo : info.label;
+      document.getElementById('primaryOS').textContent = currentLang === 'ko' ? info.labelKo : info.label;
+
+      const btn = document.getElementById('primaryBtn');
+      if (asset) {
+        btn.href = asset.browser_download_url;
+        btn.classList.remove('disabled');
+        document.getElementById('primaryFile').textContent = `${asset.name} (${formatBytes(asset.size)})`;
+      } else {
+        btn.href = releaseData.html_url || '#';
+        btn.classList.add('disabled');
+        document.getElementById('primaryFile').textContent = strings.noRelease;
+      }
+
+      // Other platforms
+      const grid = document.getElementById('platformGrid');
+      grid.innerHTML = '';
+      const others = Object.keys(osInfo).filter(k => k !== primaryOS);
+      for (const os of others) {
+        const oi = osInfo[os];
+        const a = findAsset(assets, os);
+        const card = document.createElement('a');
+        card.className = 'platform-card' + (a ? '' : ' disabled');
+        card.href = a ? a.browser_download_url : '#';
+        card.innerHTML = `
+          <div class="os-icon">${oi.icon}</div>
+          <div class="platform-info">
+            <div class="platform-name">${currentLang === 'ko' ? oi.labelKo : oi.label}</div>
+            <div class="platform-file">${a ? `${a.name} (${formatBytes(a.size)})` : strings.noRelease}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    function showSecurityTab(os) {
+      ['macos', 'windows', 'linux'].forEach(k => {
+        document.getElementById('security' + k.charAt(0).toUpperCase() + k.slice(1)).hidden = k !== os;
+        document.getElementById('tab' + k.charAt(0).toUpperCase() + k.slice(1)).classList.toggle('active', k === os);
+      });
+    }
+
+    // ── Init ──
+    async function init() {
+      applyI18n();
+
+      // Auto-select security tab based on OS
+      const detectedOS = detectOS();
+      if (['macos', 'windows', 'linux'].includes(detectedOS)) {
+        showSecurityTab(detectedOS);
+      }
+
+      releaseData = await fetchRelease();
+
+      document.getElementById('loadingState').style.display = 'none';
+
+      if (releaseData) {
+        document.getElementById('downloadContent').style.display = 'block';
+        renderDownloadUI();
+      } else {
+        document.getElementById('errorState').style.display = 'block';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
