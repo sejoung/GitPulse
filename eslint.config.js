@@ -23,6 +23,7 @@ export default tseslint.config(
       "lint-staged.config.js",
       "postcss.config.js",
       "src-tauri/target",
+      "scripts",
     ],
   },
   js.configs.recommended,
