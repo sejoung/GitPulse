@@ -5,6 +5,7 @@ on:
     paths-ignore:
       - "**/*.md"
       - "LICENSE"
+      - "pages/**"
   push:
     branches:
       - main
@@ -13,6 +14,7 @@ on:
     paths-ignore:
       - "**/*.md"
       - "LICENSE"
+      - "pages/**"
   workflow_dispatch:
 
 concurrency:
