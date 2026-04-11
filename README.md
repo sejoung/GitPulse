@@ -223,6 +223,10 @@ The current app covers the core repository signal workflow. Likely next areas ar
 - export refinements
 - stronger diagnostics and issue-report tooling
 
+## Inspiration
+
+This project was inspired by [Git commands you should know before reading code](https://piechowski.io/post/git-commands-before-reading-code/).
+
 ## License
 
 GitPulse is licensed under the [Apache License 2.0](LICENSE).
