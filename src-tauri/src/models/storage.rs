@@ -1,18 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EmergencyPatternSetting {
-    pub pattern: String,
-    pub signal: String,
-}
+use crate::models::overview::EmergencyPatternConfig;
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RepositoryOverrideSettings {
     pub excluded_paths: String,
     pub bug_keywords: String,
-    pub emergency_patterns: Vec<EmergencyPatternSetting>,
+    pub emergency_patterns: Vec<EmergencyPatternConfig>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -26,7 +21,7 @@ pub struct PersistedUiSettings {
     pub excluded_paths: String,
     pub default_branch: String,
     pub bug_keywords: String,
-    pub emergency_patterns: Vec<EmergencyPatternSetting>,
+    pub emergency_patterns: Vec<EmergencyPatternConfig>,
     pub remember_last_repository: bool,
     pub repository_overrides: std::collections::BTreeMap<String, RepositoryOverrideSettings>,
 }

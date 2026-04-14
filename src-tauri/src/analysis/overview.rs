@@ -1,56 +1,19 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::Path;
-use std::process::Command;
 
+use crate::git::{is_excluded_path, is_git_workspace, run_git, since_arg, split_csv};
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
     OverviewAnalysis, OwnershipContributor, RiskThresholds, SettingsMatchPreview,
     SettingsPatternCommitSample, SettingsPatternMatch, SettingsPreviewCommit,
 };
 
-#[allow(unused_mut)]
-fn git_command() -> Command {
-    let mut cmd = Command::new("git");
-    #[cfg(windows)]
-    {
-        use std::os::windows::process::CommandExt;
-        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
-    }
-    cmd
-}
-
-fn is_git_workspace(workspace_path: &str) -> bool {
-    Path::new(workspace_path).exists()
-        && git_command()
-            .args(["-C", workspace_path, "rev-parse", "--is-inside-work-tree"])
-            .output()
-            .map(|output| output.status.success())
-            .unwrap_or(false)
-}
-
-fn run_git(workspace_path: &str, args: &[&str]) -> Option<String> {
-    let output = git_command()
-        .arg("-C")
-        .arg(workspace_path)
-        .args(args)
-        .output()
-        .ok()?;
-
-    if !output.status.success() {
-        return None;
-    }
-
-    Some(String::from_utf8_lossy(&output.stdout).to_string())
-}
-
-fn since_arg(period: Option<&str>) -> Option<&'static str> {
-    match period {
-        Some("3m") | Some("30d") => Some("3 months ago"),
-        Some("6m") | Some("90d") => Some("6 months ago"),
-        Some("1y") | Some("all") => Some("1 year ago"),
-        _ => None,
-    }
-}
+const MAX_HOTSPOT_ROWS: usize = 20;
+const MAX_HOTSPOT_COMMITS: usize = 20;
+const MAX_OWNERSHIP_ROWS: usize = 20;
+const MAX_PREVIEW_COMMITS: usize = 5;
+const MAX_PREVIEW_SAMPLES: usize = 3;
+const DEFAULT_BUG_KEYWORDS: &[&str] = &["fix", "bug", "broken"];
 
 fn month_window(period: Option<&str>) -> i32 {
     match period {
@@ -132,25 +95,6 @@ fn commit_matches_keywords(subject: &str, keywords: &[String]) -> bool {
     keywords
         .iter()
         .any(|keyword| subject.contains(&keyword.to_lowercase()))
-}
-
-fn split_csv(value: Option<&str>) -> Vec<String> {
-    value
-        .unwrap_or("")
-        .split(',')
-        .map(str::trim)
-        .filter(|item| !item.is_empty())
-        .map(ToString::to_string)
-        .collect()
-}
-
-fn is_excluded_path(path: &str, excluded_paths: &[String]) -> bool {
-    excluded_paths.iter().any(|excluded_path| {
-        let normalized = excluded_path.trim_end_matches('/');
-
-        !normalized.is_empty()
-            && (path == normalized || path.starts_with(&format!("{normalized}/")))
-    })
 }
 
 fn default_emergency_patterns() -> Vec<EmergencyPatternConfig> {
@@ -310,7 +254,7 @@ pub fn build_hotspots_analysis(
 
     let excluded_paths = split_csv(excluded_paths);
     let change_counts = collect_file_counts(workspace_path, period, &excluded_paths, None);
-    let bug_pattern = keyword_pattern(bug_keywords, &["fix", "bug", "broken"]);
+    let bug_pattern = keyword_pattern(bug_keywords, DEFAULT_BUG_KEYWORDS);
     let fix_counts =
         collect_file_counts(workspace_path, period, &excluded_paths, Some(&bug_pattern));
     let mut rows: Vec<HotspotFile> = change_counts
@@ -343,7 +287,7 @@ pub fn build_hotspots_analysis(
             .cmp(&a.changes)
             .then_with(|| b.fixes.cmp(&a.fixes))
     });
-    rows.truncate(20);
+    rows.truncate(MAX_HOTSPOT_ROWS);
     rows
 }
 
@@ -375,7 +319,7 @@ pub fn build_hotspot_commit_details(
     ) else {
         return Vec::new();
     };
-    let bug_keywords = split_keywords(bug_keywords, &["fix", "bug", "broken"]);
+    let bug_keywords = split_keywords(bug_keywords, DEFAULT_BUG_KEYWORDS);
 
     output
         .lines()
@@ -396,7 +340,7 @@ pub fn build_hotspot_commit_details(
                 matches_bug_keyword: commit_matches_keywords(subject, &bug_keywords),
             })
         })
-        .take(20)
+        .take(MAX_HOTSPOT_COMMITS)
         .collect()
 }
 
@@ -465,7 +409,7 @@ pub fn build_ownership_analysis(
                 risk: risk.to_string(),
             })
         })
-        .take(20)
+        .take(MAX_OWNERSHIP_ROWS)
         .collect()
 }
 
@@ -634,13 +578,13 @@ pub fn build_settings_match_preview(
         .collect();
     excluded_files.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
 
-    let bug_pattern = keyword_pattern(bug_keywords, &["fix", "bug", "broken"]);
-    let bug_keywords = split_keywords(bug_keywords, &["fix", "bug", "broken"]);
+    let bug_pattern = keyword_pattern(bug_keywords, DEFAULT_BUG_KEYWORDS);
+    let bug_keywords = split_keywords(bug_keywords, DEFAULT_BUG_KEYWORDS);
     let preview_commits = collect_preview_commits(workspace_path, period);
     let bug_keyword_commits: Vec<SettingsPreviewCommit> = preview_commits
         .iter()
         .filter(|commit| commit_matches_keywords(&commit.subject, &bug_keywords))
-        .take(5)
+        .take(MAX_PREVIEW_COMMITS)
         .cloned()
         .collect();
     let emergency_patterns = normalized_emergency_patterns(emergency_patterns);
@@ -660,7 +604,7 @@ pub fn build_settings_match_preview(
             let commits = preview_commits
                 .iter()
                 .filter(|commit| commit_matches_keywords(&commit.subject, &aliases))
-                .take(3)
+                .take(MAX_PREVIEW_SAMPLES)
                 .cloned()
                 .collect();
 
@@ -678,7 +622,7 @@ pub fn build_settings_match_preview(
         excluded_file_count: excluded_files.len() as u32,
         excluded_files: excluded_files
             .into_iter()
-            .take(5)
+            .take(MAX_PREVIEW_COMMITS)
             .map(|(path, _)| path)
             .collect(),
         emergency_matches,

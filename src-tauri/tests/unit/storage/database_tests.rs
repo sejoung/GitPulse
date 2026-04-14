@@ -1,7 +1,7 @@
 use super::*;
+use crate::models::overview::EmergencyPatternConfig;
 use crate::models::storage::{
-    AnalysisCacheEntry, AnalysisRunRecord, EmergencyPatternSetting, PersistedUiSettings,
-    RepositoryOverrideSettings,
+    AnalysisCacheEntry, AnalysisRunRecord, PersistedUiSettings, RepositoryOverrideSettings,
 };
 use std::collections::BTreeMap;
 use std::fs;
@@ -16,7 +16,7 @@ fn database_round_trips_settings_runs_and_cache_summary() {
         RepositoryOverrideSettings {
             excluded_paths: "dist/".to_string(),
             bug_keywords: "fix, bug".to_string(),
-            emergency_patterns: vec![EmergencyPatternSetting {
+            emergency_patterns: vec![EmergencyPatternConfig {
                 pattern: "revert".to_string(),
                 signal: "Rollback activity".to_string(),
             }],
@@ -34,7 +34,7 @@ fn database_round_trips_settings_runs_and_cache_summary() {
             excluded_paths: "dist/".to_string(),
             default_branch: "main".to_string(),
             bug_keywords: "fix, bug".to_string(),
-            emergency_patterns: vec![EmergencyPatternSetting {
+            emergency_patterns: vec![EmergencyPatternConfig {
                 pattern: "revert".to_string(),
                 signal: "Rollback activity".to_string(),
             }],

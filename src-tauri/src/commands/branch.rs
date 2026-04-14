@@ -1,43 +1,7 @@
 use std::collections::HashSet;
-use std::path::Path;
-use std::process::Command;
 
+use crate::git::{is_git_workspace, run_git_strict as run_git};
 use crate::models::overview::{GitBranch, GitRemoteStatus, GitRepositoryState};
-
-#[allow(unused_mut)]
-fn git_command() -> Command {
-    let mut cmd = Command::new("git");
-    #[cfg(windows)]
-    {
-        use std::os::windows::process::CommandExt;
-        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
-    }
-    cmd
-}
-
-fn is_git_workspace(workspace_path: &str) -> bool {
-    Path::new(workspace_path).exists()
-        && git_command()
-            .args(["-C", workspace_path, "rev-parse", "--is-inside-work-tree"])
-            .output()
-            .map(|output| output.status.success())
-            .unwrap_or(false)
-}
-
-fn run_git(workspace_path: &str, args: &[&str]) -> Result<String, String> {
-    let output = git_command()
-        .arg("-C")
-        .arg(workspace_path)
-        .args(args)
-        .output()
-        .map_err(|error| error.to_string())?;
-
-    if !output.status.success() {
-        return Err(String::from_utf8_lossy(&output.stderr).trim().to_string());
-    }
-
-    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
-}
 
 fn current_branch(workspace_path: &str) -> Option<String> {
     run_git(workspace_path, &["symbolic-ref", "--short", "HEAD"]).ok()

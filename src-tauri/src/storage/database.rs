@@ -50,97 +50,9 @@ fn database_path(app_handle: &AppHandle) -> Result<PathBuf, String> {
     Ok(app_data_dir.join(DATABASE_FILENAME))
 }
 
-pub fn load_snapshot(app_handle: &AppHandle) -> Result<LocalDatabaseSnapshot, String> {
-    let path = database_path(app_handle)?;
-    let database = read_database_file(&path);
+// --- Internal path-based helpers (shared by public API and tests) ---
 
-    Ok(LocalDatabaseSnapshot {
-        settings: database.settings,
-        analysis_runs: database.analysis_runs,
-    })
-}
-
-pub fn save_settings(app_handle: &AppHandle, settings: PersistedUiSettings) -> Result<(), String> {
-    let path = database_path(app_handle)?;
-    let mut database = read_database_file(&path);
-    database.version = DATABASE_VERSION;
-    database.settings = Some(settings);
-    write_database_file(&path, &database)
-}
-
-pub fn save_analysis_runs(
-    app_handle: &AppHandle,
-    runs: Vec<AnalysisRunRecord>,
-) -> Result<(), String> {
-    let path = database_path(app_handle)?;
-    let mut database = read_database_file(&path);
-    database.version = DATABASE_VERSION;
-    database.analysis_runs = runs;
-    write_database_file(&path, &database)
-}
-
-pub fn upsert_analysis_cache(
-    app_handle: &AppHandle,
-    entry: AnalysisCacheEntry,
-) -> Result<(), String> {
-    let path = database_path(app_handle)?;
-    let mut database = read_database_file(&path);
-    database.version = DATABASE_VERSION;
-
-    if let Some(index) = database.analysis_cache.iter().position(|item| {
-        item.workspace_path == entry.workspace_path
-            && item.branch == entry.branch
-            && item.period == entry.period
-            && item.head_sha == entry.head_sha
-    }) {
-        database.analysis_cache[index] = entry;
-    } else {
-        database.analysis_cache.insert(0, entry);
-        database.analysis_cache.truncate(ANALYSIS_CACHE_LIMIT);
-    }
-
-    write_database_file(&path, &database)
-}
-
-pub fn summary(app_handle: &AppHandle) -> Result<LocalDatabaseSummary, String> {
-    let path = database_path(app_handle)?;
-    let database = read_database_file(&path);
-    let cached_repository_count = database
-        .analysis_cache
-        .iter()
-        .map(|item| item.workspace_path.clone())
-        .collect::<BTreeSet<_>>()
-        .len() as u32;
-
-    Ok(LocalDatabaseSummary {
-        settings_stored: database.settings.is_some(),
-        analysis_run_count: database.analysis_runs.len() as u32,
-        analysis_cache_count: database.analysis_cache.len() as u32,
-        cached_repository_count,
-        database_path: path.display().to_string(),
-        analysis_run_limit: ANALYSIS_RUN_LIMIT as u32,
-        analysis_cache_limit: ANALYSIS_CACHE_LIMIT as u32,
-    })
-}
-
-pub fn open_database_directory(app_handle: &AppHandle) -> Result<(), String> {
-    let path = database_path(app_handle)?;
-    if !path.exists() {
-        write_database_file(&path, &default_database())?;
-    }
-
-    app_handle
-        .opener()
-        .reveal_item_in_dir(&path)
-        .map_err(|error| error.to_string())
-}
-
-#[cfg(test)]
-#[path = "../../tests/unit/storage/database_tests.rs"]
-mod database_tests;
-
-#[cfg(test)]
-pub fn load_snapshot_from_path(path: &Path) -> LocalDatabaseSnapshot {
+fn load_snapshot_at(path: &Path) -> LocalDatabaseSnapshot {
     let database = read_database_file(path);
 
     LocalDatabaseSnapshot {
@@ -149,24 +61,21 @@ pub fn load_snapshot_from_path(path: &Path) -> LocalDatabaseSnapshot {
     }
 }
 
-#[cfg(test)]
-pub fn save_settings_to_path(path: &Path, settings: PersistedUiSettings) -> Result<(), String> {
+fn save_settings_at(path: &Path, settings: PersistedUiSettings) -> Result<(), String> {
     let mut database = read_database_file(path);
     database.version = DATABASE_VERSION;
     database.settings = Some(settings);
     write_database_file(path, &database)
 }
 
-#[cfg(test)]
-pub fn save_analysis_runs_to_path(path: &Path, runs: Vec<AnalysisRunRecord>) -> Result<(), String> {
+fn save_analysis_runs_at(path: &Path, runs: Vec<AnalysisRunRecord>) -> Result<(), String> {
     let mut database = read_database_file(path);
     database.version = DATABASE_VERSION;
     database.analysis_runs = runs;
     write_database_file(path, &database)
 }
 
-#[cfg(test)]
-pub fn upsert_analysis_cache_to_path(path: &Path, entry: AnalysisCacheEntry) -> Result<(), String> {
+fn upsert_analysis_cache_at(path: &Path, entry: AnalysisCacheEntry) -> Result<(), String> {
     let mut database = read_database_file(path);
     database.version = DATABASE_VERSION;
 
@@ -185,8 +94,7 @@ pub fn upsert_analysis_cache_to_path(path: &Path, entry: AnalysisCacheEntry) -> 
     write_database_file(path, &database)
 }
 
-#[cfg(test)]
-pub fn summary_from_path(path: &Path) -> LocalDatabaseSummary {
+fn summary_at(path: &Path) -> LocalDatabaseSummary {
     let database = read_database_file(path);
     let cached_repository_count = database
         .analysis_cache
@@ -205,3 +113,79 @@ pub fn summary_from_path(path: &Path) -> LocalDatabaseSummary {
         analysis_cache_limit: ANALYSIS_CACHE_LIMIT as u32,
     }
 }
+
+// --- Public AppHandle-based API ---
+
+pub fn load_snapshot(app_handle: &AppHandle) -> Result<LocalDatabaseSnapshot, String> {
+    let path = database_path(app_handle)?;
+    Ok(load_snapshot_at(&path))
+}
+
+pub fn save_settings(app_handle: &AppHandle, settings: PersistedUiSettings) -> Result<(), String> {
+    let path = database_path(app_handle)?;
+    save_settings_at(&path, settings)
+}
+
+pub fn save_analysis_runs(
+    app_handle: &AppHandle,
+    runs: Vec<AnalysisRunRecord>,
+) -> Result<(), String> {
+    let path = database_path(app_handle)?;
+    save_analysis_runs_at(&path, runs)
+}
+
+pub fn upsert_analysis_cache(
+    app_handle: &AppHandle,
+    entry: AnalysisCacheEntry,
+) -> Result<(), String> {
+    let path = database_path(app_handle)?;
+    upsert_analysis_cache_at(&path, entry)
+}
+
+pub fn summary(app_handle: &AppHandle) -> Result<LocalDatabaseSummary, String> {
+    let path = database_path(app_handle)?;
+    Ok(summary_at(&path))
+}
+
+pub fn open_database_directory(app_handle: &AppHandle) -> Result<(), String> {
+    let path = database_path(app_handle)?;
+    if !path.exists() {
+        write_database_file(&path, &default_database())?;
+    }
+
+    app_handle
+        .opener()
+        .reveal_item_in_dir(&path)
+        .map_err(|error| error.to_string())
+}
+
+// --- Test helpers (delegate to path-based internals) ---
+
+#[cfg(test)]
+pub fn load_snapshot_from_path(path: &Path) -> LocalDatabaseSnapshot {
+    load_snapshot_at(path)
+}
+
+#[cfg(test)]
+pub fn save_settings_to_path(path: &Path, settings: PersistedUiSettings) -> Result<(), String> {
+    save_settings_at(path, settings)
+}
+
+#[cfg(test)]
+pub fn save_analysis_runs_to_path(path: &Path, runs: Vec<AnalysisRunRecord>) -> Result<(), String> {
+    save_analysis_runs_at(path, runs)
+}
+
+#[cfg(test)]
+pub fn upsert_analysis_cache_to_path(path: &Path, entry: AnalysisCacheEntry) -> Result<(), String> {
+    upsert_analysis_cache_at(path, entry)
+}
+
+#[cfg(test)]
+pub fn summary_from_path(path: &Path) -> LocalDatabaseSummary {
+    summary_at(path)
+}
+
+#[cfg(test)]
+#[path = "../../tests/unit/storage/database_tests.rs"]
+mod database_tests;

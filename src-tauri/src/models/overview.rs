@@ -94,7 +94,7 @@ pub struct SettingsMatchPreview {
     pub emergency_commit_samples: Vec<SettingsPatternCommitSample>,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EmergencyPatternConfig {
     pub pattern: String,
