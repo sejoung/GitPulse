@@ -5,6 +5,7 @@ type TableColumn<T> = {
   header: string;
   render: (row: T) => ReactNode;
   align?: "left" | "right";
+  className?: string;
 };
 
 type TableProps<T> = {
@@ -23,7 +24,7 @@ export function Table<T>({ columns, rows, getRowKey, emptyText = "No data yet." 
             {columns.map((column) => (
               <th
                 key={column.key}
-                className={column.align === "right" ? "text-right" : "text-left"}
+                className={`${column.align === "right" ? "text-right" : "text-left"} ${column.className ?? ""}`}
               >
                 {column.header}
               </th>
@@ -37,7 +38,7 @@ export function Table<T>({ columns, rows, getRowKey, emptyText = "No data yet." 
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className={column.align === "right" ? "text-right" : "text-left"}
+                    className={`${column.align === "right" ? "text-right" : "text-left"} ${column.className ?? ""}`}
                   >
                     {column.render(row)}
                   </td>

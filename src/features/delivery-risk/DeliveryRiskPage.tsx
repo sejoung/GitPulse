@@ -127,7 +127,16 @@ export function DeliveryRiskPage() {
       <DetailPanel title={t("patterns.title")} description={t("patterns.description")}>
         <Table
           columns={[
-            { key: "event", header: t("common:table.pattern"), render: (row) => row.event },
+            {
+              key: "event",
+              header: t("common:table.pattern"),
+              className: "w-[30%]",
+              render: (row) => (
+                <span className="block truncate" title={row.event}>
+                  {row.event}
+                </span>
+              ),
+            },
             {
               key: "count",
               header: t("common:table.count"),
@@ -137,7 +146,12 @@ export function DeliveryRiskPage() {
             {
               key: "signal",
               header: t("common:table.signal"),
-              render: (row) => row.signal || t(`common:${row.signalKey}`),
+              className: "w-[25%]",
+              render: (row) => (
+                <span className="block truncate" title={row.signal || t(`common:${row.signalKey}`)}>
+                  {row.signal || t(`common:${row.signalKey}`)}
+                </span>
+              ),
             },
             {
               key: "risk",

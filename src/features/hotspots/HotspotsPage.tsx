@@ -178,7 +178,16 @@ export function HotspotsPage() {
       <DetailPanel title={t("ranking.title")} description={t("ranking.description")}>
         <Table
           columns={[
-            { key: "path", header: t("common:table.file"), render: (row) => row.path },
+            {
+              key: "path",
+              header: t("common:table.file"),
+              className: "w-[40%]",
+              render: (row) => (
+                <span className="block truncate" title={row.path}>
+                  {row.path}
+                </span>
+              ),
+            },
             {
               key: "changes",
               header: t("common:table.changes"),
@@ -408,8 +417,9 @@ export function HotspotsPage() {
                       {
                         key: "subject",
                         header: t("details.subject"),
+                        className: "w-[35%]",
                         render: (row) => (
-                          <span className="block max-w-md truncate" title={row.subject}>
+                          <span className="block truncate" title={row.subject}>
                             {row.subject}
                           </span>
                         ),

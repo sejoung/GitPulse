@@ -125,7 +125,16 @@ export function OwnershipPage() {
       <DetailPanel title={t("table.title")} description={t("table.description")}>
         <Table
           columns={[
-            { key: "name", header: t("common:table.contributor"), render: (row) => row.name },
+            {
+              key: "name",
+              header: t("common:table.contributor"),
+              className: "w-[25%]",
+              render: (row) => (
+                <span className="block truncate" title={row.name}>
+                  {row.name}
+                </span>
+              ),
+            },
             {
               key: "commits",
               header: t("common:table.commits"),

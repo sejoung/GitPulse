@@ -147,7 +147,7 @@
   }
 
   .gp-table {
-    @apply w-full min-w-[640px] border-collapse text-sm;
+    @apply w-full min-w-[640px] table-fixed border-collapse text-sm;
   }
 
   .gp-table th {

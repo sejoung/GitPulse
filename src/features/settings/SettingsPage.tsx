@@ -957,7 +957,12 @@ export function SettingsPage() {
                         {
                           key: "pattern",
                           header: t("common:table.pattern"),
-                          render: (row) => row.pattern,
+                          className: "w-[40%]",
+                          render: (row) => (
+                            <span className="block truncate" title={row.pattern}>
+                              {row.pattern}
+                            </span>
+                          ),
                         },
                         {
                           key: "signal",

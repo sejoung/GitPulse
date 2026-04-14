@@ -743,7 +743,16 @@ export function OverviewPage() {
         </div>
         <Table
           columns={[
-            { key: "path", header: t("common:table.file"), render: (row) => row.path },
+            {
+              key: "path",
+              header: t("common:table.file"),
+              className: "w-[50%]",
+              render: (row) => (
+                <span className="block truncate" title={row.path}>
+                  {row.path}
+                </span>
+              ),
+            },
             {
               key: "changes",
               header: t("common:table.changes"),
@@ -955,7 +964,12 @@ export function OverviewPage() {
               {
                 key: "branch",
                 header: t("workspaceDetails.analysisBasis.branch"),
-                render: (row) => row.branch,
+                className: "w-[15%]",
+                render: (row) => (
+                  <span className="block truncate" title={row.branch}>
+                    {row.branch}
+                  </span>
+                ),
               },
               {
                 key: "head",
