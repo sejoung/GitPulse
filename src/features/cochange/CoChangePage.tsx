@@ -179,7 +179,9 @@ export function CoChangePage() {
                 key: "file",
                 header: t("common:table.file"),
                 className: "max-w-0",
-                render: (row) => <TruncatedCell value={row.file} />,
+                render: (row) => (
+                  <TruncatedCell value={row.file} workspacePath={ctx.workspacePath} />
+                ),
               },
               {
                 key: "partners",
@@ -255,7 +257,9 @@ export function CoChangePage() {
                 key: "partner",
                 header: t("ranking.partner"),
                 className: "max-w-0",
-                render: (row) => <TruncatedCell value={row.partner} />,
+                render: (row) => (
+                  <TruncatedCell value={row.partner} workspacePath={ctx.workspacePath} />
+                ),
               },
               {
                 key: "coChangeCount",

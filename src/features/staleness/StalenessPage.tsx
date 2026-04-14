@@ -122,7 +122,9 @@ export function StalenessPage() {
                 key: "path",
                 header: t("common:table.file"),
                 className: "max-w-0",
-                render: (row) => <TruncatedCell value={row.path} />,
+                render: (row) => (
+                  <TruncatedCell value={row.path} workspacePath={ctx.workspacePath} />
+                ),
               },
               {
                 key: "lastModified",

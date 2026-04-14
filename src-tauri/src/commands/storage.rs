@@ -1,7 +1,9 @@
 use std::fs;
+use std::path::Path;
 
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_opener::OpenerExt;
 
 use crate::models::storage::{
     AnalysisCacheEntry, AnalysisRunRecord, LocalDatabaseSnapshot, LocalDatabaseSummary,
@@ -104,6 +106,26 @@ pub async fn save_export_file(
     };
 
     fs::write(path.as_path().ok_or("Invalid path")?, contents.as_bytes())
+        .map_err(|error| error.to_string())?;
+
+    Ok(true)
+}
+
+#[tauri::command]
+pub async fn reveal_file_in_explorer(
+    app_handle: AppHandle,
+    workspace_path: String,
+    file_path: String,
+) -> Result<bool, String> {
+    let full_path = Path::new(&workspace_path).join(&file_path);
+
+    if !full_path.exists() {
+        return Ok(false);
+    }
+
+    app_handle
+        .opener()
+        .reveal_item_in_dir(&full_path)
         .map_err(|error| error.to_string())?;
 
     Ok(true)

@@ -794,7 +794,7 @@ export function OverviewPage() {
               key: "path",
               header: t("common:table.file"),
               className: "w-[50%]",
-              render: (row) => <TruncatedCell value={row.path} />,
+              render: (row) => <TruncatedCell value={row.path} workspacePath={workspacePath} />,
             },
             {
               key: "changes",

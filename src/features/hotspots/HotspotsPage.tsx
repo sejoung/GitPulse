@@ -160,7 +160,7 @@ export function HotspotsPage() {
               key: "path",
               header: t("common:table.file"),
               className: "w-[40%]",
-              render: (row) => <TruncatedCell value={row.path} />,
+              render: (row) => <TruncatedCell value={row.path} workspacePath={ctx.workspacePath} />,
             },
             {
               key: "changes",

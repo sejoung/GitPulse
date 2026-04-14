@@ -266,6 +266,76 @@ import { ChartCard } from "../../components/charts";
 />
 ```
 
+### Analysis Basis Panel
+
+```tsx
+<AnalysisBasisPanel
+  title={t("basis.title")}
+  description={t("basis.description")}
+  onOpenSettings={() => ctx.setActiveItem("settings")}
+  items={[
+    { label: t("basis.repository"), value: ctx.workspacePath, breakWords: true },
+    { label: t("basis.branch"), value: ctx.selectedBranch },
+    {
+      label: t("basis.window"),
+      value: t(`settings:defaults.analysisWindows.${ctx.analysisPeriod}`),
+    },
+    { label: t("basis.filters"), value: "3 / 2" },
+  ]}
+/>
+```
+
+### Info Grid
+
+```tsx
+<InfoGrid
+  items={[
+    { label: "Contributor", value: "Beni", breakWords: true },
+    { label: "Commits", value: "42" },
+    { label: "Signal", value: <Badge tone="watch">watch</Badge> },
+  ]}
+  columns="md:grid-cols-3"
+/>
+```
+
+### Truncated Cell
+
+Use inside `Table` column renders for long text (file paths, commit subjects):
+
+```tsx
+<Table
+  columns={[
+    {
+      key: "path",
+      header: "File",
+      className: "max-w-0",
+      render: (row) => <TruncatedCell value={row.path} />,
+    },
+  ]}
+  rows={rows}
+  getRowKey={(row) => row.path}
+/>
+```
+
+### Analysis Page Context Hook
+
+```tsx
+const ctx = useAnalysisPageContext();
+// ctx.workspacePath, ctx.selectedBranch, ctx.headSha, ctx.analysisPeriod
+// ctx.excludedPaths, ctx.bugKeywords, ctx.emergencyPatterns, ctx.riskThresholds
+// ctx.hasWorkspace, ctx.setActiveItem
+```
+
+### StatCard Value Helper
+
+```tsx
+<StatCard
+  label="Hotspots"
+  value={statValue(ctx.hasWorkspace, isLoading, String(count), t("common:status.notAnalyzed"))}
+  tone={ctx.hasWorkspace ? "brand" : "neutral"}
+/>
+```
+
 ### Chart Card
 
 ```tsx
@@ -347,6 +417,31 @@ These patterns are now implemented in the app and should be reused.
 - Use tables for read-heavy structured data, not for editable settings forms.
 - When a section depends on repository selection, explain the blocked reason in the section body instead of only disabling the action.
 - For primary user journeys, provide a direct adjacent action to the next step rather than expecting sidebar navigation.
+- For new analysis pages, use `useAnalysisPageContext()` instead of repeating store selectors. Use `AnalysisBasisPanel` for the basis section, `InfoGrid` for detail grids, `TruncatedCell` for truncated table cells, and `statValue()` for StatCard value ternaries.
+- Use `riskTone()` or `couplingTone()` from `src/lib/analysis-helpers.ts` instead of inline risk-to-tone ternaries.
+- For file export in Tauri, use the `save_export_file` Rust command (dialog + fs::write). Do not use Blob URL downloads or `window.open` in Tauri.
+
+---
+
+### Keyboard Shortcuts
+
+Global keyboard shortcuts are registered in `src/app/router/useKeyboardShortcuts.ts`.
+
+| Key | Action           |
+| --- | ---------------- |
+| `1` | Overview         |
+| `2` | Hotspots         |
+| `3` | Ownership        |
+| `4` | Activity         |
+| `5` | Delivery Risk    |
+| `6` | Co-change        |
+| `7` | Collaboration    |
+| `8` | Staleness        |
+| `S` | Settings         |
+| `R` | Refresh analysis |
+| `O` | Select workspace |
+
+Shortcuts are suppressed when an input, textarea, or select is focused, and when a modifier key (Cmd/Ctrl/Alt) is held.
 
 ---
 
@@ -354,7 +449,6 @@ These patterns are now implemented in the app and should be reused.
 
 The current system is a foundation. It does not yet include:
 
-- Real chart implementations
 - Modal/dialog components
 - Form field grouping and validation messaging
 - Loading skeletons (basic spinner and overlay implemented; full skeleton placeholders pending)
