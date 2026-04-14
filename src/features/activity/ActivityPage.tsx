@@ -149,7 +149,11 @@ export function ActivityPage() {
         )}
       </ChartCard>
 
-      <DetailPanel title={t("table.title")} description={t("table.description")}>
+      <DetailPanel
+        title={t("table.title")}
+        description={t("table.description")}
+        loading={isLoading}
+      >
         <Table
           columns={[
             { key: "month", header: t("common:table.month"), render: (row) => row.month },

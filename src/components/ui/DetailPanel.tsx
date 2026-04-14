@@ -1,14 +1,16 @@
 import type { ReactNode } from "react";
 import { Card } from "./Card";
+import { Spinner } from "./Spinner";
 
 type DetailPanelProps = {
   title: string;
   description?: string;
   actions?: ReactNode;
+  loading?: boolean;
   children: ReactNode;
 };
 
-export function DetailPanel({ title, description, actions, children }: DetailPanelProps) {
+export function DetailPanel({ title, description, actions, loading, children }: DetailPanelProps) {
   return (
     <Card className="p-5">
       <div className="gp-content-header">
@@ -18,7 +20,14 @@ export function DetailPanel({ title, description, actions, children }: DetailPan
         </div>
         {actions ? <div className="gp-header-actions">{actions}</div> : null}
       </div>
-      <div className="mt-5">{children}</div>
+      <div className="relative mt-5">
+        {children}
+        {loading ? (
+          <div className="gp-loading-overlay">
+            <Spinner />
+          </div>
+        ) : null}
+      </div>
     </Card>
   );
 }

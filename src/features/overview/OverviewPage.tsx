@@ -593,6 +593,7 @@ export function OverviewPage() {
       <DetailPanel
         title={t("workspaceDetails.title")}
         description={t("workspaceDetails.description")}
+        loading={isLoading}
         actions={
           <div className="gp-header-actions">
             <Button variant="secondary" onClick={() => setActiveItem("settings")}>

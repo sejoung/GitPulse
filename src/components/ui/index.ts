@@ -7,5 +7,6 @@ export { Input } from "./Input";
 export { PageHeader } from "./PageHeader";
 export { Select } from "./Select";
 export { StatCard } from "./StatCard";
+export { Spinner } from "./Spinner";
 export { Table } from "./Table";
 export { Tabs } from "./Tabs";

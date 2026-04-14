@@ -197,4 +197,12 @@
   .gp-alert-critical {
     @apply rounded-lg border border-gp-risk-critical bg-gp-bg-secondary p-4 text-sm text-gp-risk-critical;
   }
+
+  .gp-spinner {
+    @apply animate-spin rounded-full border-gp-border-divider border-t-gp-brand-cyan;
+  }
+
+  .gp-loading-overlay {
+    @apply absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-gp-bg-secondary/70;
+  }
 }

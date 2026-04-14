@@ -163,22 +163,26 @@ fn branches_from_ref_output(output: &str, current_branch: Option<&str>) -> Vec<G
 }
 
 #[tauri::command]
-pub fn list_git_branches(workspace_path: Option<String>) -> Vec<GitBranch> {
-    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
-        return Vec::new();
-    };
-    let current_branch = current_branch(&workspace_path);
-    let output = run_git(
-        &workspace_path,
-        &[
-            "for-each-ref",
-            "--format=%(refname)|%(refname:short)",
-            "refs/heads",
-            "refs/remotes",
-        ],
-    )
-    .unwrap_or_default();
-    branches_from_ref_output(&output, current_branch.as_deref())
+pub async fn list_git_branches(workspace_path: Option<String>) -> Result<Vec<GitBranch>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+            return Vec::new();
+        };
+        let current_branch = current_branch(&workspace_path);
+        let output = run_git(
+            &workspace_path,
+            &[
+                "for-each-ref",
+                "--format=%(refname)|%(refname:short)",
+                "refs/heads",
+                "refs/remotes",
+            ],
+        )
+        .unwrap_or_default();
+        branches_from_ref_output(&output, current_branch.as_deref())
+    })
+    .await
+    .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -194,19 +198,23 @@ pub async fn checkout_git_branch(
 }
 
 #[tauri::command]
-pub fn get_git_repository_state(
+pub async fn get_git_repository_state(
     workspace_path: Option<String>,
 ) -> Result<GitRepositoryState, String> {
-    let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
-        return Err("Select a Git workspace first.".to_string());
-    };
+    tauri::async_runtime::spawn_blocking(move || {
+        let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
+            return Err("Select a Git workspace first.".to_string());
+        };
 
-    Ok(GitRepositoryState {
-        branch: current_branch(&workspace_path),
-        head_sha: head_sha(&workspace_path),
-        short_head_sha: short_head_sha(&workspace_path),
-        dirty: working_tree_dirty(&workspace_path),
+        Ok(GitRepositoryState {
+            branch: current_branch(&workspace_path),
+            head_sha: head_sha(&workspace_path),
+            short_head_sha: short_head_sha(&workspace_path),
+            dirty: working_tree_dirty(&workspace_path),
+        })
     })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 fn checkout_git_branch_blocking(

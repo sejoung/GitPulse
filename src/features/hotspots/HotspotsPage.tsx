@@ -175,7 +175,11 @@ export function HotspotsPage() {
         </div>
       </DetailPanel>
 
-      <DetailPanel title={t("ranking.title")} description={t("ranking.description")}>
+      <DetailPanel
+        title={t("ranking.title")}
+        description={t("ranking.description")}
+        loading={isLoading}
+      >
         <Table
           columns={[
             {
@@ -239,6 +243,7 @@ export function HotspotsPage() {
         <DetailPanel
           title={t("details.title")}
           description={t("details.description", { path: selectedHotspot.path })}
+          loading={isCommitLoading}
         >
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="gp-panel min-w-0 p-3">

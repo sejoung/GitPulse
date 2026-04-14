@@ -122,7 +122,11 @@ export function OwnershipPage() {
         </div>
       </DetailPanel>
 
-      <DetailPanel title={t("table.title")} description={t("table.description")}>
+      <DetailPanel
+        title={t("table.title")}
+        description={t("table.description")}
+        loading={isLoading}
+      >
         <Table
           columns={[
             {

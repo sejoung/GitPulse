@@ -858,6 +858,7 @@ export function SettingsPage() {
           <DetailPanel
             title={t("preview.title")}
             description={t("preview.description")}
+            loading={isMatchPreviewFetching}
             actions={
               workspacePath ? (
                 <Button variant="primary" onClick={openOverviewAnalysis}>

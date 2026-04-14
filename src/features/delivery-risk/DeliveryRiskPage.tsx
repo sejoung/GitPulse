@@ -124,7 +124,11 @@ export function DeliveryRiskPage() {
         </div>
       </DetailPanel>
 
-      <DetailPanel title={t("patterns.title")} description={t("patterns.description")}>
+      <DetailPanel
+        title={t("patterns.title")}
+        description={t("patterns.description")}
+        loading={isLoading}
+      >
         <Table
           columns={[
             {

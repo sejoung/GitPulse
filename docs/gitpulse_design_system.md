@@ -122,6 +122,8 @@ Use them for repeated UI patterns:
 | `gp-text-secondary`   | Supporting text                    |
 | `gp-text-muted`       | Muted text                         |
 | `gp-alert-critical`   | Critical inline alert              |
+| `gp-spinner`          | Spinning loading indicator         |
+| `gp-loading-overlay`  | Semi-transparent loading overlay   |
 
 ---
 
@@ -153,6 +155,7 @@ import { AppShell, Sidebar, Topbar } from "../../components/layout";
 | `Tabs`        | `src/components/ui/Tabs.tsx`        | Tab navigation                      |
 | `Input`       | `src/components/ui/Input.tsx`       | Text input                          |
 | `EmptyState`  | `src/components/ui/EmptyState.tsx`  | Empty content state                 |
+| `Spinner`     | `src/components/ui/Spinner.tsx`     | Loading indicator                   |
 | `DetailPanel` | `src/components/ui/DetailPanel.tsx` | Detail section with header and body |
 | `PageHeader`  | `src/components/ui/PageHeader.tsx`  | Page title, description, actions    |
 
@@ -332,7 +335,7 @@ The current system is a foundation. It does not yet include:
 - Real chart implementations
 - Modal/dialog components
 - Form field grouping and validation messaging
-- Loading skeletons
+- Loading skeletons (basic spinner and overlay implemented; full skeleton placeholders pending)
 - Toast notifications
 
 Add these only when a feature needs them.
