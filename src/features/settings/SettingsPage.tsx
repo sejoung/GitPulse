@@ -8,7 +8,16 @@ import type {
   RepositoryOverrideSettings,
 } from "../../app/store/ui-store";
 import { useUiStore } from "../../app/store/ui-store";
-import { Badge, Button, DetailPanel, Input, PageHeader, Table, Tabs } from "../../components/ui";
+import {
+  Badge,
+  Button,
+  DetailPanel,
+  Input,
+  PageHeader,
+  Table,
+  Tabs,
+  TruncatedCell,
+} from "../../components/ui";
 import { languageStorageKey } from "../../i18n/config";
 import { openLocalDatabaseDirectory } from "../../services/tauri/local-database";
 import { openLogFile } from "../../services/tauri/app-log";
@@ -1127,11 +1136,7 @@ export function SettingsPage() {
                           key: "pattern",
                           header: t("common:table.pattern"),
                           className: "w-[40%]",
-                          render: (row) => (
-                            <span className="block truncate" title={row.pattern}>
-                              {row.pattern}
-                            </span>
-                          ),
+                          render: (row) => <TruncatedCell value={row.pattern} />,
                         },
                         {
                           key: "signal",

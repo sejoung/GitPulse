@@ -9,6 +9,7 @@ import {
   PageHeader,
   StatCard,
   Table,
+  TruncatedCell,
 } from "../../components/ui";
 import type { CollaborationPair } from "../../domains/metrics/overview";
 import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
@@ -187,11 +188,7 @@ export function CollaborationPage() {
                 key: "name",
                 header: t("common:table.contributor"),
                 className: "max-w-0",
-                render: (row) => (
-                  <span className="block truncate" title={row.name}>
-                    {row.name}
-                  </span>
-                ),
+                render: (row) => <TruncatedCell value={row.name} />,
               },
               {
                 key: "partners",
@@ -267,11 +264,7 @@ export function CollaborationPage() {
                 key: "partner",
                 header: t("common:table.contributor"),
                 className: "max-w-0",
-                render: (row) => (
-                  <span className="block truncate" title={row.partner}>
-                    {row.partner}
-                  </span>
-                ),
+                render: (row) => <TruncatedCell value={row.partner} />,
               },
               {
                 key: "sharedFileCount",

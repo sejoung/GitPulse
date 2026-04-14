@@ -14,6 +14,7 @@ import {
   StatCard,
   Table,
   Tabs,
+  TruncatedCell,
 } from "../../components/ui";
 import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
 import { riskTone, statValue } from "../../lib/analysis-helpers";
@@ -159,11 +160,7 @@ export function HotspotsPage() {
               key: "path",
               header: t("common:table.file"),
               className: "w-[40%]",
-              render: (row) => (
-                <span className="block truncate" title={row.path}>
-                  {row.path}
-                </span>
-              ),
+              render: (row) => <TruncatedCell value={row.path} />,
             },
             {
               key: "changes",
@@ -372,11 +369,7 @@ export function HotspotsPage() {
                         key: "subject",
                         header: t("details.subject"),
                         className: "w-[35%]",
-                        render: (row) => (
-                          <span className="block truncate" title={row.subject}>
-                            {row.subject}
-                          </span>
-                        ),
+                        render: (row) => <TruncatedCell value={row.subject} />,
                       },
                       {
                         key: "match",

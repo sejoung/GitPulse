@@ -13,6 +13,7 @@ import {
   StatCard,
   Table,
   Tabs,
+  TruncatedCell,
 } from "../../components/ui";
 import { formatCount } from "../../lib/format";
 import { useOverviewAnalysis } from "./useOverviewAnalysis";
@@ -793,11 +794,7 @@ export function OverviewPage() {
               key: "path",
               header: t("common:table.file"),
               className: "w-[50%]",
-              render: (row) => (
-                <span className="block truncate" title={row.path}>
-                  {row.path}
-                </span>
-              ),
+              render: (row) => <TruncatedCell value={row.path} />,
             },
             {
               key: "changes",
@@ -1011,11 +1008,7 @@ export function OverviewPage() {
                 key: "branch",
                 header: t("workspaceDetails.analysisBasis.branch"),
                 className: "w-[15%]",
-                render: (row) => (
-                  <span className="block truncate" title={row.branch}>
-                    {row.branch}
-                  </span>
-                ),
+                render: (row) => <TruncatedCell value={row.branch} />,
               },
               {
                 key: "head",

@@ -9,6 +9,7 @@ import {
   PageHeader,
   StatCard,
   Table,
+  TruncatedCell,
 } from "../../components/ui";
 import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
 import { riskTone, statValue } from "../../lib/analysis-helpers";
@@ -123,11 +124,7 @@ export function DeliveryRiskPage() {
               key: "event",
               header: t("common:table.pattern"),
               className: "w-[30%]",
-              render: (row) => (
-                <span className="block truncate" title={row.event}>
-                  {row.event}
-                </span>
-              ),
+              render: (row) => <TruncatedCell value={row.event} />,
             },
             {
               key: "count",
@@ -139,11 +136,7 @@ export function DeliveryRiskPage() {
               key: "signal",
               header: t("common:table.signal"),
               className: "w-[25%]",
-              render: (row) => (
-                <span className="block truncate" title={row.signal || t(`common:${row.signalKey}`)}>
-                  {row.signal || t(`common:${row.signalKey}`)}
-                </span>
-              ),
+              render: (row) => <TruncatedCell value={row.signal || t(`common:${row.signalKey}`)} />,
             },
             {
               key: "risk",

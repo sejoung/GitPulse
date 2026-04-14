@@ -11,4 +11,5 @@ export { Select } from "./Select";
 export { StatCard } from "./StatCard";
 export { Spinner } from "./Spinner";
 export { Table } from "./Table";
+export { TruncatedCell } from "./TruncatedCell";
 export { Tabs } from "./Tabs";

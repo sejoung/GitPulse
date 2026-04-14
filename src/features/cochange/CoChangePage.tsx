@@ -9,6 +9,7 @@ import {
   PageHeader,
   StatCard,
   Table,
+  TruncatedCell,
 } from "../../components/ui";
 import type { CoChangePair } from "../../domains/metrics/overview";
 import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
@@ -178,11 +179,7 @@ export function CoChangePage() {
                 key: "file",
                 header: t("common:table.file"),
                 className: "max-w-0",
-                render: (row) => (
-                  <span className="block truncate" title={row.file}>
-                    {row.file}
-                  </span>
-                ),
+                render: (row) => <TruncatedCell value={row.file} />,
               },
               {
                 key: "partners",
@@ -258,11 +255,7 @@ export function CoChangePage() {
                 key: "partner",
                 header: t("ranking.partner"),
                 className: "max-w-0",
-                render: (row) => (
-                  <span className="block truncate" title={row.partner}>
-                    {row.partner}
-                  </span>
-                ),
+                render: (row) => <TruncatedCell value={row.partner} />,
               },
               {
                 key: "coChangeCount",

@@ -9,6 +9,7 @@ import {
   PageHeader,
   StatCard,
   Table,
+  TruncatedCell,
 } from "../../components/ui";
 import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
 import { statValue } from "../../lib/analysis-helpers";
@@ -121,11 +122,7 @@ export function StalenessPage() {
                 key: "path",
                 header: t("common:table.file"),
                 className: "max-w-0",
-                render: (row) => (
-                  <span className="block truncate" title={row.path}>
-                    {row.path}
-                  </span>
-                ),
+                render: (row) => <TruncatedCell value={row.path} />,
               },
               {
                 key: "lastModified",

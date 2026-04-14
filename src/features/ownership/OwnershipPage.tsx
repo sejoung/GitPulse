@@ -11,6 +11,7 @@ import {
   PageHeader,
   StatCard,
   Table,
+  TruncatedCell,
 } from "../../components/ui";
 import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
 import { riskTone, statValue } from "../../lib/analysis-helpers";
@@ -110,11 +111,7 @@ export function OwnershipPage() {
               key: "name",
               header: t("common:table.contributor"),
               className: "w-[25%]",
-              render: (row) => (
-                <span className="block truncate" title={row.name}>
-                  {row.name}
-                </span>
-              ),
+              render: (row) => <TruncatedCell value={row.name} />,
             },
             {
               key: "commits",

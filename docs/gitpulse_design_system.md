@@ -145,35 +145,57 @@ import { AppShell, Sidebar, Topbar } from "../../components/layout";
 
 ### UI Components
 
-| Component     | Path                                | Purpose                             |
-| ------------- | ----------------------------------- | ----------------------------------- |
-| `Button`      | `src/components/ui/Button.tsx`      | Standard actions                    |
-| `Badge`       | `src/components/ui/Badge.tsx`       | Status and signal labels            |
-| `Card`        | `src/components/ui/Card.tsx`        | Base surface container              |
-| `StatCard`    | `src/components/ui/StatCard.tsx`    | Metric summary card                 |
-| `Table`       | `src/components/ui/Table.tsx`       | Typed data table                    |
-| `Tabs`        | `src/components/ui/Tabs.tsx`        | Tab navigation                      |
-| `Input`       | `src/components/ui/Input.tsx`       | Text input                          |
-| `EmptyState`  | `src/components/ui/EmptyState.tsx`  | Empty content state                 |
-| `Spinner`     | `src/components/ui/Spinner.tsx`     | Loading indicator                   |
-| `DetailPanel` | `src/components/ui/DetailPanel.tsx` | Detail section with header and body |
-| `PageHeader`  | `src/components/ui/PageHeader.tsx`  | Page title, description, actions    |
+| Component            | Path                                       | Purpose                                           |
+| -------------------- | ------------------------------------------ | ------------------------------------------------- |
+| `Button`             | `src/components/ui/Button.tsx`             | Standard actions                                  |
+| `Badge`              | `src/components/ui/Badge.tsx`              | Status and signal labels                          |
+| `Card`               | `src/components/ui/Card.tsx`               | Base surface container                            |
+| `StatCard`           | `src/components/ui/StatCard.tsx`           | Metric summary card                               |
+| `Table`              | `src/components/ui/Table.tsx`              | Typed data table                                  |
+| `Tabs`               | `src/components/ui/Tabs.tsx`               | Tab navigation                                    |
+| `Input`              | `src/components/ui/Input.tsx`              | Text input                                        |
+| `EmptyState`         | `src/components/ui/EmptyState.tsx`         | Empty content state                               |
+| `Spinner`            | `src/components/ui/Spinner.tsx`            | Loading indicator                                 |
+| `DetailPanel`        | `src/components/ui/DetailPanel.tsx`        | Detail section with header and body               |
+| `PageHeader`         | `src/components/ui/PageHeader.tsx`         | Page title, description, actions                  |
+| `AnalysisBasisPanel` | `src/components/ui/AnalysisBasisPanel.tsx` | Analysis context panel with settings action       |
+| `InfoGrid`           | `src/components/ui/InfoGrid.tsx`           | Key-value panel grid for detail sections          |
+| `TruncatedCell`      | `src/components/ui/TruncatedCell.tsx`      | Truncated text with hover tooltip for table cells |
 
 Import from:
 
 ```ts
 import {
+  AnalysisBasisPanel,
   Badge,
   Button,
   Card,
   DetailPanel,
   EmptyState,
+  InfoGrid,
   Input,
   PageHeader,
   StatCard,
   Table,
   Tabs,
+  TruncatedCell,
 } from "../../components/ui";
+```
+
+### Shared Hooks and Utilities
+
+| Module                   | Path                                  | Purpose                                                 |
+| ------------------------ | ------------------------------------- | ------------------------------------------------------- |
+| `useAnalysisPageContext` | `src/hooks/useAnalysisPageContext.ts` | Shared store selectors + headSha + repository overrides |
+| `statValue`              | `src/lib/analysis-helpers.ts`         | `!hasWorkspace ? na : isLoading ? "..." : value` helper |
+| `riskTone`               | `src/lib/analysis-helpers.ts`         | Maps risk level string to `BadgeTone`                   |
+| `couplingTone`           | `src/lib/analysis-helpers.ts`         | Maps coupling signal string to `BadgeTone`              |
+
+Import from:
+
+```ts
+import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
+import { statValue, riskTone, couplingTone } from "../../lib/analysis-helpers";
 ```
 
 ### Chart Components
