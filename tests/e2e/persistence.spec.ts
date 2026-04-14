@@ -34,9 +34,10 @@ test("persists settings changes to local storage", async ({ page }) => {
             deliveryRiskyCount: 6,
             deliveryWatchCount: 2,
             ownershipWatchPercent: 60,
+            stalenessThresholdDays: 180,
           },
         },
-        version: 7,
+        version: 8,
       })
     );
     window.localStorage.setItem("gitpulse.language", "en");

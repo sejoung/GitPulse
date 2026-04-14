@@ -1,3 +1,4 @@
+import { invoke } from "@tauri-apps/api/core";
 import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
 import type {
   ActivityPoint,
@@ -411,7 +412,6 @@ export async function saveReportFile(
   );
 
   if ("__TAURI_INTERNALS__" in window) {
-    const { invoke } = await import("@tauri-apps/api/core");
     return invoke<boolean>("save_export_file", { defaultName: filename, contents });
   }
 

@@ -1,7 +1,16 @@
 import type { Page } from "@playwright/test";
 
 export type PartialUiState = {
-  activeItem?: "overview" | "hotspots" | "ownership" | "activity" | "delivery-risk" | "settings";
+  activeItem?:
+    | "overview"
+    | "hotspots"
+    | "ownership"
+    | "activity"
+    | "delivery-risk"
+    | "cochange"
+    | "collaboration"
+    | "staleness"
+    | "settings";
   language?: "en" | "ko";
   developerMode?: boolean;
   workspacePath?: string;
@@ -63,6 +72,7 @@ const defaultState = {
     deliveryRiskyCount: 6,
     deliveryWatchCount: 2,
     ownershipWatchPercent: 60,
+    stalenessThresholdDays: 180,
   },
 } as const;
 
@@ -77,7 +87,7 @@ export async function seedAppState(page: Page, overrides: PartialUiState = {}) {
       "gitpulse.ui",
       JSON.stringify({
         state: value,
-        version: 7,
+        version: 8,
       })
     );
     window.localStorage.setItem("gitpulse.language", value.language);
