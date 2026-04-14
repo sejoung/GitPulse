@@ -17,6 +17,7 @@ pub fn run() {
             commands::analysis::get_delivery_risk_analysis,
             commands::analysis::get_settings_match_preview,
             commands::analysis::get_cochange_analysis,
+            commands::analysis::get_collaboration_analysis,
             commands::branch::list_git_branches,
             commands::branch::checkout_git_branch,
             commands::branch::get_git_repository_state,

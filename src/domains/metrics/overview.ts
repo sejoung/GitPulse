@@ -132,3 +132,16 @@ export type CoChangeAnalysis = {
   analyzedCommitCount: number;
   uniqueFileCount: number;
 };
+
+export type CollaborationPair = {
+  authorA: string;
+  authorB: string;
+  sharedFileCount: number;
+  strength: "strong" | "moderate" | "weak";
+};
+
+export type CollaborationAnalysis = {
+  pairs: CollaborationPair[];
+  contributorCount: number;
+  analyzedFileCount: number;
+};

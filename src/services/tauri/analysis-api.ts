@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   ActivityPoint,
   CoChangeAnalysis,
+  CollaborationAnalysis,
   DeliveryEvent,
   GitBranch,
   GitRepositoryState,
@@ -231,6 +232,19 @@ export function getCoChangeAnalysis({
     "get_cochange_analysis",
     { pairs: [], analyzedCommitCount: 0, uniqueFileCount: 0 } as CoChangeAnalysis,
     { workspacePath, period, excludedPaths, minCoupling },
+    { guard: Boolean(workspacePath) }
+  );
+}
+
+export function getCollaborationAnalysis({
+  workspacePath,
+  period = "1y",
+  excludedPaths,
+}: AnalysisParams) {
+  return tauriQuery(
+    "get_collaboration_analysis",
+    { pairs: [], contributorCount: 0, analyzedFileCount: 0 } as CollaborationAnalysis,
+    { workspacePath, period, excludedPaths },
     { guard: Boolean(workspacePath) }
   );
 }

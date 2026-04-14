@@ -1,0 +1,49 @@
+{
+  "kicker": "Collaboration Network",
+  "title": "Who works on the same files",
+  "description": "Discover collaboration patterns: contributors who frequently modify the same files share implicit knowledge dependencies.",
+  "badge": "Collaboration signals",
+  "stats": {
+    "collaborators": "Collaborators",
+    "collaboratorsDetail": "Contributors with shared files",
+    "strongPairs": "Strong pairs",
+    "strongPairsDetail": "5+ shared files",
+    "analyzedFiles": "Analyzed files",
+    "topStrength": "Top strength"
+  },
+  "basis": {
+    "title": "Analysis basis",
+    "description": "Review the repository, time window, and filter scope before inspecting collaboration pairs.",
+    "repository": "Repository",
+    "branch": "Branch",
+    "window": "Analysis window",
+    "filters": "Excluded paths"
+  },
+  "ranking": {
+    "title": "Collaboration ranking",
+    "description": "Contributors grouped by how many files they co-modify. Select a pair to see details.",
+    "contributorA": "Contributor A",
+    "contributorB": "Contributor B",
+    "sharedFiles": "Shared files",
+    "strength": "Strength"
+  },
+  "signals": {
+    "strong": "Strong",
+    "moderate": "Moderate",
+    "weak": "Weak"
+  },
+  "details": {
+    "title": "Pair details",
+    "description": "Collaboration details for {{authorA}} and {{authorB}}.",
+    "sharedFileCount": "Shared file count",
+    "strength": "Strength",
+    "reading": "Reading",
+    "strongReading": "These contributors frequently work on the same files. Consider them as knowledge-sharing partners or review buddies.",
+    "moderateReading": "Some overlap in file ownership. Monitor for potential knowledge silos.",
+    "weakReading": "Minimal overlap. These contributors work in largely independent areas."
+  },
+  "empty": {
+    "noPairs": "No collaboration pairs detected in the analyzed period.",
+    "selectWorkspace": "Select a repository to detect collaboration patterns."
+  }
+}

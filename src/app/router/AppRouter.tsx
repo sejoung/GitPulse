@@ -3,6 +3,7 @@ import { AppShell } from "../../components/layout/AppShell";
 import { useUiStore } from "../store/ui-store";
 import { ActivityPage } from "../../features/activity/ActivityPage";
 import { CoChangePage } from "../../features/cochange/CoChangePage";
+import { CollaborationPage } from "../../features/collaboration/CollaborationPage";
 import { DeliveryRiskPage } from "../../features/delivery-risk/DeliveryRiskPage";
 import { HotspotsPage } from "../../features/hotspots/HotspotsPage";
 import { OverviewPage } from "../../features/overview/OverviewPage";
@@ -24,6 +25,8 @@ function ActivePage() {
       return <DeliveryRiskPage />;
     case "cochange":
       return <CoChangePage />;
+    case "collaboration":
+      return <CollaborationPage />;
     case "settings":
       return <SettingsPage />;
     case "overview":

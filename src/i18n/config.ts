@@ -3,6 +3,7 @@ import { initReactI18next } from "react-i18next";
 
 import enActivity from "./locales/en/activity.json";
 import enCochange from "./locales/en/cochange.json";
+import enCollaboration from "./locales/en/collaboration.json";
 import enCommon from "./locales/en/common.json";
 import enDeliveryRisk from "./locales/en/deliveryRisk.json";
 import enHotspots from "./locales/en/hotspots.json";
@@ -12,6 +13,7 @@ import enSettings from "./locales/en/settings.json";
 import enWorkspace from "./locales/en/workspace.json";
 import koActivity from "./locales/ko/activity.json";
 import koCochange from "./locales/ko/cochange.json";
+import koCollaboration from "./locales/ko/collaboration.json";
 import koCommon from "./locales/ko/common.json";
 import koDeliveryRisk from "./locales/ko/deliveryRisk.json";
 import koHotspots from "./locales/ko/hotspots.json";
@@ -33,6 +35,7 @@ export const resources = {
     activity: enActivity,
     deliveryRisk: enDeliveryRisk,
     cochange: enCochange,
+    collaboration: enCollaboration,
     settings: enSettings,
   },
   ko: {
@@ -44,6 +47,7 @@ export const resources = {
     activity: koActivity,
     deliveryRisk: koDeliveryRisk,
     cochange: koCochange,
+    collaboration: koCollaboration,
     settings: koSettings,
   },
 } as const;
@@ -68,6 +72,7 @@ void i18n.use(initReactI18next).init({
     "activity",
     "deliveryRisk",
     "cochange",
+    "collaboration",
     "settings",
   ],
   interpolation: {

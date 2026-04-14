@@ -51,6 +51,7 @@ export type NavigationItem =
   | "activity"
   | "delivery-risk"
   | "cochange"
+  | "collaboration"
   | "settings";
 
 type UiState = {

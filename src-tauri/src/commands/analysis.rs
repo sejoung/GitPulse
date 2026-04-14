@@ -1,10 +1,12 @@
 use crate::analysis::cochange::build_cochange_analysis;
+use crate::analysis::collaboration::build_collaboration_analysis;
 use crate::analysis::overview::{
     build_activity_analysis, build_delivery_risk_analysis, build_hotspot_commit_details,
     build_hotspots_analysis, build_overview_analysis, build_ownership_analysis,
     build_settings_match_preview,
 };
 use crate::models::cochange::CoChangeAnalysis;
+use crate::models::collaboration::CollaborationAnalysis;
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
     OverviewAnalysis, OwnershipContributor, RiskThresholds, SettingsMatchPreview,
@@ -155,6 +157,23 @@ pub async fn get_cochange_analysis(
             period.as_deref(),
             excluded_paths.as_deref(),
             min_coupling,
+        )
+    })
+    .await
+    .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub async fn get_collaboration_analysis(
+    workspace_path: Option<String>,
+    period: Option<String>,
+    excluded_paths: Option<String>,
+) -> Result<CollaborationAnalysis, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        build_collaboration_analysis(
+            workspace_path.as_deref(),
+            period.as_deref(),
+            excluded_paths.as_deref(),
         )
     })
     .await

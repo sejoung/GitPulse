@@ -11,6 +11,7 @@ const navItems = [
   { id: "activity", labelKey: "nav.activity" },
   { id: "delivery-risk", labelKey: "nav.deliveryRisk" },
   { id: "cochange", labelKey: "nav.cochange" },
+  { id: "collaboration", labelKey: "nav.collaboration" },
   { id: "settings", labelKey: "nav.settings" },
 ] as const;
 
