@@ -56,10 +56,13 @@ export const resources = {
   },
 } as const;
 
-const savedLanguage =
-  typeof window === "undefined"
-    ? undefined
-    : (window.localStorage.getItem(languageStorageKey) ?? undefined);
+const savedLanguage = (() => {
+  try {
+    return window.localStorage.getItem(languageStorageKey) ?? undefined;
+  } catch {
+    return undefined;
+  }
+})();
 
 void i18n.use(initReactI18next).init({
   resources,
