@@ -4,9 +4,20 @@ use std::process::Command;
 
 use crate::models::overview::{GitBranch, GitRemoteStatus, GitRepositoryState};
 
+#[allow(unused_mut)]
+fn git_command() -> Command {
+    let mut cmd = Command::new("git");
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+    }
+    cmd
+}
+
 fn is_git_workspace(workspace_path: &str) -> bool {
     Path::new(workspace_path).exists()
-        && Command::new("git")
+        && git_command()
             .args(["-C", workspace_path, "rev-parse", "--is-inside-work-tree"])
             .output()
             .map(|output| output.status.success())
@@ -14,7 +25,7 @@ fn is_git_workspace(workspace_path: &str) -> bool {
 }
 
 fn run_git(workspace_path: &str, args: &[&str]) -> Result<String, String> {
-    let output = Command::new("git")
+    let output = git_command()
         .arg("-C")
         .arg(workspace_path)
         .args(args)
