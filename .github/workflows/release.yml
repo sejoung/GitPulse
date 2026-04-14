@@ -19,8 +19,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: ubuntu-22.04
-            args: ""
           - platform: windows-latest
             args: ""
           - platform: macos-latest
@@ -47,17 +45,6 @@ jobs:
         with:
           workspaces: |
             src-tauri -> target
-
-      - name: Install Linux system dependencies
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libsoup-3.0-dev \
-            libwebkit2gtk-4.1-dev
 
       - name: Install npm dependencies
         run: npm ci
