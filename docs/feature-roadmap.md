@@ -12,11 +12,9 @@
 - [x] **Co-change graph** - Detect files that frequently change together from existing git log data
 - [x] **Contributor collaboration network** - Visualize who works on the same files, extending Ownership data
 - [x] **File staleness detection** - Flag files with no modifications beyond a configurable threshold
-- [ ] **Trend anomaly detection** - Auto-detect unusual spikes/drops in monthly Activity using standard deviation
+- [x] **Trend anomaly detection** - Auto-detect unusual spikes/drops in monthly Activity using standard deviation
 
 ## Low Priority
 
-- [ ] **GitHub/GitLab API integration** - Enrich commits with PR/issue metadata for deeper context
-- [ ] **Slack/webhook notifications** - Alert on risk level changes for team workflows
 - [ ] **PDF report export** - Generate formatted reports for management sharing
 - [ ] **Dashboard widget customization** - Let users rearrange and select Overview layout widgets

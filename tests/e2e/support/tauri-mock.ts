@@ -45,12 +45,12 @@ const defaultPayload: Required<TauriMockPayload> = {
     { path: "src/lib/report.ts", changes: 9, fixes: 1, risk: "watch" },
   ],
   activity: [
-    { month: "2026-01", commits: 8 },
-    { month: "2026-02", commits: 12 },
-    { month: "2026-03", commits: 15 },
-    { month: "2026-04", commits: 18 },
-    { month: "2026-05", commits: 14 },
-    { month: "2026-06", commits: 20 },
+    { month: "2026-01", commits: 8, anomaly: null },
+    { month: "2026-02", commits: 12, anomaly: null },
+    { month: "2026-03", commits: 15, anomaly: null },
+    { month: "2026-04", commits: 18, anomaly: null },
+    { month: "2026-05", commits: 14, anomaly: null },
+    { month: "2026-06", commits: 20, anomaly: null },
   ],
   hotspotCommits: [
     {

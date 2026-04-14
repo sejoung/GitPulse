@@ -33,6 +33,7 @@ export type OwnershipContributor = {
 export type ActivityPoint = {
   month: string;
   commits: number;
+  anomaly: "spike" | "drop" | null;
 };
 
 export type DeliveryEvent = {

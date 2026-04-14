@@ -1,11 +1,14 @@
 {
   "kicker": "Activity Trend",
   "title": "Is the project accelerating or stalling?",
-  "description": "Monthly commit rhythm shows team momentum and release patterns.",
+  "description": "Monthly commit rhythm shows team momentum and release patterns. Anomalies are auto-detected using standard deviation.",
   "badge": "Monthly rhythm",
   "stats": {
     "currentMonth": "Current month",
     "trend": "Trend",
+    "anomalies": "Anomalies",
+    "anomaliesDetail": "Unusual spikes or drops",
+    "anomalyDetected": "Anomaly detected",
     "signal": "Signal",
     "comparedWithPreviousMonth": "Compared with previous month",
     "noDeclinePattern": "No decline pattern"
@@ -20,10 +23,15 @@
   },
   "chart": {
     "title": "Monthly commit trend",
-    "description": "A steady rhythm is a healthy project signal."
+    "description": "A steady rhythm is a healthy project signal. Orange bars indicate spikes, yellow bars indicate drops."
   },
   "table": {
     "title": "Monthly commits",
-    "description": "Monthly activity extracted from Git history."
+    "description": "Monthly activity extracted from Git history.",
+    "anomaly": "Anomaly"
+  },
+  "anomaly": {
+    "spike": "Spike",
+    "drop": "Drop"
   }
 }

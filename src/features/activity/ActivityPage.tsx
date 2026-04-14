@@ -13,6 +13,17 @@ import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
 import { statValue } from "../../lib/analysis-helpers";
 import { useActivityAnalysis } from "./useActivityAnalysis";
 
+function anomalyBarColor(anomaly: "spike" | "drop" | null) {
+  switch (anomaly) {
+    case "spike":
+      return "bg-gp-risk-risky";
+    case "drop":
+      return "bg-gp-risk-watch";
+    default:
+      return "bg-gp-brand-cyan";
+  }
+}
+
 export function ActivityPage() {
   const { t } = useTranslation(["activity", "common", "settings"]);
   const ctx = useAnalysisPageContext();
@@ -30,6 +41,7 @@ export function ActivityPage() {
     previousMonthCommits === 0
       ? 0
       : Math.round(((currentMonthCommits - previousMonthCommits) / previousMonthCommits) * 100);
+  const anomalyCount = activityRows.filter((row) => row.anomaly !== null).length;
   const na = t("common:status.notAnalyzed");
 
   return (
@@ -39,13 +51,13 @@ export function ActivityPage() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Badge tone={ctx.hasWorkspace ? "brand" : "neutral"}>
+          <Badge tone={ctx.hasWorkspace ? (anomalyCount > 0 ? "watch" : "brand") : "neutral"}>
             {ctx.hasWorkspace ? t("badge") : na}
           </Badge>
         }
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label={t("stats.currentMonth")}
           value={statValue(ctx.hasWorkspace, isLoading, String(currentMonthCommits), na)}
@@ -64,16 +76,24 @@ export function ActivityPage() {
           tone={ctx.hasWorkspace && hasData ? (trend < 0 ? "watch" : "healthy") : "neutral"}
         />
         <StatCard
+          label={t("stats.anomalies")}
+          value={statValue(ctx.hasWorkspace, isLoading, String(anomalyCount), na)}
+          detail={t("stats.anomaliesDetail")}
+          tone={ctx.hasWorkspace && anomalyCount > 0 ? "watch" : "neutral"}
+        />
+        <StatCard
           label={t("stats.signal")}
           value={
             !ctx.hasWorkspace
               ? na
               : hasData
-                ? t("common:status.steady")
+                ? anomalyCount > 0
+                  ? t("stats.anomalyDetected")
+                  : t("common:status.steady")
                 : t("common:empty.activity")
           }
           detail={t("stats.noDeclinePattern")}
-          tone={ctx.hasWorkspace && hasData ? "healthy" : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? (anomalyCount > 0 ? "watch" : "healthy") : "neutral"}
         />
       </section>
 
@@ -112,16 +132,28 @@ export function ActivityPage() {
         ) : (
           <div className="flex h-56 gap-3">
             {activityRows.map((row) => (
-              <div key={row.month} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+              <div
+                key={row.month}
+                className="flex min-w-0 flex-1 flex-col items-center gap-2"
+                title={
+                  row.anomaly
+                    ? `${row.month}: ${row.commits} (${t(`anomaly.${row.anomaly}`)})`
+                    : `${row.month}: ${row.commits}`
+                }
+              >
                 <div className="flex h-48 w-full items-end">
                   <div
-                    className="w-full rounded-t-md bg-gp-brand-cyan"
+                    className={`w-full rounded-t-md ${anomalyBarColor(row.anomaly)}`}
                     style={{
                       height: `${row.commits === 0 ? 0 : Math.max(12, (row.commits / maxCommits) * 100)}%`,
                     }}
                   />
                 </div>
-                <span className="gp-text-muted text-xs">{row.month.slice(5)}</span>
+                <span
+                  className={`text-xs ${row.anomaly ? "font-semibold text-gp-risk-watch" : "gp-text-muted"}`}
+                >
+                  {row.month.slice(5)}
+                </span>
               </div>
             ))}
           </div>
@@ -141,6 +173,17 @@ export function ActivityPage() {
               header: t("common:table.commits"),
               align: "right",
               render: (row) => row.commits,
+            },
+            {
+              key: "anomaly",
+              header: t("table.anomaly"),
+              align: "right",
+              render: (row) =>
+                row.anomaly ? (
+                  <Badge tone={row.anomaly === "spike" ? "risky" : "watch"}>
+                    {t(`anomaly.${row.anomaly}`)}
+                  </Badge>
+                ) : null,
             },
           ]}
           rows={activityRows}

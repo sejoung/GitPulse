@@ -449,14 +449,60 @@ pub fn build_activity_analysis(
 
     let month_window = month_window(period);
 
-    (1 - month_window..=0)
+    let points: Vec<(String, u32)> = (1 - month_window..=0)
         .map(|offset| {
             let month = shift_month(latest_year, latest_month, offset);
             let commits = by_month.get(&month).copied().unwrap_or(0);
+            (month, commits)
+        })
+        .collect();
 
-            ActivityPoint { month, commits }
+    let commits_list: Vec<f64> = points.iter().map(|(_, c)| *c as f64).collect();
+    let (mean, stddev) = mean_stddev(&commits_list);
+
+    points
+        .into_iter()
+        .map(|(month, commits)| {
+            let anomaly = detect_anomaly(commits as f64, mean, stddev);
+            ActivityPoint {
+                month,
+                commits,
+                anomaly,
+            }
         })
         .collect()
+}
+
+fn mean_stddev(values: &[f64]) -> (f64, f64) {
+    if values.is_empty() {
+        return (0.0, 0.0);
+    }
+
+    let n = values.len() as f64;
+    let mean = values.iter().sum::<f64>() / n;
+
+    if values.len() < 2 {
+        return (mean, 0.0);
+    }
+
+    let variance = values.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / n;
+    (mean, variance.sqrt())
+}
+
+fn detect_anomaly(value: f64, mean: f64, stddev: f64) -> Option<String> {
+    if stddev < 1.0 {
+        return None;
+    }
+
+    let z = (value - mean) / stddev;
+
+    if z >= 2.0 {
+        Some("spike".to_string())
+    } else if z <= -2.0 {
+        Some("drop".to_string())
+    } else {
+        None
+    }
 }
 
 pub fn build_delivery_risk_analysis(

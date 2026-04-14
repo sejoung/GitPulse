@@ -36,7 +36,7 @@ const baseInput = {
   ownership: [
     { name: "Beni", commits: 12, share: "67%", recentKey: "status.active", risk: "watch" as const },
   ],
-  activity: [{ month: "2026-04", commits: 6 }],
+  activity: [{ month: "2026-04", commits: 6, anomaly: null }],
   deliveryRisk: [
     {
       event: "revert, reverted",

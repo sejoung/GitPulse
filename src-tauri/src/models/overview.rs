@@ -45,6 +45,7 @@ pub struct OwnershipContributor {
 pub struct ActivityPoint {
     pub month: String,
     pub commits: u32,
+    pub anomaly: Option<String>,
 }
 
 #[derive(Serialize)]
