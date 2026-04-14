@@ -63,6 +63,13 @@ export const queryKeys = {
     riskThresholds: string
   ) =>
     ["delivery-risk", workspacePath, branch, headSha, emergencyPatterns, riskThresholds] as const,
+  cochange: (
+    workspacePath: string,
+    branch: string,
+    headSha: string,
+    period: string,
+    excludedPaths: string
+  ) => ["cochange", workspacePath, branch, headSha, period, excludedPaths] as const,
   settingsMatchPreview: (
     workspacePath: string,
     period: string,

@@ -10,6 +10,7 @@ const navItems = [
   { id: "ownership", labelKey: "nav.ownership" },
   { id: "activity", labelKey: "nav.activity" },
   { id: "delivery-risk", labelKey: "nav.deliveryRisk" },
+  { id: "cochange", labelKey: "nav.cochange" },
   { id: "settings", labelKey: "nav.settings" },
 ] as const;
 

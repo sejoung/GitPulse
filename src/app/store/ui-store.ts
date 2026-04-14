@@ -50,6 +50,7 @@ export type NavigationItem =
   | "ownership"
   | "activity"
   | "delivery-risk"
+  | "cochange"
   | "settings";
 
 type UiState = {

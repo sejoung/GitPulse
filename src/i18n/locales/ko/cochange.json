@@ -1,0 +1,46 @@
+{
+  "kicker": "동시 변경 그래프",
+  "title": "함께 변경되는 파일",
+  "description": "암묵적 커플링 감지: 같은 커밋에 자주 함께 나타나는 파일은 숨겨진 의존성을 가질 수 있습니다.",
+  "badge": "커플링 신호",
+  "stats": {
+    "coupledFiles": "커플링 파일",
+    "coupledFilesDetail": "동시 변경 파트너가 있는 파일",
+    "maxPartners": "최대 파트너 수",
+    "maxPartnersDetail": "가장 많이 커플링된 파일",
+    "analyzedCommits": "분석된 커밋",
+    "tightestCoupling": "가장 높은 커플링"
+  },
+  "basis": {
+    "title": "분석 기준",
+    "description": "동시 변경 파일을 확인하기 전에 저장소, 분석 기간, 필터 범위를 먼저 확인합니다.",
+    "repository": "저장소",
+    "branch": "브랜치",
+    "window": "분석 기간",
+    "filters": "제외 경로"
+  },
+  "ranking": {
+    "title": "동시 변경 순위",
+    "description": "동시 변경 파트너가 가장 많은 파일입니다. 파일을 선택하면 커플링 상세를 확인할 수 있습니다.",
+    "partners": "파트너",
+    "partner": "파트너",
+    "coChanges": "동시 변경",
+    "maxCoupling": "최대 커플링",
+    "coupling": "커플링",
+    "signal": "신호"
+  },
+  "signals": {
+    "tight": "밀접 커플링",
+    "moderate": "보통 커플링",
+    "loose": "느슨한 커플링"
+  },
+  "details": {
+    "title": "커플링 파트너",
+    "fileDescription": "{{file}}과(와) 자주 함께 변경되는 모든 파일입니다.",
+    "signal": "신호"
+  },
+  "empty": {
+    "noPairs": "최소 임계값을 초과하는 동시 변경 쌍이 감지되지 않았습니다.",
+    "selectWorkspace": "동시 변경 패턴을 감지하려면 저장소를 선택하세요."
+  }
+}

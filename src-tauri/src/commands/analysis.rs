@@ -1,8 +1,10 @@
+use crate::analysis::cochange::build_cochange_analysis;
 use crate::analysis::overview::{
     build_activity_analysis, build_delivery_risk_analysis, build_hotspot_commit_details,
     build_hotspots_analysis, build_overview_analysis, build_ownership_analysis,
     build_settings_match_preview,
 };
+use crate::models::cochange::CoChangeAnalysis;
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
     OverviewAnalysis, OwnershipContributor, RiskThresholds, SettingsMatchPreview,
@@ -134,6 +136,25 @@ pub async fn get_settings_match_preview(
             bug_keywords.as_deref(),
             emergency_patterns.as_deref(),
             &thresholds,
+        )
+    })
+    .await
+    .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub async fn get_cochange_analysis(
+    workspace_path: Option<String>,
+    period: Option<String>,
+    excluded_paths: Option<String>,
+    min_coupling: Option<u32>,
+) -> Result<CoChangeAnalysis, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        build_cochange_analysis(
+            workspace_path.as_deref(),
+            period.as_deref(),
+            excluded_paths.as_deref(),
+            min_coupling,
         )
     })
     .await

@@ -2,6 +2,7 @@ import { AppErrorBoundary } from "../error/AppErrorBoundary";
 import { AppShell } from "../../components/layout/AppShell";
 import { useUiStore } from "../store/ui-store";
 import { ActivityPage } from "../../features/activity/ActivityPage";
+import { CoChangePage } from "../../features/cochange/CoChangePage";
 import { DeliveryRiskPage } from "../../features/delivery-risk/DeliveryRiskPage";
 import { HotspotsPage } from "../../features/hotspots/HotspotsPage";
 import { OverviewPage } from "../../features/overview/OverviewPage";
@@ -21,6 +22,8 @@ function ActivePage() {
       return <ActivityPage />;
     case "delivery-risk":
       return <DeliveryRiskPage />;
+    case "cochange":
+      return <CoChangePage />;
     case "settings":
       return <SettingsPage />;
     case "overview":

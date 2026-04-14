@@ -9,7 +9,7 @@
 
 ## Medium Priority
 
-- [ ] **Co-change graph** - Detect files that frequently change together from existing git log data
+- [x] **Co-change graph** - Detect files that frequently change together from existing git log data
 - [ ] **Contributor collaboration network** - Visualize who works on the same files, extending Ownership data
 - [ ] **File staleness detection** - Flag files with no modifications beyond a configurable threshold
 - [ ] **Trend anomaly detection** - Auto-detect unusual spikes/drops in monthly Activity using standard deviation

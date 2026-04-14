@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ActivityPoint,
+  CoChangeAnalysis,
   DeliveryEvent,
   GitBranch,
   GitRepositoryState,
@@ -248,6 +249,28 @@ export function pullGitRemoteUpdates(workspacePath: string) {
     { workspacePath },
     { logSuccess: true }
   );
+}
+
+export function getCoChangeAnalysis({
+  workspacePath,
+  period = "1y",
+  excludedPaths,
+  minCoupling,
+}: AnalysisParams & { minCoupling?: number }) {
+  if (!isTauriRuntime() || !workspacePath) {
+    return Promise.resolve<CoChangeAnalysis>({
+      pairs: [],
+      analyzedCommitCount: 0,
+      uniqueFileCount: 0,
+    });
+  }
+
+  return invokeLogged<CoChangeAnalysis>("get_cochange_analysis", {
+    workspacePath,
+    period,
+    excludedPaths,
+    minCoupling,
+  });
 }
 
 export function checkAppUpdate() {

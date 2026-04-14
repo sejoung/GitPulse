@@ -344,6 +344,7 @@ export function OverviewPage() {
     void queryClient.invalidateQueries({ queryKey: ["ownership"] });
     void queryClient.invalidateQueries({ queryKey: ["activity"] });
     void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
+    void queryClient.invalidateQueries({ queryKey: ["cochange"] });
   }
 
   function exportReport(format: "json" | "md") {

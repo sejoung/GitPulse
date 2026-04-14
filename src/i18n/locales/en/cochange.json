@@ -1,0 +1,46 @@
+{
+  "kicker": "Co-change Graph",
+  "title": "Files that change together",
+  "description": "Detect implicit coupling: files that frequently appear in the same commits may share hidden dependencies.",
+  "badge": "Coupling signals",
+  "stats": {
+    "coupledFiles": "Coupled files",
+    "coupledFilesDetail": "Files with co-change partners",
+    "maxPartners": "Max partners",
+    "maxPartnersDetail": "Most coupled file",
+    "analyzedCommits": "Analyzed commits",
+    "tightestCoupling": "Tightest coupling"
+  },
+  "basis": {
+    "title": "Analysis basis",
+    "description": "Review the repository, time window, and filter scope before inspecting co-change files.",
+    "repository": "Repository",
+    "branch": "Branch",
+    "window": "Analysis window",
+    "filters": "Excluded paths"
+  },
+  "ranking": {
+    "title": "Co-change ranking",
+    "description": "Files with the most co-change partners. Select a file to inspect its coupling details.",
+    "partners": "Partners",
+    "partner": "Partner",
+    "coChanges": "Co-changes",
+    "maxCoupling": "Max coupling",
+    "coupling": "Coupling",
+    "signal": "Signal"
+  },
+  "signals": {
+    "tight": "Tight coupling",
+    "moderate": "Moderate coupling",
+    "loose": "Loose coupling"
+  },
+  "details": {
+    "title": "Coupling partners",
+    "fileDescription": "All files that frequently change together with {{file}}.",
+    "signal": "Signal"
+  },
+  "empty": {
+    "noPairs": "No co-change pairs detected above the minimum threshold.",
+    "selectWorkspace": "Select a repository to detect co-change patterns."
+  }
+}

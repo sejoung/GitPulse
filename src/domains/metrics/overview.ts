@@ -118,3 +118,17 @@ export type RiskThresholds = {
   deliveryWatchCount: number;
   ownershipWatchPercent: number;
 };
+
+export type CoChangePair = {
+  fileA: string;
+  fileB: string;
+  coChangeCount: number;
+  couplingRatio: number;
+  signal: "tight" | "moderate" | "loose";
+};
+
+export type CoChangeAnalysis = {
+  pairs: CoChangePair[];
+  analyzedCommitCount: number;
+  uniqueFileCount: number;
+};
