@@ -25,8 +25,9 @@ test("persists settings changes to local storage", async ({ page }) => {
           rememberLastRepository: true,
           repositoryOverrides: {},
           analysisRuns: [],
+          dismissedUpdateVersion: "",
         },
-        version: 5,
+        version: 6,
       })
     );
     window.localStorage.setItem("gitpulse.language", "en");
