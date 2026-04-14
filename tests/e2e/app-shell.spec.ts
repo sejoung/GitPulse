@@ -7,3 +7,7 @@ test("renders the overview empty state on first load", async ({ appPage }) => {
   await expect(appPage.getByRole("button", { name: "Overview", exact: true })).toBeVisible();
   await expect(appPage.getByRole("button", { name: "Settings", exact: true })).toBeVisible();
 });
+
+test("shows current version in sidebar", async ({ appPage }) => {
+  await expect(appPage.getByText(/^v\d+\.\d+\.\d+$/)).toBeVisible();
+});

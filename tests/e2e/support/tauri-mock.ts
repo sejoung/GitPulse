@@ -186,6 +186,13 @@ export async function seedTauriMocks(page: Page, overrides: TauriMockPayload = {
               };
             case "checkout_git_branch":
               return "main";
+            case "check_app_update":
+              return {
+                currentVersion: "0.1.4",
+                latestVersion: "0.1.4",
+                hasUpdate: false,
+                downloadUrl: "https://sejoung.github.io/GitPulse/",
+              };
             default:
               throw new Error(`Unhandled mock invoke command: ${command}`);
           }
