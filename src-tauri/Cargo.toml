@@ -1,6 +1,6 @@
 [package]
 name = "gitpulse"
-version = "0.2.0"
+version = "0.2.1"
 description = "A desktop dashboard for Git history signals."
 authors = ["GitPulse Contributors"]
 edition = "2021"
