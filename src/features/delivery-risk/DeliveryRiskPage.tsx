@@ -1,38 +1,38 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUiStore } from "../../app/store/ui-store";
-import { Badge, Button, DetailPanel, PageHeader, StatCard, Table } from "../../components/ui";
-import { useGitRepositoryState } from "../overview/useGitBranches";
+import {
+  AnalysisBasisPanel,
+  Badge,
+  Button,
+  DetailPanel,
+  InfoGrid,
+  PageHeader,
+  StatCard,
+  Table,
+} from "../../components/ui";
+import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
+import { riskTone, statValue } from "../../lib/analysis-helpers";
 import { useDeliveryRiskAnalysis } from "./useDeliveryRiskAnalysis";
 
 export function DeliveryRiskPage() {
   const { t } = useTranslation(["deliveryRisk", "common"]);
-  const workspacePath = useUiStore((state) => state.workspacePath);
-  const selectedBranch = useUiStore((state) => state.selectedBranch);
-  const setActiveItem = useUiStore((state) => state.setActiveItem);
-  const globalEmergencyPatterns = useUiStore((state) => state.emergencyPatterns);
-  const riskThresholds = useUiStore((state) => state.riskThresholds);
-  const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
-  const emergencyPatterns = repositoryOverride?.emergencyPatterns ?? globalEmergencyPatterns;
-  const { data: repositoryState } = useGitRepositoryState(workspacePath);
-  const headSha = repositoryState?.headSha ?? null;
+  const ctx = useAnalysisPageContext();
   const [selectedEvent, setSelectedEvent] = useState("");
   const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(
-    workspacePath,
-    selectedBranch,
-    headSha,
-    emergencyPatterns,
-    riskThresholds
+    ctx.workspacePath,
+    ctx.selectedBranch,
+    ctx.headSha,
+    ctx.emergencyPatterns,
+    ctx.riskThresholds
   );
-  const hasWorkspace = Boolean(workspacePath);
   const hasData = deliveryRows.length > 0;
   const selectedPattern = deliveryRows.find((row) => row.event === selectedEvent) ?? null;
-  const selectedConfiguredPattern = emergencyPatterns.find(
+  const selectedConfiguredPattern = ctx.emergencyPatterns.find(
     (item) => item.pattern === selectedPattern?.event
   );
   const summaryRows = hasData
     ? deliveryRows.slice(0, 3)
-    : emergencyPatterns
+    : ctx.emergencyPatterns
         .filter((item) => item.pattern.trim())
         .slice(0, 3)
         .map(
@@ -55,6 +55,7 @@ export function DeliveryRiskPage() {
     : deliveryRows.some((row) => row.risk === "watch")
       ? "watch"
       : "healthy";
+  const na = t("common:status.notAnalyzed");
 
   return (
     <div className="space-y-6">
@@ -63,8 +64,8 @@ export function DeliveryRiskPage() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Badge tone={hasWorkspace && hasData ? deliverySignal : "neutral"}>
-            {hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
+          <Badge tone={ctx.hasWorkspace && hasData ? deliverySignal : "neutral"}>
+            {ctx.hasWorkspace ? t("badge") : na}
           </Badge>
         }
       />
@@ -74,61 +75,42 @@ export function DeliveryRiskPage() {
           <StatCard
             key={row.event}
             label={row.event}
-            value={
-              !hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(row.count)
-            }
+            value={statValue(ctx.hasWorkspace, isLoading, String(row.count), na)}
             detail={t("common:time.lastYear")}
-            tone={hasWorkspace && hasData ? row.risk : "neutral"}
+            tone={ctx.hasWorkspace && hasData ? row.risk : "neutral"}
           />
         ))}
         <StatCard
           label={t("stats.signal")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : hasData
-                  ? t(`common:status.${deliverySignal}`)
-                  : t("common:empty.deliveryRisk")
-          }
+          value={statValue(
+            ctx.hasWorkspace,
+            isLoading,
+            hasData ? t(`common:status.${deliverySignal}`) : t("common:empty.deliveryRisk"),
+            na
+          )}
           detail={t("stats.deliveryRisk")}
-          tone={hasWorkspace && hasData ? deliverySignal : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? deliverySignal : "neutral"}
         />
       </section>
 
-      <DetailPanel
+      <AnalysisBasisPanel
         title={t("basis.title")}
         description={t("basis.description")}
-        actions={
-          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
-            {t("common:actions.openSettings")}
-          </Button>
-        }
-      >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.repository")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.branch")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {selectedBranch || t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.patternRows")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{emergencyPatterns.length}</p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.matchedRows")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{deliveryRows.length}</p>
-          </div>
-        </div>
-      </DetailPanel>
+        onOpenSettings={() => ctx.setActiveItem("settings")}
+        items={[
+          {
+            label: t("basis.repository"),
+            value: ctx.hasWorkspace ? ctx.workspacePath : t("common:status.notSelected"),
+            breakWords: true,
+          },
+          {
+            label: t("basis.branch"),
+            value: ctx.selectedBranch || t("common:status.notSelected"),
+          },
+          { label: t("basis.patternRows"), value: String(ctx.emergencyPatterns.length) },
+          { label: t("basis.matchedRows"), value: String(deliveryRows.length) },
+        ]}
+      />
 
       <DetailPanel
         title={t("patterns.title")}
@@ -168,11 +150,7 @@ export function DeliveryRiskPage() {
               header: t("common:table.risk"),
               align: "right",
               render: (row) => (
-                <Badge
-                  tone={row.risk === "risky" ? "risky" : row.risk === "watch" ? "watch" : "healthy"}
-                >
-                  {t(`common:status.${row.risk}`)}
-                </Badge>
+                <Badge tone={riskTone(row.risk)}>{t(`common:status.${row.risk}`)}</Badge>
               ),
             },
             {
@@ -195,7 +173,7 @@ export function DeliveryRiskPage() {
           rows={deliveryRows}
           getRowKey={(row) => row.event}
           emptyText={
-            hasWorkspace ? t("common:empty.deliveryRisk") : t("common:empty.selectWorkspace")
+            ctx.hasWorkspace ? t("common:empty.deliveryRisk") : t("common:empty.selectWorkspace")
           }
         />
       </DetailPanel>
@@ -205,37 +183,25 @@ export function DeliveryRiskPage() {
           title={t("details.title")}
           description={t("details.description", { pattern: selectedPattern.event })}
         >
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.pattern")}</p>
-              <p className="gp-text-secondary mt-1 break-words text-sm">{selectedPattern.event}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.count")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{selectedPattern.count}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.signal")}</p>
-              <p className="gp-text-secondary mt-1 break-words text-sm">
-                {selectedPattern.signal || t(`common:${selectedPattern.signalKey}`)}
-              </p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.risk")}</p>
-              <Badge
-                tone={
-                  selectedPattern.risk === "risky"
-                    ? "risky"
-                    : selectedPattern.risk === "watch"
-                      ? "watch"
-                      : "healthy"
-                }
-                className="mt-2"
-              >
-                {t(`common:status.${selectedPattern.risk}`)}
-              </Badge>
-            </div>
-          </div>
+          <InfoGrid
+            items={[
+              { label: t("common:table.pattern"), value: selectedPattern.event, breakWords: true },
+              { label: t("common:table.count"), value: String(selectedPattern.count) },
+              {
+                label: t("common:table.signal"),
+                value: selectedPattern.signal || t(`common:${selectedPattern.signalKey}`),
+                breakWords: true,
+              },
+              {
+                label: t("common:table.risk"),
+                value: (
+                  <Badge tone={riskTone(selectedPattern.risk)} className="mt-2">
+                    {t(`common:status.${selectedPattern.risk}`)}
+                  </Badge>
+                ),
+              },
+            ]}
+          />
           <div className="gp-panel mt-3 min-w-0 p-3">
             <p className="gp-kicker">{t("details.configuredSignal")}</p>
             <p className="gp-text-secondary mt-1 break-words text-sm">
@@ -243,7 +209,7 @@ export function DeliveryRiskPage() {
             </p>
           </div>
         </DetailPanel>
-      ) : hasWorkspace && hasData ? (
+      ) : ctx.hasWorkspace && hasData ? (
         <DetailPanel title={t("details.title")} description={t("details.emptyDescription")}>
           <div className="gp-panel min-w-0 p-3">
             <p className="gp-kicker">{t("details.emptyTitle")}</p>

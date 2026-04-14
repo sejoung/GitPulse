@@ -1,35 +1,31 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
 import {
+  AnalysisBasisPanel,
   Badge,
   Button,
   DetailPanel,
   EmptyState,
+  InfoGrid,
   PageHeader,
   StatCard,
   Table,
 } from "../../components/ui";
-import { useGitRepositoryState } from "../overview/useGitBranches";
+import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
+import { riskTone, statValue } from "../../lib/analysis-helpers";
 import { useOwnershipAnalysis } from "./useOwnershipAnalysis";
 
 export function OwnershipPage() {
   const { t } = useTranslation(["ownership", "common"]);
-  const workspacePath = useUiStore((state) => state.workspacePath);
-  const selectedBranch = useUiStore((state) => state.selectedBranch);
-  const riskThresholds = useUiStore((state) => state.riskThresholds);
-  const setActiveItem = useUiStore((state) => state.setActiveItem);
-  const { data: repositoryState } = useGitRepositoryState(workspacePath);
-  const headSha = repositoryState?.headSha ?? null;
+  const ctx = useAnalysisPageContext();
   const { data: contributorRows = [], isLoading } = useOwnershipAnalysis(
-    workspacePath,
-    selectedBranch,
-    headSha,
-    riskThresholds
+    ctx.workspacePath,
+    ctx.selectedBranch,
+    ctx.headSha,
+    ctx.riskThresholds
   );
   const [selectedContributorName, setSelectedContributorName] = useState("");
-  const hasWorkspace = Boolean(workspacePath);
   const hasData = contributorRows.length > 0;
   const selectedContributor =
     contributorRows.find((row) => row.name === selectedContributorName) ?? null;
@@ -38,6 +34,7 @@ export function OwnershipPage() {
     (row) => row.recentKey === "status.active"
   ).length;
   const knowledgeRisk = contributorRows.some((row) => row.risk === "watch") ? "watch" : "healthy";
+  const na = t("common:status.notAnalyzed");
 
   return (
     <div className="space-y-6">
@@ -46,8 +43,8 @@ export function OwnershipPage() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Badge tone={hasWorkspace ? "watch" : "neutral"}>
-            {hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
+          <Badge tone={ctx.hasWorkspace ? "watch" : "neutral"}>
+            {ctx.hasWorkspace ? t("badge") : na}
           </Badge>
         }
       />
@@ -55,78 +52,52 @@ export function OwnershipPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label={t("stats.topContributor")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : hasData
-                  ? topContributor
-                  : t("common:empty.ownership")
-          }
+          value={statValue(
+            ctx.hasWorkspace,
+            isLoading,
+            hasData ? topContributor : t("common:empty.ownership"),
+            na
+          )}
           detail={t("stats.aboveWatchThreshold")}
-          tone={hasWorkspace && hasData ? knowledgeRisk : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? knowledgeRisk : "neutral"}
         />
         <StatCard
           label={t("stats.activeContributors")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : String(activeContributorCount)
-          }
+          value={statValue(ctx.hasWorkspace, isLoading, String(activeContributorCount), na)}
           detail={t("stats.recentActivity")}
-          tone={hasWorkspace ? "brand" : "neutral"}
+          tone={ctx.hasWorkspace ? "brand" : "neutral"}
         />
         <StatCard
           label={t("stats.knowledgeRisk")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : hasData
-                  ? t(`common:status.${knowledgeRisk}`)
-                  : t("common:empty.ownership")
-          }
+          value={statValue(
+            ctx.hasWorkspace,
+            isLoading,
+            hasData ? t(`common:status.${knowledgeRisk}`) : t("common:empty.ownership"),
+            na
+          )}
           detail={t("stats.ownershipConcentration")}
-          tone={hasWorkspace && hasData ? knowledgeRisk : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? knowledgeRisk : "neutral"}
         />
       </section>
 
-      <DetailPanel
+      <AnalysisBasisPanel
         title={t("basis.title")}
         description={t("basis.description")}
-        actions={
-          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
-            {t("common:actions.openSettings")}
-          </Button>
-        }
-      >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.repository")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.branch")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {selectedBranch || t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.contributors")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{contributorRows.length}</p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.active")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{activeContributorCount}</p>
-          </div>
-        </div>
-      </DetailPanel>
+        onOpenSettings={() => ctx.setActiveItem("settings")}
+        items={[
+          {
+            label: t("basis.repository"),
+            value: ctx.hasWorkspace ? ctx.workspacePath : t("common:status.notSelected"),
+            breakWords: true,
+          },
+          {
+            label: t("basis.branch"),
+            value: ctx.selectedBranch || t("common:status.notSelected"),
+          },
+          { label: t("basis.contributors"), value: String(contributorRows.length) },
+          { label: t("basis.active"), value: String(activeContributorCount) },
+        ]}
+      />
 
       <DetailPanel
         title={t("table.title")}
@@ -168,9 +139,7 @@ export function OwnershipPage() {
               header: t("common:table.signal"),
               align: "right",
               render: (row) => (
-                <Badge tone={row.risk === "watch" ? "watch" : "healthy"}>
-                  {t(`common:status.${row.risk}`)}
-                </Badge>
+                <Badge tone={riskTone(row.risk)}>{t(`common:status.${row.risk}`)}</Badge>
               ),
             },
             {
@@ -192,7 +161,9 @@ export function OwnershipPage() {
           ]}
           rows={contributorRows}
           getRowKey={(row) => row.name}
-          emptyText={hasWorkspace ? t("common:empty.ownership") : t("common:empty.selectWorkspace")}
+          emptyText={
+            ctx.hasWorkspace ? t("common:empty.ownership") : t("common:empty.selectWorkspace")
+          }
         />
       </DetailPanel>
 
@@ -201,49 +172,44 @@ export function OwnershipPage() {
           title={t("details.title")}
           description={t("details.description", { contributor: selectedContributor.name })}
         >
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.contributor")}</p>
-              <p className="gp-text-secondary mt-1 break-words text-sm">
-                {selectedContributor.name}
-              </p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.commits")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{selectedContributor.commits}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.share")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{selectedContributor.share}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.signal")}</p>
-              <Badge
-                tone={selectedContributor.risk === "watch" ? "watch" : "healthy"}
-                className="mt-2"
-              >
-                {t(`common:status.${selectedContributor.risk}`)}
-              </Badge>
-            </div>
-          </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("details.recent")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">
-                {t(`common:${selectedContributor.recentKey}`)}
-              </p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("details.reading")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">
-                {selectedContributor.risk === "watch"
-                  ? t("details.watchReading")
-                  : t("details.healthyReading")}
-              </p>
-            </div>
-          </div>
+          <InfoGrid
+            items={[
+              {
+                label: t("common:table.contributor"),
+                value: selectedContributor.name,
+                breakWords: true,
+              },
+              { label: t("common:table.commits"), value: String(selectedContributor.commits) },
+              { label: t("common:table.share"), value: selectedContributor.share },
+              {
+                label: t("common:table.signal"),
+                value: (
+                  <Badge tone={riskTone(selectedContributor.risk)} className="mt-2">
+                    {t(`common:status.${selectedContributor.risk}`)}
+                  </Badge>
+                ),
+              },
+            ]}
+          />
+          <InfoGrid
+            className="mt-3"
+            columns="md:grid-cols-2"
+            items={[
+              {
+                label: t("details.recent"),
+                value: t(`common:${selectedContributor.recentKey}`),
+              },
+              {
+                label: t("details.reading"),
+                value:
+                  selectedContributor.risk === "watch"
+                    ? t("details.watchReading")
+                    : t("details.healthyReading"),
+              },
+            ]}
+          />
         </DetailPanel>
-      ) : hasWorkspace && hasData ? (
+      ) : ctx.hasWorkspace && hasData ? (
         <DetailPanel title={t("details.title")} description={t("details.emptyDescription")}>
           <EmptyState title={t("details.emptyTitle")} description={t("details.emptyBody")} />
         </DetailPanel>
@@ -252,9 +218,11 @@ export function OwnershipPage() {
       <ChartCard title={t("chart.title")} description={t("chart.description")}>
         {contributorRows.length === 0 ? (
           <EmptyState
-            title={hasWorkspace ? t("common:empty.ownership") : t("common:empty.selectWorkspace")}
+            title={
+              ctx.hasWorkspace ? t("common:empty.ownership") : t("common:empty.selectWorkspace")
+            }
             description={
-              hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
+              ctx.hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
             }
           />
         ) : (

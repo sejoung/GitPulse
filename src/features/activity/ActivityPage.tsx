@@ -1,33 +1,27 @@
 import { useTranslation } from "react-i18next";
-import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
 import {
+  AnalysisBasisPanel,
   Badge,
-  Button,
   DetailPanel,
   EmptyState,
   PageHeader,
   StatCard,
   Table,
 } from "../../components/ui";
-import { useGitRepositoryState } from "../overview/useGitBranches";
+import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
+import { statValue } from "../../lib/analysis-helpers";
 import { useActivityAnalysis } from "./useActivityAnalysis";
 
 export function ActivityPage() {
-  const { t } = useTranslation(["activity", "common"]);
-  const workspacePath = useUiStore((state) => state.workspacePath);
-  const selectedBranch = useUiStore((state) => state.selectedBranch);
-  const analysisPeriod = useUiStore((state) => state.analysisPeriod);
-  const setActiveItem = useUiStore((state) => state.setActiveItem);
-  const { data: repositoryState } = useGitRepositoryState(workspacePath);
-  const headSha = repositoryState?.headSha ?? null;
+  const { t } = useTranslation(["activity", "common", "settings"]);
+  const ctx = useAnalysisPageContext();
   const { data: activityRows = [], isLoading } = useActivityAnalysis(
-    workspacePath,
-    selectedBranch,
-    headSha,
-    analysisPeriod
+    ctx.workspacePath,
+    ctx.selectedBranch,
+    ctx.headSha,
+    ctx.analysisPeriod
   );
-  const hasWorkspace = Boolean(workspacePath);
   const hasData = activityRows.some((row) => row.commits > 0);
   const maxCommits = Math.max(1, ...activityRows.map((row) => row.commits));
   const currentMonthCommits = activityRows[activityRows.length - 1]?.commits ?? 0;
@@ -36,6 +30,7 @@ export function ActivityPage() {
     previousMonthCommits === 0
       ? 0
       : Math.round(((currentMonthCommits - previousMonthCommits) / previousMonthCommits) * 100);
+  const na = t("common:status.notAnalyzed");
 
   return (
     <div className="space-y-6">
@@ -44,8 +39,8 @@ export function ActivityPage() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Badge tone={hasWorkspace ? "brand" : "neutral"}>
-            {hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
+          <Badge tone={ctx.hasWorkspace ? "brand" : "neutral"}>
+            {ctx.hasWorkspace ? t("badge") : na}
           </Badge>
         }
       />
@@ -53,85 +48,65 @@ export function ActivityPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label={t("stats.currentMonth")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : String(currentMonthCommits)
-          }
+          value={statValue(ctx.hasWorkspace, isLoading, String(currentMonthCommits), na)}
           detail={t("common:table.commits")}
-          tone={hasWorkspace ? "brand" : "neutral"}
+          tone={ctx.hasWorkspace ? "brand" : "neutral"}
         />
         <StatCard
           label={t("stats.trend")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : hasData
-                  ? `${trend > 0 ? "+" : ""}${trend}%`
-                  : t("common:empty.activity")
-          }
+          value={statValue(
+            ctx.hasWorkspace,
+            isLoading,
+            hasData ? `${trend > 0 ? "+" : ""}${trend}%` : t("common:empty.activity"),
+            na
+          )}
           detail={t("stats.comparedWithPreviousMonth")}
-          tone={hasWorkspace && hasData ? (trend < 0 ? "watch" : "healthy") : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? (trend < 0 ? "watch" : "healthy") : "neutral"}
         />
         <StatCard
           label={t("stats.signal")}
           value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
+            !ctx.hasWorkspace
+              ? na
               : hasData
                 ? t("common:status.steady")
                 : t("common:empty.activity")
           }
           detail={t("stats.noDeclinePattern")}
-          tone={hasWorkspace && hasData ? "healthy" : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? "healthy" : "neutral"}
         />
       </section>
 
-      <DetailPanel
+      <AnalysisBasisPanel
         title={t("basis.title")}
         description={t("basis.description")}
-        actions={
-          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
-            {t("common:actions.openSettings")}
-          </Button>
-        }
-      >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.repository")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.branch")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {selectedBranch || t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.window")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {t(`settings:defaults.analysisWindows.${analysisPeriod}`)}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.rows")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">{activityRows.length}</p>
-          </div>
-        </div>
-      </DetailPanel>
+        onOpenSettings={() => ctx.setActiveItem("settings")}
+        items={[
+          {
+            label: t("basis.repository"),
+            value: ctx.hasWorkspace ? ctx.workspacePath : t("common:status.notSelected"),
+            breakWords: true,
+          },
+          {
+            label: t("basis.branch"),
+            value: ctx.selectedBranch || t("common:status.notSelected"),
+          },
+          {
+            label: t("basis.window"),
+            value: t(`settings:defaults.analysisWindows.${ctx.analysisPeriod}`),
+          },
+          { label: t("basis.rows"), value: String(activityRows.length) },
+        ]}
+      />
 
       <ChartCard title={t("chart.title")} description={t("chart.description")}>
-        {activityRows.length === 0 || !hasWorkspace ? (
+        {activityRows.length === 0 || !ctx.hasWorkspace ? (
           <EmptyState
-            title={hasWorkspace ? t("common:empty.activity") : t("common:empty.selectWorkspace")}
+            title={
+              ctx.hasWorkspace ? t("common:empty.activity") : t("common:empty.selectWorkspace")
+            }
             description={
-              hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
+              ctx.hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
             }
           />
         ) : (
@@ -170,7 +145,9 @@ export function ActivityPage() {
           ]}
           rows={activityRows}
           getRowKey={(row) => row.month}
-          emptyText={hasWorkspace ? t("common:empty.activity") : t("common:empty.selectWorkspace")}
+          emptyText={
+            ctx.hasWorkspace ? t("common:empty.activity") : t("common:empty.selectWorkspace")
+          }
         />
       </DetailPanel>
     </div>

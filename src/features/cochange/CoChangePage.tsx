@@ -1,29 +1,19 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUiStore } from "../../app/store/ui-store";
 import {
+  AnalysisBasisPanel,
   Badge,
-  Button,
   DetailPanel,
   EmptyState,
+  InfoGrid,
   PageHeader,
   StatCard,
   Table,
 } from "../../components/ui";
 import type { CoChangePair } from "../../domains/metrics/overview";
-import { useGitRepositoryState } from "../overview/useGitBranches";
+import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
+import { couplingTone, statValue } from "../../lib/analysis-helpers";
 import { useCoChangeAnalysis } from "./useCoChangeAnalysis";
-
-function signalTone(signal: string) {
-  switch (signal) {
-    case "tight":
-      return "risky";
-    case "moderate":
-      return "watch";
-    default:
-      return "healthy";
-  }
-}
 
 type FileGroup = {
   file: string;
@@ -79,32 +69,24 @@ function partnersForFile(pairs: CoChangePair[], file: string) {
 
 export function CoChangePage() {
   const { t } = useTranslation(["cochange", "common", "settings"]);
-  const workspacePath = useUiStore((state) => state.workspacePath);
-  const selectedBranch = useUiStore((state) => state.selectedBranch);
-  const analysisPeriod = useUiStore((state) => state.analysisPeriod);
-  const setActiveItem = useUiStore((state) => state.setActiveItem);
-  const globalExcludedPaths = useUiStore((state) => state.excludedPaths);
-  const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
-  const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
-  const { data: repositoryState } = useGitRepositoryState(workspacePath);
-  const headSha = repositoryState?.headSha ?? null;
+  const ctx = useAnalysisPageContext();
   const { data, isLoading } = useCoChangeAnalysis(
-    workspacePath,
-    selectedBranch,
-    headSha,
-    analysisPeriod,
-    excludedPaths
+    ctx.workspacePath,
+    ctx.selectedBranch,
+    ctx.headSha,
+    ctx.analysisPeriod,
+    ctx.excludedPaths
   );
   const pairs = useMemo(() => data?.pairs ?? [], [data?.pairs]);
   const fileGroups = useMemo(() => groupByFile(pairs), [pairs]);
   const [selectedFile, setSelectedFile] = useState("");
-  const hasWorkspace = Boolean(workspacePath);
   const hasData = fileGroups.length > 0;
   const activeFile = fileGroups.find((g) => g.file === selectedFile) ?? null;
   const activePartners = useMemo(
     () => (activeFile ? partnersForFile(pairs, activeFile.file) : []),
     [activeFile, pairs]
   );
+  const na = t("common:status.notAnalyzed");
   const tightestSignal = fileGroups[0]?.maxSignal ?? "loose";
   const tightCount = fileGroups.filter((g) => g.maxSignal === "tight").length;
   const maxPartners = fileGroups[0]?.partners ?? 0;
@@ -116,8 +98,8 @@ export function CoChangePage() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Badge tone={hasWorkspace ? "brand" : "neutral"}>
-            {hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
+          <Badge tone={ctx.hasWorkspace ? "brand" : "neutral"}>
+            {ctx.hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
           </Badge>
         }
       />
@@ -125,97 +107,67 @@ export function CoChangePage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label={t("stats.coupledFiles")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : String(fileGroups.length)
-          }
+          value={statValue(ctx.hasWorkspace, isLoading, String(fileGroups.length), na)}
           detail={t("stats.coupledFilesDetail")}
-          tone={hasWorkspace ? "brand" : "neutral"}
+          tone={ctx.hasWorkspace ? "brand" : "neutral"}
         />
         <StatCard
           label={t("stats.maxPartners")}
-          value={
-            !hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(maxPartners)
-          }
+          value={statValue(ctx.hasWorkspace, isLoading, String(maxPartners), na)}
           detail={t("stats.maxPartnersDetail")}
-          tone={hasWorkspace && maxPartners >= 3 ? "watch" : hasWorkspace ? "brand" : "neutral"}
+          tone={
+            ctx.hasWorkspace && maxPartners >= 3 ? "watch" : ctx.hasWorkspace ? "brand" : "neutral"
+          }
         />
         <StatCard
           label={t("stats.analyzedCommits")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : String(data?.analyzedCommitCount ?? 0)
-          }
-          detail={t(`settings:defaults.analysisWindows.${analysisPeriod}`)}
-          tone={hasWorkspace ? "brand" : "neutral"}
+          value={statValue(ctx.hasWorkspace, isLoading, String(data?.analyzedCommitCount ?? 0), na)}
+          detail={t(`settings:defaults.analysisWindows.${ctx.analysisPeriod}`)}
+          tone={ctx.hasWorkspace ? "brand" : "neutral"}
         />
         <StatCard
           label={t("stats.tightestCoupling")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : hasData
-                  ? t(`signals.${tightestSignal}`)
-                  : "-"
-          }
+          value={statValue(
+            ctx.hasWorkspace,
+            isLoading,
+            hasData ? t(`signals.${tightestSignal}`) : "-",
+            na
+          )}
           detail={
             hasData ? `${tightCount} ${t("signals.tight").toLowerCase()}` : t("empty.noPairs")
           }
-          tone={hasWorkspace && hasData ? signalTone(tightestSignal) : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? couplingTone(tightestSignal) : "neutral"}
         />
       </section>
 
-      <DetailPanel
+      <AnalysisBasisPanel
         title={t("basis.title")}
         description={t("basis.description")}
-        actions={
-          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
-            {t("common:actions.openSettings")}
-          </Button>
-        }
-      >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.repository")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.branch")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {selectedBranch || t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.window")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {t(`settings:defaults.analysisWindows.${analysisPeriod}`)}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.filters")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {excludedPaths.split(",").filter(Boolean).length} excluded
-            </p>
-          </div>
-        </div>
-      </DetailPanel>
+        onOpenSettings={() => ctx.setActiveItem("settings")}
+        items={[
+          {
+            label: t("basis.repository"),
+            value: ctx.hasWorkspace ? ctx.workspacePath : t("common:status.notSelected"),
+            breakWords: true,
+          },
+          { label: t("basis.branch"), value: ctx.selectedBranch || t("common:status.notSelected") },
+          {
+            label: t("basis.window"),
+            value: t(`settings:defaults.analysisWindows.${ctx.analysisPeriod}`),
+          },
+          {
+            label: t("basis.filters"),
+            value: `${ctx.excludedPaths.split(",").filter(Boolean).length} excluded`,
+          },
+        ]}
+      />
 
       <DetailPanel
         title={t("ranking.title")}
         description={t("ranking.description")}
         loading={isLoading}
       >
-        {!hasWorkspace ? (
+        {!ctx.hasWorkspace ? (
           <EmptyState title={t("empty.selectWorkspace")} />
         ) : !hasData && !isLoading ? (
           <EmptyState title={t("empty.noPairs")} />
@@ -260,7 +212,7 @@ export function CoChangePage() {
                       className="inline-block cursor-pointer"
                       onClick={() => setSelectedFile(isSelected ? "" : row.file)}
                     >
-                      <Badge tone={isSelected ? "brand" : signalTone(row.maxSignal)}>
+                      <Badge tone={isSelected ? "brand" : couplingTone(row.maxSignal)}>
                         {t(`signals.${row.maxSignal}`)}
                       </Badge>
                     </button>
@@ -280,26 +232,25 @@ export function CoChangePage() {
           title={t("details.title")}
           description={t("details.fileDescription", { file: activeFile.file })}
         >
-          <div className="mb-4 grid gap-3 md:grid-cols-3">
-            <div className="gp-panel p-3">
-              <p className="gp-kicker">{t("ranking.partners")}</p>
-              <p className="mt-1 text-lg font-semibold text-gp-text-primary">
-                {activeFile.partners}
-              </p>
-            </div>
-            <div className="gp-panel p-3">
-              <p className="gp-kicker">{t("ranking.maxCoupling")}</p>
-              <p className="mt-1 text-lg font-semibold text-gp-text-primary">
-                {Math.round(activeFile.maxCoupling * 100)}%
-              </p>
-            </div>
-            <div className="gp-panel p-3">
-              <p className="gp-kicker">{t("details.signal")}</p>
-              <Badge tone={signalTone(activeFile.maxSignal)} className="mt-1">
-                {t(`signals.${activeFile.maxSignal}`)}
-              </Badge>
-            </div>
-          </div>
+          <InfoGrid
+            className="mb-4"
+            columns="md:grid-cols-3"
+            items={[
+              { label: t("ranking.partners"), value: String(activeFile.partners) },
+              {
+                label: t("ranking.maxCoupling"),
+                value: `${Math.round(activeFile.maxCoupling * 100)}%`,
+              },
+              {
+                label: t("details.signal"),
+                value: (
+                  <Badge tone={couplingTone(activeFile.maxSignal)} className="mt-1">
+                    {t(`signals.${activeFile.maxSignal}`)}
+                  </Badge>
+                ),
+              },
+            ]}
+          />
 
           <Table
             columns={[
@@ -333,7 +284,7 @@ export function CoChangePage() {
                 align: "right",
                 className: "whitespace-nowrap",
                 render: (row) => (
-                  <Badge tone={signalTone(row.signal)}>{t(`signals.${row.signal}`)}</Badge>
+                  <Badge tone={couplingTone(row.signal)}>{t(`signals.${row.signal}`)}</Badge>
                 ),
               },
             ]}

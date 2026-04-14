@@ -51,6 +51,19 @@ async function invokeLogged<T>(
   }
 }
 
+function tauriQuery<T>(
+  command: string,
+  fallback: T,
+  payload: Record<string, unknown>,
+  options?: { guard?: boolean; logSuccess?: boolean }
+): Promise<T> {
+  if (!isTauriRuntime() || options?.guard === false) {
+    return Promise.resolve(fallback);
+  }
+
+  return invokeLogged<T>(command, payload, options);
+}
+
 export function getOverviewAnalysis({
   workspacePath,
   period = "1y",
@@ -59,24 +72,18 @@ export function getOverviewAnalysis({
   emergencyPatterns,
   riskThresholds,
 }: AnalysisParams) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<OverviewAnalysis>({
+  return tauriQuery(
+    "get_overview_analysis",
+    {
       repositoryName: workspacePath || "No workspace selected",
       totalCommits: 0,
       hotspotCount: 0,
       contributorCount: 0,
       deliveryRiskLevel: "low",
-    });
-  }
-
-  return invokeLogged<OverviewAnalysis>("get_overview_analysis", {
-    workspacePath,
-    period,
-    excludedPaths,
-    bugKeywords,
-    emergencyPatterns,
-    riskThresholds,
-  });
+    } as OverviewAnalysis,
+    { workspacePath, period, excludedPaths, bugKeywords, emergencyPatterns, riskThresholds },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function getHotspotsAnalysis({
@@ -86,17 +93,12 @@ export function getHotspotsAnalysis({
   bugKeywords,
   riskThresholds,
 }: AnalysisParams) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<HotspotFile[]>([]);
-  }
-
-  return invokeLogged<HotspotFile[]>("get_hotspots_analysis", {
-    workspacePath,
-    period,
-    excludedPaths,
-    bugKeywords,
-    riskThresholds,
-  });
+  return tauriQuery<HotspotFile[]>(
+    "get_hotspots_analysis",
+    [],
+    { workspacePath, period, excludedPaths, bugKeywords, riskThresholds },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function getHotspotCommitDetails({
@@ -105,35 +107,30 @@ export function getHotspotCommitDetails({
   bugKeywords,
   filePath,
 }: AnalysisParams & { filePath: string }) {
-  if (!isTauriRuntime() || !workspacePath || !filePath) {
-    return Promise.resolve<HotspotCommit[]>([]);
-  }
-
-  return invokeLogged<HotspotCommit[]>("get_hotspot_commit_details", {
-    workspacePath,
-    period,
-    bugKeywords,
-    filePath,
-  });
+  return tauriQuery<HotspotCommit[]>(
+    "get_hotspot_commit_details",
+    [],
+    { workspacePath, period, bugKeywords, filePath },
+    { guard: Boolean(workspacePath && filePath) }
+  );
 }
 
 export function getOwnershipAnalysis(workspacePath: string, riskThresholds?: RiskThresholds) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<OwnershipContributor[]>([]);
-  }
-
-  return invokeLogged<OwnershipContributor[]>("get_ownership_analysis", {
-    workspacePath,
-    riskThresholds,
-  });
+  return tauriQuery<OwnershipContributor[]>(
+    "get_ownership_analysis",
+    [],
+    { workspacePath, riskThresholds },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function getActivityAnalysis(workspacePath: string, period: AnalysisPeriod = "1y") {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<ActivityPoint[]>([]);
-  }
-
-  return invokeLogged<ActivityPoint[]>("get_activity_analysis", { workspacePath, period });
+  return tauriQuery<ActivityPoint[]>(
+    "get_activity_analysis",
+    [],
+    { workspacePath, period },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function getDeliveryRiskAnalysis(
@@ -141,15 +138,12 @@ export function getDeliveryRiskAnalysis(
   emergencyPatterns?: EmergencyPattern[],
   riskThresholds?: RiskThresholds
 ) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<DeliveryEvent[]>([]);
-  }
-
-  return invokeLogged<DeliveryEvent[]>("get_delivery_risk_analysis", {
-    workspacePath,
-    emergencyPatterns,
-    riskThresholds,
-  });
+  return tauriQuery<DeliveryEvent[]>(
+    "get_delivery_risk_analysis",
+    [],
+    { workspacePath, emergencyPatterns, riskThresholds },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function getSettingsMatchPreview({
@@ -160,8 +154,9 @@ export function getSettingsMatchPreview({
   emergencyPatterns,
   riskThresholds,
 }: AnalysisParams) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<SettingsMatchPreview>({
+  return tauriQuery(
+    "get_settings_match_preview",
+    {
       analyzedCommitCount: 0,
       bugKeywordCommitCount: 0,
       excludedFileCount: 0,
@@ -169,85 +164,60 @@ export function getSettingsMatchPreview({
       emergencyMatches: [],
       bugKeywordCommits: [],
       emergencyCommitSamples: [],
-    });
-  }
-
-  return invokeLogged<SettingsMatchPreview>("get_settings_match_preview", {
-    workspacePath,
-    period,
-    excludedPaths,
-    bugKeywords,
-    emergencyPatterns,
-    riskThresholds,
-  });
+    } as SettingsMatchPreview,
+    { workspacePath, period, excludedPaths, bugKeywords, emergencyPatterns, riskThresholds },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function getGitBranches(workspacePath: string) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<GitBranch[]>([]);
-  }
-
-  return invokeLogged<GitBranch[]>("list_git_branches", { workspacePath });
+  return tauriQuery<GitBranch[]>(
+    "list_git_branches",
+    [],
+    { workspacePath },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function getGitRepositoryState(workspacePath: string) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<GitRepositoryState>({
-      branch: null,
-      headSha: null,
-      shortHeadSha: null,
-      dirty: false,
-    });
-  }
-
-  return invokeLogged<GitRepositoryState>("get_git_repository_state", { workspacePath });
+  return tauriQuery(
+    "get_git_repository_state",
+    { branch: null, headSha: null, shortHeadSha: null, dirty: false } as GitRepositoryState,
+    { workspacePath },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function checkoutGitBranch(workspacePath: string, branchName: string) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve(branchName);
-  }
-
-  return invokeLogged<string>(
+  return tauriQuery(
     "checkout_git_branch",
+    branchName,
     { workspacePath, branchName },
-    { logSuccess: true }
+    { guard: Boolean(workspacePath), logSuccess: true }
   );
 }
 
 export function checkGitRemoteStatus(workspacePath: string) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<GitRemoteStatus>({
+  return tauriQuery(
+    "check_git_remote_status",
+    {
       status: workspacePath ? "up_to_date" : "no_upstream",
       upstream: null,
       ahead: 0,
       behind: 0,
       message: null,
-    });
-  }
-
-  return invokeLogged<GitRemoteStatus>(
-    "check_git_remote_status",
+    } as GitRemoteStatus,
     { workspacePath },
-    { logSuccess: true }
+    { guard: Boolean(workspacePath), logSuccess: true }
   );
 }
 
 export function pullGitRemoteUpdates(workspacePath: string) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<GitRemoteStatus>({
-      status: "up_to_date",
-      upstream: null,
-      ahead: 0,
-      behind: 0,
-      message: null,
-    });
-  }
-
-  return invokeLogged<GitRemoteStatus>(
+  return tauriQuery(
     "pull_git_remote_updates",
+    { status: "up_to_date", upstream: null, ahead: 0, behind: 0, message: null } as GitRemoteStatus,
     { workspacePath },
-    { logSuccess: true }
+    { guard: Boolean(workspacePath), logSuccess: true }
   );
 }
 
@@ -257,31 +227,23 @@ export function getCoChangeAnalysis({
   excludedPaths,
   minCoupling,
 }: AnalysisParams & { minCoupling?: number }) {
-  if (!isTauriRuntime() || !workspacePath) {
-    return Promise.resolve<CoChangeAnalysis>({
-      pairs: [],
-      analyzedCommitCount: 0,
-      uniqueFileCount: 0,
-    });
-  }
-
-  return invokeLogged<CoChangeAnalysis>("get_cochange_analysis", {
-    workspacePath,
-    period,
-    excludedPaths,
-    minCoupling,
-  });
+  return tauriQuery(
+    "get_cochange_analysis",
+    { pairs: [], analyzedCommitCount: 0, uniqueFileCount: 0 } as CoChangeAnalysis,
+    { workspacePath, period, excludedPaths, minCoupling },
+    { guard: Boolean(workspacePath) }
+  );
 }
 
 export function checkAppUpdate() {
-  if (!isTauriRuntime()) {
-    return Promise.resolve<AppUpdateInfo>({
+  return tauriQuery(
+    "check_app_update",
+    {
       currentVersion: "0.0.0",
       latestVersion: "0.0.0",
       hasUpdate: false,
       downloadUrl: "",
-    });
-  }
-
-  return invokeLogged<AppUpdateInfo>("check_app_update", {});
+    } as AppUpdateInfo,
+    {}
+  );
 }

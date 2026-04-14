@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUiStore } from "../../app/store/ui-store";
 import { ChartCard } from "../../components/charts";
 import {
+  AnalysisBasisPanel,
   Badge,
   Button,
   DetailPanel,
   EmptyState,
+  InfoGrid,
   Input,
   PageHeader,
   Select,
@@ -14,46 +15,35 @@ import {
   Table,
   Tabs,
 } from "../../components/ui";
-import { useGitRepositoryState } from "../overview/useGitBranches";
+import { useAnalysisPageContext } from "../../hooks/useAnalysisPageContext";
+import { riskTone, statValue } from "../../lib/analysis-helpers";
 import { useHotspotCommitDetails, useHotspotsAnalysis } from "./useHotspotsAnalysis";
 
 export function HotspotsPage() {
-  const { t } = useTranslation(["hotspots", "common"]);
-  const workspacePath = useUiStore((state) => state.workspacePath);
-  const selectedBranch = useUiStore((state) => state.selectedBranch);
-  const analysisPeriod = useUiStore((state) => state.analysisPeriod);
-  const setActiveItem = useUiStore((state) => state.setActiveItem);
-  const globalExcludedPaths = useUiStore((state) => state.excludedPaths);
-  const globalBugKeywords = useUiStore((state) => state.bugKeywords);
-  const riskThresholds = useUiStore((state) => state.riskThresholds);
-  const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
-  const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
-  const bugKeywords = repositoryOverride?.bugKeywords ?? globalBugKeywords;
-  const { data: repositoryState } = useGitRepositoryState(workspacePath);
-  const headSha = repositoryState?.headSha ?? null;
+  const { t } = useTranslation(["hotspots", "common", "settings"]);
+  const ctx = useAnalysisPageContext();
   const [selectedPath, setSelectedPath] = useState("");
   const [commitScope, setCommitScope] = useState<"all" | "matched">("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
   const [commitSearch, setCommitSearch] = useState("");
   const [showCommitFilters, setShowCommitFilters] = useState(false);
   const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(
-    workspacePath,
-    selectedBranch,
-    headSha,
-    analysisPeriod,
-    excludedPaths,
-    bugKeywords,
-    riskThresholds
+    ctx.workspacePath,
+    ctx.selectedBranch,
+    ctx.headSha,
+    ctx.analysisPeriod,
+    ctx.excludedPaths,
+    ctx.bugKeywords,
+    ctx.riskThresholds
   );
-  const hasWorkspace = Boolean(workspacePath);
   const hasData = hotspotRows.length > 0;
   const selectedHotspot = hotspotRows.find((row) => row.path === selectedPath) ?? hotspotRows[0];
   const { data: commitRows = [], isLoading: isCommitLoading } = useHotspotCommitDetails(
-    workspacePath,
-    selectedBranch,
-    headSha,
-    analysisPeriod,
-    bugKeywords,
+    ctx.workspacePath,
+    ctx.selectedBranch,
+    ctx.headSha,
+    ctx.analysisPeriod,
+    ctx.bugKeywords,
     selectedHotspot?.path ?? ""
   );
   const bugOverlap = hotspotRows.filter((row) => row.fixes > 0).length;
@@ -92,6 +82,7 @@ export function HotspotsPage() {
   }, [commitRows, commitScope, selectedAuthor, commitSearch]);
   const matchedCommitCount = commitRows.filter((row) => row.matchesBugKeyword).length;
   const latestCommitDate = commitRows[0]?.date ?? t("details.noCommitEvidence");
+  const na = t("common:status.notAnalyzed");
 
   return (
     <div className="space-y-6">
@@ -100,8 +91,8 @@ export function HotspotsPage() {
         title={t("title")}
         description={t("description")}
         actions={
-          <Badge tone={hasWorkspace ? "brand" : "neutral"}>
-            {hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
+          <Badge tone={ctx.hasWorkspace ? "brand" : "neutral"}>
+            {ctx.hasWorkspace ? t("badge") : t("common:status.notAnalyzed")}
           </Badge>
         }
       />
@@ -109,78 +100,53 @@ export function HotspotsPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label={t("stats.topChurnFiles")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : String(hotspotRows.length)
-          }
+          value={statValue(ctx.hasWorkspace, isLoading, String(hotspotRows.length), na)}
           detail={t("common:time.lastYear")}
-          tone={hasWorkspace ? "brand" : "neutral"}
+          tone={ctx.hasWorkspace ? "brand" : "neutral"}
         />
         <StatCard
           label={t("stats.bugOverlap")}
-          value={
-            !hasWorkspace ? t("common:status.notAnalyzed") : isLoading ? "..." : String(bugOverlap)
-          }
+          value={statValue(ctx.hasWorkspace, isLoading, String(bugOverlap), na)}
           detail={t("stats.highChangeAndFixHeavy")}
-          tone={hasWorkspace ? "watch" : "neutral"}
+          tone={ctx.hasWorkspace ? "watch" : "neutral"}
         />
         <StatCard
           label={t("stats.highestSignal")}
-          value={
-            !hasWorkspace
-              ? t("common:status.notAnalyzed")
-              : isLoading
-                ? "..."
-                : hasData
-                  ? t(`common:status.${highestSignal}`)
-                  : t("common:empty.hotspots")
-          }
+          value={statValue(
+            ctx.hasWorkspace,
+            isLoading,
+            hasData ? t(`common:status.${highestSignal}`) : t("common:empty.hotspots"),
+            na
+          )}
           detail={t("stats.potentialMaintenanceLoad")}
-          tone={hasWorkspace && hasData ? highestSignal : "neutral"}
+          tone={ctx.hasWorkspace && hasData ? highestSignal : "neutral"}
         />
       </section>
 
-      <DetailPanel
+      <AnalysisBasisPanel
         title={t("basis.title")}
         description={t("basis.description")}
-        actions={
-          <Button variant="secondary" onClick={() => setActiveItem("settings")}>
-            {t("common:actions.openSettings")}
-          </Button>
-        }
-      >
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.repository")}</p>
-            <p className="gp-text-secondary mt-1 break-words text-sm">
-              {hasWorkspace ? workspacePath : t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.branch")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {selectedBranch || t("common:status.notSelected")}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.window")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {t(`settings:defaults.analysisWindows.${analysisPeriod}`)}
-            </p>
-          </div>
-          <div className="gp-panel min-w-0 p-3">
-            <p className="gp-kicker">{t("basis.filters")}</p>
-            <p className="gp-text-secondary mt-1 text-sm">
-              {`${bugKeywords.split(",").filter(Boolean).length} / ${
-                excludedPaths.split(",").filter(Boolean).length
-              }`}
-            </p>
-          </div>
-        </div>
-      </DetailPanel>
+        onOpenSettings={() => ctx.setActiveItem("settings")}
+        items={[
+          {
+            label: t("basis.repository"),
+            value: ctx.hasWorkspace ? ctx.workspacePath : t("common:status.notSelected"),
+            breakWords: true,
+          },
+          {
+            label: t("basis.branch"),
+            value: ctx.selectedBranch || t("common:status.notSelected"),
+          },
+          {
+            label: t("basis.window"),
+            value: t(`settings:defaults.analysisWindows.${ctx.analysisPeriod}`),
+          },
+          {
+            label: t("basis.filters"),
+            value: `${ctx.bugKeywords.split(",").filter(Boolean).length} / ${ctx.excludedPaths.split(",").filter(Boolean).length}`,
+          },
+        ]}
+      />
 
       <DetailPanel
         title={t("ranking.title")}
@@ -216,11 +182,7 @@ export function HotspotsPage() {
               header: t("common:table.signal"),
               align: "right",
               render: (row) => (
-                <Badge
-                  tone={row.risk === "risky" ? "risky" : row.risk === "watch" ? "watch" : "healthy"}
-                >
-                  {t(`common:status.${row.risk}`)}
-                </Badge>
+                <Badge tone={riskTone(row.risk)}>{t(`common:status.${row.risk}`)}</Badge>
               ),
             },
             {
@@ -242,7 +204,9 @@ export function HotspotsPage() {
           ]}
           rows={hotspotRows}
           getRowKey={(row) => row.path}
-          emptyText={hasWorkspace ? t("common:empty.hotspots") : t("common:empty.selectWorkspace")}
+          emptyText={
+            ctx.hasWorkspace ? t("common:empty.hotspots") : t("common:empty.selectWorkspace")
+          }
         />
       </DetailPanel>
 
@@ -252,45 +216,29 @@ export function HotspotsPage() {
           description={t("details.description", { path: selectedHotspot.path })}
           loading={isCommitLoading}
         >
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.file")}</p>
-              <p className="gp-text-secondary mt-1 break-words text-sm">{selectedHotspot.path}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.changes")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{selectedHotspot.changes}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.fixCommits")}</p>
-              <p className="gp-text-secondary mt-1 text-sm">{selectedHotspot.fixes}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("common:table.signal")}</p>
-              <Badge
-                tone={
-                  selectedHotspot.risk === "risky"
-                    ? "risky"
-                    : selectedHotspot.risk === "watch"
-                      ? "watch"
-                      : "healthy"
-                }
-                className="mt-2"
-              >
-                {t(`common:status.${selectedHotspot.risk}`)}
-              </Badge>
-            </div>
-          </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("details.bugKeywords")}</p>
-              <p className="gp-text-secondary mt-1 break-words text-sm">{bugKeywords}</p>
-            </div>
-            <div className="gp-panel min-w-0 p-3">
-              <p className="gp-kicker">{t("details.excludedPaths")}</p>
-              <p className="gp-text-secondary mt-1 break-words text-sm">{excludedPaths}</p>
-            </div>
-          </div>
+          <InfoGrid
+            items={[
+              { label: t("common:table.file"), value: selectedHotspot.path, breakWords: true },
+              { label: t("common:table.changes"), value: String(selectedHotspot.changes) },
+              { label: t("common:table.fixCommits"), value: String(selectedHotspot.fixes) },
+              {
+                label: t("common:table.signal"),
+                value: (
+                  <Badge tone={riskTone(selectedHotspot.risk)} className="mt-2">
+                    {t(`common:status.${selectedHotspot.risk}`)}
+                  </Badge>
+                ),
+              },
+            ]}
+          />
+          <InfoGrid
+            className="mt-3"
+            columns="md:grid-cols-2"
+            items={[
+              { label: t("details.bugKeywords"), value: ctx.bugKeywords, breakWords: true },
+              { label: t("details.excludedPaths"), value: ctx.excludedPaths, breakWords: true },
+            ]}
+          />
           <div className="mt-4">
             <div className="gp-status-row">
               <div className="min-w-0">
@@ -316,24 +264,18 @@ export function HotspotsPage() {
             </div>
             {commitRows.length > 0 ? (
               <>
-                <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-kicker">{t("details.summary.totalCommits")}</p>
-                    <p className="gp-text-secondary mt-1 text-sm">{commitRows.length}</p>
-                  </div>
-                  <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-kicker">{t("details.summary.matchedCommits")}</p>
-                    <p className="gp-text-secondary mt-1 text-sm">{matchedCommitCount}</p>
-                  </div>
-                  <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-kicker">{t("details.summary.authors")}</p>
-                    <p className="gp-text-secondary mt-1 text-sm">{commitAuthors.length}</p>
-                  </div>
-                  <div className="gp-panel min-w-0 p-3">
-                    <p className="gp-kicker">{t("details.summary.latestDate")}</p>
-                    <p className="gp-text-secondary mt-1 text-sm">{latestCommitDate}</p>
-                  </div>
-                </div>
+                <InfoGrid
+                  className="mt-3"
+                  items={[
+                    { label: t("details.summary.totalCommits"), value: String(commitRows.length) },
+                    {
+                      label: t("details.summary.matchedCommits"),
+                      value: String(matchedCommitCount),
+                    },
+                    { label: t("details.summary.authors"), value: String(commitAuthors.length) },
+                    { label: t("details.summary.latestDate"), value: latestCommitDate },
+                  ]}
+                />
                 {showCommitFilters ? (
                   <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,1fr)]">
                     <div className="gp-panel min-w-0 p-3">
@@ -383,7 +325,7 @@ export function HotspotsPage() {
                     </div>
                   </div>
                 ) : null}
-                <div className="space-y-3 xl:hidden">
+                <div className="mt-3 space-y-3 xl:hidden">
                   {filteredCommitRows.map((row) => (
                     <div key={row.sha} className="gp-panel min-w-0 p-3">
                       <div className="flex flex-wrap items-center gap-2">
@@ -408,7 +350,7 @@ export function HotspotsPage() {
                     </div>
                   ))}
                 </div>
-                <div className="hidden xl:block">
+                <div className="mt-3 hidden xl:block">
                   <Table
                     columns={[
                       {
@@ -470,9 +412,11 @@ export function HotspotsPage() {
       <ChartCard title={t("chart.title")} description={t("chart.description")}>
         {hotspotRows.length === 0 ? (
           <EmptyState
-            title={hasWorkspace ? t("common:empty.hotspots") : t("common:empty.selectWorkspace")}
+            title={
+              ctx.hasWorkspace ? t("common:empty.hotspots") : t("common:empty.selectWorkspace")
+            }
             description={
-              hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
+              ctx.hasWorkspace ? t("common:empty.chart") : t("common:empty.selectWorkspaceDetail")
             }
           />
         ) : (
