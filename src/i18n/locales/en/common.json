@@ -90,5 +90,10 @@
     "watchReleasePressure": "Watch release pressure",
     "noRollbackPattern": "No rollback pattern",
     "noEmergencyPattern": "No emergency pattern"
+  },
+  "update": {
+    "newVersion": "New version v{{version}} is available",
+    "download": "Download",
+    "dismiss": "Dismiss"
   }
 }

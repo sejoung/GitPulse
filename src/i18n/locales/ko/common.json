@@ -90,5 +90,10 @@
     "watchReleasePressure": "릴리스 압박 관찰",
     "noRollbackPattern": "롤백 패턴 없음",
     "noEmergencyPattern": "긴급 패턴 없음"
+  },
+  "update": {
+    "newVersion": "새 버전 v{{version}}이 출시되었습니다",
+    "download": "다운로드",
+    "dismiss": "닫기"
   }
 }

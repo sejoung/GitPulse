@@ -2,6 +2,7 @@ import type { PropsWithChildren } from "react";
 import { useTranslation } from "react-i18next";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { UpdateBanner } from "./UpdateBanner";
 
 const navItems = [
   { id: "overview", labelKey: "nav.overview" },
@@ -24,6 +25,7 @@ export function AppShell({ children }: PropsWithChildren) {
       <Sidebar items={translatedNavItems} />
       <main className="gp-main">
         <Topbar title={t("appName")} />
+        <UpdateBanner />
         <div className="gp-page">{children}</div>
       </main>
     </div>

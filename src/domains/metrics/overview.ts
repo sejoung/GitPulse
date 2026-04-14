@@ -101,3 +101,10 @@ export type GitRepositoryState = {
   shortHeadSha: string | null;
   dirty: boolean;
 };
+
+export type AppUpdateInfo = {
+  currentVersion: string;
+  latestVersion: string;
+  hasUpdate: boolean;
+  downloadUrl: string;
+};

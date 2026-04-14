@@ -10,6 +10,7 @@ import type {
   OverviewAnalysis,
   OwnershipContributor,
   SettingsMatchPreview,
+  AppUpdateInfo,
 } from "../../domains/metrics/overview";
 import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
 import { appendAppLog } from "./app-log";
@@ -235,4 +236,17 @@ export function pullGitRemoteUpdates(workspacePath: string) {
     { workspacePath },
     { logSuccess: true }
   );
+}
+
+export function checkAppUpdate() {
+  if (!isTauriRuntime()) {
+    return Promise.resolve<AppUpdateInfo>({
+      currentVersion: "0.0.0",
+      latestVersion: "0.0.0",
+      hasUpdate: false,
+      downloadUrl: "",
+    });
+  }
+
+  return invokeLogged<AppUpdateInfo>("check_app_update", {});
 }

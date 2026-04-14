@@ -46,6 +46,8 @@ type UiState = {
   rememberLastRepository: boolean;
   repositoryOverrides: Record<string, RepositoryOverrideSettings>;
   analysisRuns: AnalysisRunRecord[];
+  dismissedUpdateVersion: string;
+  setDismissedUpdateVersion: (version: string) => void;
   setActiveItem: (item: NavigationItem) => void;
   setLanguage: (language: AppLanguage) => void;
   setDeveloperMode: (enabled: boolean) => void;
@@ -82,12 +84,14 @@ export type PersistedUiSettings = {
   rememberLastRepository: boolean;
   repositoryOverrides: Record<string, RepositoryOverrideSettings>;
   analysisRuns: AnalysisRunRecord[];
+  dismissedUpdateVersion: string;
 };
 
 type PersistedUiState = Partial<Omit<PersistedUiSettings, "analysisPeriod">> & {
   analysisPeriod?: AnalysisPeriod | "30d" | "90d" | "all";
   emergencyKeywords?: string;
   language?: AppLanguage;
+  dismissedUpdateVersion?: string;
 };
 
 const defaultEmergencyPatterns: EmergencyPattern[] = [
@@ -161,6 +165,7 @@ export function selectPersistedUiSettings(state: Pick<UiState, keyof PersistedUi
     rememberLastRepository: state.rememberLastRepository,
     repositoryOverrides: state.repositoryOverrides,
     analysisRuns: state.analysisRuns,
+    dismissedUpdateVersion: state.dismissedUpdateVersion,
   };
 }
 
@@ -180,6 +185,8 @@ export const useUiStore = create<UiState>()(
       rememberLastRepository: true,
       repositoryOverrides: {},
       analysisRuns: [],
+      dismissedUpdateVersion: "",
+      setDismissedUpdateVersion: (dismissedUpdateVersion) => set({ dismissedUpdateVersion }),
       setActiveItem: (activeItem) => set({ activeItem }),
       setLanguage: (language) => set({ language }),
       setDeveloperMode: (developerMode) => set({ developerMode }),
@@ -259,11 +266,12 @@ export const useUiStore = create<UiState>()(
           rememberLastRepository: payload.rememberLastRepository ?? state.rememberLastRepository,
           repositoryOverrides: payload.repositoryOverrides ?? state.repositoryOverrides,
           analysisRuns: payload.analysisRuns ?? state.analysisRuns,
+          dismissedUpdateVersion: payload.dismissedUpdateVersion ?? state.dismissedUpdateVersion,
         })),
     }),
     {
       name: "gitpulse.ui",
-      version: 5,
+      version: 6,
       partialize: (state) => selectPersistedUiSettings(state),
       migrate: (persistedState) => {
         const state = persistedState as PersistedUiState;
@@ -281,6 +289,7 @@ export const useUiStore = create<UiState>()(
           rememberLastRepository: state.rememberLastRepository ?? true,
           repositoryOverrides: state.repositoryOverrides ?? {},
           analysisRuns: state.analysisRuns ?? [],
+          dismissedUpdateVersion: state.dismissedUpdateVersion ?? "",
         };
       },
     }
