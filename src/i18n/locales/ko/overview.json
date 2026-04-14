@@ -155,6 +155,7 @@
     "scopeCurrent": "현재 스냅샷만 포함",
     "scopeUnavailable": "먼저 기준 스냅샷을 선택하세요",
     "scopeTarget": "스냅샷 대상",
+    "html": "HTML 내보내기",
     "markdown": "Markdown 내보내기",
     "json": "JSON 내보내기",
     "includes": "포함 내용",
@@ -171,7 +172,8 @@
     "compareUnavailable": "비교 리포트를 내보내려면 먼저 기준 스냅샷을 선택하세요.",
     "success": {
       "md": "Markdown 리포트를 내려받았습니다.",
-      "json": "JSON 리포트를 내려받았습니다."
+      "json": "JSON 리포트를 내려받았습니다.",
+      "html": "HTML 리포트를 저장했습니다."
     }
   }
 }

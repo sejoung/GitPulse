@@ -30,9 +30,10 @@ import {
 } from "./useGitBranches";
 import type { GitRemoteStatus } from "../../domains/metrics/overview";
 import {
+  buildAnalysisReportHtml,
   buildAnalysisReportJson,
   buildAnalysisReportMarkdown,
-  downloadAnalysisReport,
+  saveReportFile,
   type ReportDetailLevel,
   type ReportScope,
 } from "./report-export";
@@ -349,16 +350,7 @@ export function OverviewPage() {
     void queryClient.invalidateQueries({ queryKey: ["staleness"] });
   }
 
-  function exportReport(format: "json" | "md") {
-    if (!workspacePath || !activeBranch || !data) {
-      setExportMessage(t("export.empty"));
-      return;
-    }
-    if (exportScope === "compare" && !canExportComparison) {
-      setExportMessage(t("export.compareUnavailable"));
-      return;
-    }
-
+  function buildReportInput() {
     const generatedAt = new Date().toISOString();
     const comparison =
       exportScope === "compare" && latestRecordedRun && comparisonRun
@@ -391,10 +383,11 @@ export function OverviewPage() {
             },
           }
         : null;
-    const reportInput = {
+
+    return {
       generatedAt,
       workspacePath,
-      repositoryName: data.repositoryName,
+      repositoryName: data!.repositoryName,
       branch: activeBranch,
       headSha: repositoryState?.headSha ?? null,
       shortHeadSha: repositoryState?.shortHeadSha ?? null,
@@ -405,29 +398,64 @@ export function OverviewPage() {
       excludedPaths,
       bugKeywords,
       emergencyPatterns,
-      overview: data,
+      overview: data!,
       hotspots: hotspotRows,
       ownership: ownershipRows,
       activity: activityRows,
       deliveryRisk: deliveryRows,
       comparison,
     };
+  }
 
+  function exportReport(format: "json" | "md") {
+    if (!workspacePath || !activeBranch || !data) {
+      setExportMessage(t("export.empty"));
+      return;
+    }
+    if (exportScope === "compare" && !canExportComparison) {
+      setExportMessage(t("export.compareUnavailable"));
+      return;
+    }
+
+    const reportInput = buildReportInput();
     const contents =
       format === "json"
         ? buildAnalysisReportJson(reportInput)
         : buildAnalysisReportMarkdown(reportInput);
 
-    downloadAnalysisReport(
+    void saveReportFile(
       data.repositoryName,
       activeBranch,
-      generatedAt,
+      reportInput.generatedAt,
       exportDetailLevel,
       exportScope,
       format,
       contents
-    );
-    setExportMessage(t(`export.success.${format}`));
+    ).then((saved) => {
+      if (saved) setExportMessage(t(`export.success.${format}`));
+    });
+  }
+
+  function exportHtml() {
+    if (!workspacePath || !activeBranch || !data) {
+      setExportMessage(t("export.empty"));
+      return;
+    }
+
+    const reportInput = buildReportInput();
+    const html = buildAnalysisReportHtml(reportInput);
+
+    void saveReportFile(
+      data.repositoryName,
+      activeBranch,
+      reportInput.generatedAt,
+      exportDetailLevel,
+      exportScope,
+      "html",
+      html
+    ).then((saved) => {
+      if (saved) setExportMessage(t("export.success.html"));
+    });
   }
 
   useEffect(() => {
@@ -1057,6 +1085,9 @@ export function OverviewPage() {
           description={t("export.description")}
           actions={
             <div className="gp-header-actions">
+              <Button variant="primary" disabled={!data || !hasWorkspace} onClick={exportHtml}>
+                {t("export.html")}
+              </Button>
               <Button
                 variant="secondary"
                 disabled={!data || !hasWorkspace}

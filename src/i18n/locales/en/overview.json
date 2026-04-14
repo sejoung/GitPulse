@@ -155,6 +155,7 @@
     "scopeCurrent": "Current snapshot only",
     "scopeUnavailable": "Choose a baseline snapshot first",
     "scopeTarget": "Snapshot target",
+    "html": "Export HTML",
     "markdown": "Export Markdown",
     "json": "Export JSON",
     "includes": "Included sections",
@@ -171,7 +172,8 @@
     "compareUnavailable": "Choose a baseline snapshot before exporting a compare report.",
     "success": {
       "md": "Markdown report downloaded.",
-      "json": "JSON report downloaded."
+      "json": "JSON report downloaded.",
+      "html": "HTML report saved."
     }
   }
 }

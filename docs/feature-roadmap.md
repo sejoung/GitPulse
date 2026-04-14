@@ -16,5 +16,5 @@
 
 ## Low Priority
 
-- [ ] **PDF report export** - Generate formatted reports for management sharing
+- [x] **HTML report export** - Generate formatted HTML reports for management sharing
 - [ ] **Dashboard widget customization** - Let users rearrange and select Overview layout widgets

@@ -40,7 +40,7 @@ type AnalysisReportComparison = {
   };
 };
 
-type AnalysisReportInput = {
+export type AnalysisReportInput = {
   generatedAt: string;
   workspacePath: string;
   repositoryName: string;
@@ -81,14 +81,13 @@ export function buildAnalysisReportFilename(
   generatedAt: string,
   detailLevel: ReportDetailLevel,
   scope: ReportScope,
-  format: "json" | "md"
+  format: "json" | "md" | "html"
 ) {
   const repositorySlug = slugify(repositoryName) || "gitpulse";
   const branchSlug = slugify(branch) || "head";
   const timestamp = formatTimestampForFilename(generatedAt);
-  const extension = format === "json" ? "json" : "md";
 
-  return `${repositorySlug}-${branchSlug}-${timestamp}-${detailLevel}-${scope}-report.${extension}`;
+  return `${repositorySlug}-${branchSlug}-${timestamp}-${detailLevel}-${scope}-report.${format}`;
 }
 
 function remoteFreshnessLine(remoteStatus: GitRemoteStatus | null) {
@@ -278,16 +277,130 @@ export function buildAnalysisReportMarkdown(input: AnalysisReportInput) {
   ].join("\n");
 }
 
-export function downloadAnalysisReport(
+function escapeHtml(text: string) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function htmlTable(headers: string[], rows: string[][]) {
+  const ths = headers.map((h) => `<th>${escapeHtml(h)}</th>`).join("");
+  const trs = rows
+    .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`)
+    .join("");
+
+  return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+export function buildAnalysisReportHtml(input: AnalysisReportInput) {
+  const hotspotTable =
+    input.hotspots.length > 0
+      ? htmlTable(
+          ["File", "Changes", "Fixes", "Risk"],
+          input.hotspots
+            .slice(0, 10)
+            .map((r) => [r.path, String(r.changes), String(r.fixes), r.risk])
+        )
+      : "<p>No hotspot data.</p>";
+
+  const ownershipTable =
+    input.ownership.length > 0
+      ? htmlTable(
+          ["Contributor", "Commits", "Share", "Signal"],
+          input.ownership.slice(0, 10).map((r) => [r.name, String(r.commits), r.share, r.risk])
+        )
+      : "<p>No ownership data.</p>";
+
+  const activityTable =
+    input.activity.length > 0
+      ? htmlTable(
+          ["Month", "Commits", "Anomaly"],
+          input.activity.map((r) => [r.month, String(r.commits), r.anomaly ?? "-"])
+        )
+      : "<p>No activity data.</p>";
+
+  const deliveryTable =
+    input.deliveryRisk.length > 0
+      ? htmlTable(
+          ["Pattern", "Count", "Signal", "Risk"],
+          input.deliveryRisk.map((r) => [r.event, String(r.count), r.signal, r.risk])
+        )
+      : "<p>No delivery risk data.</p>";
+
+  const comparisonSection = input.comparison
+    ? `<h2>Snapshot Compare</h2>
+       <table>
+         <tr><td>Current</td><td>${escapeHtml(input.comparison.current.shortHeadSha)} (${escapeHtml(input.comparison.current.branch)})</td></tr>
+         <tr><td>Baseline</td><td>${escapeHtml(input.comparison.baseline.shortHeadSha)} (${escapeHtml(input.comparison.baseline.branch)})</td></tr>
+         <tr><td>Commit delta</td><td>${input.comparison.deltas.commits ?? "N/A"}</td></tr>
+         <tr><td>Hotspot delta</td><td>${input.comparison.deltas.hotspots ?? "N/A"}</td></tr>
+         <tr><td>Risk changed</td><td>${input.comparison.deltas.riskChanged ? "Yes" : "No"}</td></tr>
+       </table>`
+    : "";
+
+  const fullDetail =
+    input.detailLevel === "full"
+      ? `<h2>Hotspots</h2>${hotspotTable}
+         <h2>Ownership</h2>${ownershipTable}
+         <h2>Activity</h2>${activityTable}
+         <h2>Delivery Risk</h2>${deliveryTable}`
+      : "";
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>GitPulse Report — ${escapeHtml(input.repositoryName)}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; max-width: 800px; margin: 0 auto; padding: 32px 24px; font-size: 13px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  h2 { font-size: 15px; margin-top: 24px; border-bottom: 1px solid #e5e5e5; padding-bottom: 4px; }
+  .meta { color: #666; font-size: 11px; margin-bottom: 16px; }
+  .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+  .summary-card { background: #f7f7f8; border-radius: 6px; padding: 12px; }
+  .summary-card .label { font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+  .summary-card .value { font-size: 18px; font-weight: 600; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 12px; }
+  th { text-align: left; font-weight: 600; border-bottom: 2px solid #e5e5e5; padding: 6px 8px; font-size: 11px; text-transform: uppercase; color: #666; }
+  td { border-bottom: 1px solid #f0f0f0; padding: 6px 8px; }
+  tr:last-child td { border-bottom: none; }
+  @media print { body { padding: 0; } }
+</style></head><body>
+  <h1>GitPulse Analysis Report</h1>
+  <p class="meta">${escapeHtml(input.repositoryName)} &middot; ${escapeHtml(input.branch)} &middot; ${escapeHtml(input.shortHeadSha ?? "N/A")} &middot; ${escapeHtml(input.period)} &middot; ${escapeHtml(input.generatedAt)}</p>
+
+  <div class="summary">
+    <div class="summary-card"><div class="label">Commits</div><div class="value">${input.overview.totalCommits}</div></div>
+    <div class="summary-card"><div class="label">Hotspots</div><div class="value">${input.overview.hotspotCount}</div></div>
+    <div class="summary-card"><div class="label">Contributors</div><div class="value">${input.overview.contributorCount}</div></div>
+    <div class="summary-card"><div class="label">Delivery Risk</div><div class="value">${escapeHtml(input.overview.deliveryRiskLevel)}</div></div>
+  </div>
+
+  <h2>Repository</h2>
+  <table>
+    <tr><td>Path</td><td>${escapeHtml(input.workspacePath)}</td></tr>
+    <tr><td>Branch</td><td>${escapeHtml(input.branch)}</td></tr>
+    <tr><td>HEAD</td><td>${escapeHtml(input.shortHeadSha ?? "N/A")}</td></tr>
+    <tr><td>Analysis window</td><td>${escapeHtml(input.period)}</td></tr>
+    <tr><td>Freshness</td><td>${escapeHtml(remoteFreshnessLine(input.remoteStatus))}</td></tr>
+  </table>
+
+  <h2>Settings</h2>
+  <table>
+    <tr><td>Excluded paths</td><td>${escapeHtml(input.excludedPaths || "None")}</td></tr>
+    <tr><td>Bug keywords</td><td>${escapeHtml(input.bugKeywords || "None")}</td></tr>
+    <tr><td>Emergency patterns</td><td>${escapeHtml(input.emergencyPatterns.map((p) => p.pattern).join(", ") || "None")}</td></tr>
+  </table>
+
+  ${comparisonSection}
+  ${fullDetail}
+</body></html>`;
+}
+
+export async function saveReportFile(
   repositoryName: string,
   branch: string,
   generatedAt: string,
   detailLevel: ReportDetailLevel,
   scope: ReportScope,
-  format: "json" | "md",
+  format: "json" | "md" | "html",
   contents: string
-) {
-  const mimeType = format === "json" ? "application/json" : "text/markdown";
+): Promise<boolean> {
   const filename = buildAnalysisReportFilename(
     repositoryName,
     branch,
@@ -296,6 +409,14 @@ export function downloadAnalysisReport(
     scope,
     format
   );
+
+  if ("__TAURI_INTERNALS__" in window) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<boolean>("save_export_file", { defaultName: filename, contents });
+  }
+
+  const mimeType =
+    format === "json" ? "application/json" : format === "html" ? "text/html" : "text/markdown";
   const blob = new Blob([contents], { type: `${mimeType};charset=utf-8` });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -303,4 +424,6 @@ export function downloadAnalysisReport(
   anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
+
+  return true;
 }

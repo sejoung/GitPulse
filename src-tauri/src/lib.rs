@@ -33,6 +33,7 @@ pub fn run() {
             commands::storage::append_log_entry,
             commands::storage::get_log_file_summary,
             commands::storage::open_log_file,
+            commands::storage::save_export_file,
             commands::update::check_app_update
         ])
         .run(tauri::generate_context!())

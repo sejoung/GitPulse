@@ -1,4 +1,7 @@
+use std::fs;
+
 use tauri::AppHandle;
+use tauri_plugin_dialog::DialogExt;
 
 use crate::models::storage::{
     AnalysisCacheEntry, AnalysisRunRecord, LocalDatabaseSnapshot, LocalDatabaseSummary,
@@ -81,4 +84,27 @@ pub async fn open_log_file(app_handle: AppHandle) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || log::open_log_file(&app_handle))
         .await
         .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+pub async fn save_export_file(
+    app_handle: AppHandle,
+    default_name: String,
+    contents: String,
+) -> Result<bool, String> {
+    let file_path = app_handle
+        .dialog()
+        .file()
+        .set_file_name(&default_name)
+        .add_filter("All files", &["json", "md", "html"])
+        .blocking_save_file();
+
+    let Some(path) = file_path else {
+        return Ok(false);
+    };
+
+    fs::write(path.as_path().ok_or("Invalid path")?, contents.as_bytes())
+        .map_err(|error| error.to_string())?;
+
+    Ok(true)
 }
