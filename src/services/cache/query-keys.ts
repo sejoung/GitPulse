@@ -63,6 +63,12 @@ export const queryKeys = {
     riskThresholds: string
   ) =>
     ["delivery-risk", workspacePath, branch, headSha, emergencyPatterns, riskThresholds] as const,
+  staleness: (
+    workspacePath: string,
+    headSha: string,
+    excludedPaths: string,
+    staleThresholdDays: number
+  ) => ["staleness", workspacePath, headSha, excludedPaths, String(staleThresholdDays)] as const,
   collaboration: (
     workspacePath: string,
     branch: string,

@@ -142,7 +142,10 @@
     "deliveryWatch": "주의: 최소 매치 수",
     "ownership": "소유권",
     "ownershipHelp": "단일 기여자 커밋 비율.",
-    "ownershipWatch": "주의: 최소 %"
+    "ownershipWatch": "주의: 최소 %",
+    "staleness": "파일 노후화",
+    "stalenessHelp": "파일이 노후로 표시되기까지의 미수정 일수. 2배 초과 시 치명적.",
+    "stalenessDays": "노후 임계값 (일)"
   },
   "presets": {
     "title": "설정 프리셋",

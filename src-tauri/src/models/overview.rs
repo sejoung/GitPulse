@@ -129,7 +129,7 @@ pub struct GitRepositoryState {
     pub dirty: bool,
 }
 
-#[derive(Clone, Deserialize, Default)]
+#[derive(Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RiskThresholds {
     pub hotspot_risky_changes: Option<u32>,
@@ -139,6 +139,7 @@ pub struct RiskThresholds {
     pub delivery_risky_count: Option<u32>,
     pub delivery_watch_count: Option<u32>,
     pub ownership_watch_percent: Option<f64>,
+    pub staleness_threshold_days: Option<u32>,
 }
 
 impl RiskThresholds {

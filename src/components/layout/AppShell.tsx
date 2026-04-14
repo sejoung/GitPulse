@@ -12,6 +12,7 @@ const navItems = [
   { id: "delivery-risk", labelKey: "nav.deliveryRisk" },
   { id: "cochange", labelKey: "nav.cochange" },
   { id: "collaboration", labelKey: "nav.collaboration" },
+  { id: "staleness", labelKey: "nav.staleness" },
   { id: "settings", labelKey: "nav.settings" },
 ] as const;
 

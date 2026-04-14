@@ -1,0 +1,47 @@
+{
+  "kicker": "File Staleness",
+  "title": "Files with no recent modifications",
+  "description": "Flag files that have not been modified beyond a configurable threshold. Stale files may indicate dead code or missing maintenance.",
+  "badge": "Staleness signals",
+  "stats": {
+    "staleFiles": "Stale files",
+    "staleFilesDetail": "Above threshold",
+    "criticalFiles": "Critical files",
+    "criticalFilesDetail": "2x threshold exceeded",
+    "trackedFiles": "Tracked files",
+    "threshold": "Threshold"
+  },
+  "basis": {
+    "title": "Analysis basis",
+    "description": "Review the repository and staleness threshold before inspecting stale files.",
+    "repository": "Repository",
+    "branch": "Branch",
+    "threshold": "Threshold (days)",
+    "filters": "Excluded paths"
+  },
+  "ranking": {
+    "title": "Stale file ranking",
+    "description": "Files sorted by days since last modification. Longer staleness may indicate dead code or neglected areas.",
+    "lastModified": "Last modified",
+    "daysSince": "Days since",
+    "staleness": "Staleness"
+  },
+  "signals": {
+    "critical": "Critical",
+    "stale": "Stale"
+  },
+  "details": {
+    "title": "File details",
+    "description": "Staleness details for {{path}}.",
+    "lastModified": "Last modified",
+    "daysSince": "Days since modification",
+    "staleness": "Staleness level",
+    "reading": "Reading",
+    "criticalReading": "This file has not been modified for an extended period. Consider reviewing whether it is still needed.",
+    "staleReading": "This file has not been modified recently. It may need attention or could be intentionally stable."
+  },
+  "empty": {
+    "noStaleFiles": "No stale files detected above the threshold.",
+    "selectWorkspace": "Select a repository to detect stale files."
+  }
+}

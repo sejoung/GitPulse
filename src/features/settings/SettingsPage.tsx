@@ -789,6 +789,29 @@ export function SettingsPage() {
                   </div>
                 </div>
               </div>
+              <div className="gp-panel min-w-0 p-4">
+                <p className="gp-kicker">{t("thresholds.staleness")}</p>
+                <p className="gp-text-muted mt-1 text-xs">{t("thresholds.stalenessHelp")}</p>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-staleness-days">
+                      {t("thresholds.stalenessDays")}
+                    </label>
+                    <Input
+                      id="th-staleness-days"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.stalenessThresholdDays}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          stalenessThresholdDays: Number(e.target.value) || 180,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </DetailPanel>
         </>

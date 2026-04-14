@@ -5,6 +5,7 @@ import { ActivityPage } from "../../features/activity/ActivityPage";
 import { CoChangePage } from "../../features/cochange/CoChangePage";
 import { CollaborationPage } from "../../features/collaboration/CollaborationPage";
 import { DeliveryRiskPage } from "../../features/delivery-risk/DeliveryRiskPage";
+import { StalenessPage } from "../../features/staleness/StalenessPage";
 import { HotspotsPage } from "../../features/hotspots/HotspotsPage";
 import { OverviewPage } from "../../features/overview/OverviewPage";
 import { OwnershipPage } from "../../features/ownership/OwnershipPage";
@@ -27,6 +28,8 @@ function ActivePage() {
       return <CoChangePage />;
     case "collaboration":
       return <CollaborationPage />;
+    case "staleness":
+      return <StalenessPage />;
     case "settings":
       return <SettingsPage />;
     case "overview":

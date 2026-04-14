@@ -1,0 +1,47 @@
+{
+  "kicker": "파일 노후화",
+  "title": "최근 수정이 없는 파일",
+  "description": "설정 가능한 임계값 이상 수정이 없는 파일을 감지합니다. 노후화된 파일은 죽은 코드이거나 유지보수가 누락된 영역일 수 있습니다.",
+  "badge": "노후화 신호",
+  "stats": {
+    "staleFiles": "노후 파일",
+    "staleFilesDetail": "임계값 초과",
+    "criticalFiles": "치명적 파일",
+    "criticalFilesDetail": "임계값 2배 초과",
+    "trackedFiles": "추적 파일",
+    "threshold": "임계값"
+  },
+  "basis": {
+    "title": "분석 기준",
+    "description": "노후 파일을 확인하기 전에 저장소와 노후화 임계값을 먼저 확인합니다.",
+    "repository": "저장소",
+    "branch": "브랜치",
+    "threshold": "임계값 (일)",
+    "filters": "제외 경로"
+  },
+  "ranking": {
+    "title": "노후 파일 순위",
+    "description": "마지막 수정일 기준으로 정렬된 파일입니다. 오래된 파일은 죽은 코드이거나 방치된 영역일 수 있습니다.",
+    "lastModified": "마지막 수정",
+    "daysSince": "경과일",
+    "staleness": "노후 수준"
+  },
+  "signals": {
+    "critical": "치명적",
+    "stale": "노후"
+  },
+  "details": {
+    "title": "파일 상세",
+    "description": "{{path}}의 노후화 상세 정보입니다.",
+    "lastModified": "마지막 수정일",
+    "daysSince": "수정 후 경과일",
+    "staleness": "노후 수준",
+    "reading": "해석",
+    "criticalReading": "이 파일은 오랜 기간 수정되지 않았습니다. 여전히 필요한지 검토를 고려하세요.",
+    "staleReading": "이 파일은 최근에 수정되지 않았습니다. 관심이 필요하거나 의도적으로 안정적인 상태일 수 있습니다."
+  },
+  "empty": {
+    "noStaleFiles": "임계값을 초과하는 노후 파일이 감지되지 않았습니다.",
+    "selectWorkspace": "노후 파일을 감지하려면 저장소를 선택하세요."
+  }
+}

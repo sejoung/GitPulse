@@ -4,6 +4,7 @@ import type {
   CoChangeAnalysis,
   CollaborationAnalysis,
   DeliveryEvent,
+  StalenessAnalysis,
   GitBranch,
   GitRepositoryState,
   GitRemoteStatus,
@@ -245,6 +246,23 @@ export function getCollaborationAnalysis({
     "get_collaboration_analysis",
     { pairs: [], contributorCount: 0, analyzedFileCount: 0 } as CollaborationAnalysis,
     { workspacePath, period, excludedPaths },
+    { guard: Boolean(workspacePath) }
+  );
+}
+
+export function getStalenessAnalysis({
+  workspacePath,
+  excludedPaths,
+  staleThresholdDays,
+}: {
+  workspacePath: string;
+  excludedPaths?: string;
+  staleThresholdDays?: number;
+}) {
+  return tauriQuery(
+    "get_staleness_analysis",
+    { files: [], trackedFileCount: 0, staleFileCount: 0 } as StalenessAnalysis,
+    { workspacePath, excludedPaths, staleThresholdDays },
     { guard: Boolean(workspacePath) }
   );
 }

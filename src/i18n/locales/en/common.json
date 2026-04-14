@@ -8,6 +8,7 @@
     "deliveryRisk": "Delivery Risk",
     "cochange": "Co-change",
     "collaboration": "Collaboration",
+    "staleness": "Staleness",
     "settings": "Settings"
   },
   "actions": {

@@ -32,6 +32,7 @@ export type RiskThresholds = {
   deliveryRiskyCount: number;
   deliveryWatchCount: number;
   ownershipWatchPercent: number;
+  stalenessThresholdDays: number;
 };
 
 const defaultRiskThresholds: RiskThresholds = {
@@ -42,6 +43,7 @@ const defaultRiskThresholds: RiskThresholds = {
   deliveryRiskyCount: 6,
   deliveryWatchCount: 2,
   ownershipWatchPercent: 60,
+  stalenessThresholdDays: 180,
 };
 
 export type NavigationItem =
@@ -52,6 +54,7 @@ export type NavigationItem =
   | "delivery-risk"
   | "cochange"
   | "collaboration"
+  | "staleness"
   | "settings";
 
 type UiState = {
@@ -301,7 +304,7 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: "gitpulse.ui",
-      version: 7,
+      version: 8,
       partialize: (state) => selectPersistedUiSettings(state),
       migrate: (persistedState) => {
         const state = persistedState as PersistedUiState;
@@ -320,7 +323,7 @@ export const useUiStore = create<UiState>()(
           repositoryOverrides: state.repositoryOverrides ?? {},
           analysisRuns: state.analysisRuns ?? [],
           dismissedUpdateVersion: state.dismissedUpdateVersion ?? "",
-          riskThresholds: state.riskThresholds ?? defaultRiskThresholds,
+          riskThresholds: { ...defaultRiskThresholds, ...state.riskThresholds },
         };
       },
     }

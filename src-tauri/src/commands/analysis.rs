@@ -5,12 +5,14 @@ use crate::analysis::overview::{
     build_hotspots_analysis, build_overview_analysis, build_ownership_analysis,
     build_settings_match_preview,
 };
+use crate::analysis::staleness::build_staleness_analysis;
 use crate::models::cochange::CoChangeAnalysis;
 use crate::models::collaboration::CollaborationAnalysis;
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
     OverviewAnalysis, OwnershipContributor, RiskThresholds, SettingsMatchPreview,
 };
+use crate::models::staleness::StalenessAnalysis;
 
 #[tauri::command]
 pub async fn get_overview_analysis(
@@ -174,6 +176,23 @@ pub async fn get_collaboration_analysis(
             workspace_path.as_deref(),
             period.as_deref(),
             excluded_paths.as_deref(),
+        )
+    })
+    .await
+    .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+pub async fn get_staleness_analysis(
+    workspace_path: Option<String>,
+    excluded_paths: Option<String>,
+    stale_threshold_days: Option<u32>,
+) -> Result<StalenessAnalysis, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        build_staleness_analysis(
+            workspace_path.as_deref(),
+            excluded_paths.as_deref(),
+            stale_threshold_days,
         )
     })
     .await

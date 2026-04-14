@@ -346,6 +346,7 @@ export function OverviewPage() {
     void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
     void queryClient.invalidateQueries({ queryKey: ["cochange"] });
     void queryClient.invalidateQueries({ queryKey: ["collaboration"] });
+    void queryClient.invalidateQueries({ queryKey: ["staleness"] });
   }
 
   function exportReport(format: "json" | "md") {

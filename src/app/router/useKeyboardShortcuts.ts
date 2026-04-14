@@ -11,6 +11,7 @@ const pageKeyMap: Record<string, NavigationItem> = {
   "5": "delivery-risk",
   "6": "cochange",
   "7": "collaboration",
+  "8": "staleness",
 };
 
 function isInputFocused() {
@@ -53,6 +54,7 @@ export function useKeyboardShortcuts() {
         void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
         void queryClient.invalidateQueries({ queryKey: ["cochange"] });
         void queryClient.invalidateQueries({ queryKey: ["collaboration"] });
+        void queryClient.invalidateQueries({ queryKey: ["staleness"] });
         return;
       }
 

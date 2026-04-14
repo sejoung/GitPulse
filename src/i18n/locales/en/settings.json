@@ -142,7 +142,10 @@
     "deliveryWatch": "Watch: min matches",
     "ownership": "Ownership",
     "ownershipHelp": "Single contributor commit share.",
-    "ownershipWatch": "Watch: min %"
+    "ownershipWatch": "Watch: min %",
+    "staleness": "File staleness",
+    "stalenessHelp": "Days without modification before a file is flagged as stale. Critical at 2x.",
+    "stalenessDays": "Stale threshold (days)"
   },
   "presets": {
     "title": "Settings presets",

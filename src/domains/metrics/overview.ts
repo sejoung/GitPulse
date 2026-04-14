@@ -145,3 +145,16 @@ export type CollaborationAnalysis = {
   contributorCount: number;
   analyzedFileCount: number;
 };
+
+export type StaleFile = {
+  path: string;
+  lastModified: string;
+  daysSince: number;
+  staleness: "stale" | "critical";
+};
+
+export type StalenessAnalysis = {
+  files: StaleFile[];
+  trackedFileCount: number;
+  staleFileCount: number;
+};
