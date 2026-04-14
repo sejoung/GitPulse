@@ -102,7 +102,8 @@ fn delivery_risk_analysis_counts_custom_aliases_and_keeps_signal() {
         pattern: "hotfix, urgent".to_string(),
         signal: "Release pressure".to_string(),
     }];
-    let rows = build_delivery_risk_analysis(repo.to_str(), Some(&patterns));
+    let rows =
+        build_delivery_risk_analysis(repo.to_str(), Some(&patterns), &RiskThresholds::default());
 
     assert_eq!(rows.len(), 1);
     assert_eq!(rows[0].event, "hotfix, urgent");
@@ -188,6 +189,7 @@ fn settings_match_preview_counts_keywords_exclusions_and_patterns() {
             pattern: "revert, reverted".to_string(),
             signal: "Rollback activity".to_string(),
         }]),
+        &RiskThresholds::default(),
     );
 
     assert_eq!(preview.analyzed_commit_count, 3);

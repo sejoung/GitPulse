@@ -1,17 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import type { EmergencyPattern } from "../../app/store/ui-store";
+import type { EmergencyPattern, RiskThresholds } from "../../app/store/ui-store";
 import { queryKeys } from "../../services/cache/query-keys";
 import { getDeliveryRiskAnalysis } from "../../services/tauri/analysis-api";
 
 export function useDeliveryRiskAnalysis(
   workspacePath: string,
   branch: string,
-  emergencyPatterns: EmergencyPattern[]
+  emergencyPatterns: EmergencyPattern[],
+  riskThresholds: RiskThresholds
 ) {
   const emergencyPatternKey = JSON.stringify(emergencyPatterns);
+  const riskThresholdsKey = JSON.stringify(riskThresholds);
 
   return useQuery({
-    queryKey: queryKeys.deliveryRisk(workspacePath, branch, emergencyPatternKey),
-    queryFn: () => getDeliveryRiskAnalysis(workspacePath, emergencyPatterns),
+    queryKey: queryKeys.deliveryRisk(workspacePath, branch, emergencyPatternKey, riskThresholdsKey),
+    queryFn: () => getDeliveryRiskAnalysis(workspacePath, emergencyPatterns, riskThresholds),
   });
 }

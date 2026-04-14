@@ -108,3 +108,13 @@ export type AppUpdateInfo = {
   hasUpdate: boolean;
   downloadUrl: string;
 };
+
+export type RiskThresholds = {
+  hotspotRiskyChanges: number;
+  hotspotRiskyFixes: number;
+  hotspotWatchChanges: number;
+  hotspotWatchFixes: number;
+  deliveryRiskyCount: number;
+  deliveryWatchCount: number;
+  ownershipWatchPercent: number;
+};

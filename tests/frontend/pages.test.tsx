@@ -333,18 +333,20 @@ describe("SettingsPage", () => {
     expect(screen.getByText("reverted app shell")).toBeInTheDocument();
     expect(screen.getAllByText("revert, reverted").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Rollback activity").length).toBeGreaterThan(0);
-    expect(api.getSettingsMatchPreview).toHaveBeenCalledWith({
-      workspacePath: "/Users/beni/career-ops",
-      period: "3m",
-      excludedPaths: "dist/, node_modules/, target/",
-      bugKeywords: "fix, bug, broken",
-      emergencyPatterns: [
-        { pattern: "revert", signal: "Normal recovery" },
-        { pattern: "hotfix", signal: "Watch release pressure" },
-        { pattern: "emergency", signal: "Emergency response" },
-        { pattern: "rollback", signal: "Rollback pattern" },
-      ],
-    });
+    expect(api.getSettingsMatchPreview).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspacePath: "/Users/beni/career-ops",
+        period: "3m",
+        excludedPaths: "dist/, node_modules/, target/",
+        bugKeywords: "fix, bug, broken",
+        emergencyPatterns: [
+          { pattern: "revert", signal: "Normal recovery" },
+          { pattern: "hotfix", signal: "Watch release pressure" },
+          { pattern: "emergency", signal: "Emergency response" },
+          { pattern: "rollback", signal: "Rollback pattern" },
+        ],
+      })
+    );
   });
 
   it("lets the user jump from preview to overview", async () => {
@@ -930,12 +932,14 @@ describe("HotspotsPage", () => {
 
     expect(await screen.findByText("incident, outage")).toBeInTheDocument();
     expect(screen.getByText("build/")).toBeInTheDocument();
-    expect(api.getHotspotsAnalysis).toHaveBeenCalledWith({
-      workspacePath: "/repo",
-      period: "1y",
-      excludedPaths: "build/",
-      bugKeywords: "incident, outage",
-    });
+    expect(api.getHotspotsAnalysis).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspacePath: "/repo",
+        period: "1y",
+        excludedPaths: "build/",
+        bugKeywords: "incident, outage",
+      })
+    );
   });
 });
 

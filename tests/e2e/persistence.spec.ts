@@ -26,8 +26,17 @@ test("persists settings changes to local storage", async ({ page }) => {
           repositoryOverrides: {},
           analysisRuns: [],
           dismissedUpdateVersion: "",
+          riskThresholds: {
+            hotspotRiskyChanges: 20,
+            hotspotRiskyFixes: 5,
+            hotspotWatchChanges: 10,
+            hotspotWatchFixes: 3,
+            deliveryRiskyCount: 6,
+            deliveryWatchCount: 2,
+            ownershipWatchPercent: 60,
+          },
         },
-        version: 6,
+        version: 7,
       })
     );
     window.localStorage.setItem("gitpulse.language", "en");

@@ -55,6 +55,15 @@ const defaultState = {
   repositoryOverrides: {},
   analysisRuns: [],
   dismissedUpdateVersion: "",
+  riskThresholds: {
+    hotspotRiskyChanges: 20,
+    hotspotRiskyFixes: 5,
+    hotspotWatchChanges: 10,
+    hotspotWatchFixes: 3,
+    deliveryRiskyCount: 6,
+    deliveryWatchCount: 2,
+    ownershipWatchPercent: 60,
+  },
 } as const;
 
 export async function seedAppState(page: Page, overrides: PartialUiState = {}) {
@@ -68,7 +77,7 @@ export async function seedAppState(page: Page, overrides: PartialUiState = {}) {
       "gitpulse.ui",
       JSON.stringify({
         state: value,
-        version: 6,
+        version: 7,
       })
     );
     window.localStorage.setItem("gitpulse.language", value.language);

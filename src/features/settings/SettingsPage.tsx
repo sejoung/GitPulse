@@ -143,6 +143,8 @@ export function SettingsPage() {
   const setRepositoryOverride = useUiStore((state) => state.setRepositoryOverride);
   const setRepositoryOverridePattern = useUiStore((state) => state.setRepositoryOverridePattern);
   const clearRepositoryOverride = useUiStore((state) => state.clearRepositoryOverride);
+  const riskThresholds = useUiStore((state) => state.riskThresholds);
+  const setRiskThresholds = useUiStore((state) => state.setRiskThresholds);
   const setActiveItem = useUiStore((state) => state.setActiveItem);
   const currentLanguage = language;
   const translatedAnalysisWindowItems = analysisWindowItems.map((item) => ({
@@ -172,7 +174,8 @@ export function SettingsPage() {
     deferredPreviewPeriod,
     deferredPreviewExcludedPaths,
     deferredPreviewBugKeywords,
-    deferredPreviewEmergencyPatterns
+    deferredPreviewEmergencyPatterns,
+    riskThresholds
   );
   const previewScopeKey = currentRepositoryOverride
     ? "preview.scope.repositoryOverride"
@@ -642,6 +645,148 @@ export function SettingsPage() {
                   <p className="gp-text-muted mt-3 text-xs">
                     {t("defaults.emergencyPatternsHelp")}
                   </p>
+                </div>
+              </div>
+            </div>
+          </DetailPanel>
+
+          <DetailPanel title={t("thresholds.title")} description={t("thresholds.description")}>
+            <div className="grid gap-4 xl:grid-cols-3">
+              <div className="gp-panel min-w-0 p-4">
+                <p className="gp-kicker">{t("thresholds.hotspots")}</p>
+                <p className="gp-text-muted mt-1 text-xs">{t("thresholds.hotspotsHelp")}</p>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-risky-changes">
+                      {t("thresholds.riskyChanges")}
+                    </label>
+                    <Input
+                      id="th-risky-changes"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.hotspotRiskyChanges}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          hotspotRiskyChanges: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-risky-fixes">
+                      {t("thresholds.riskyFixes")}
+                    </label>
+                    <Input
+                      id="th-risky-fixes"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.hotspotRiskyFixes}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          hotspotRiskyFixes: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-watch-changes">
+                      {t("thresholds.watchChanges")}
+                    </label>
+                    <Input
+                      id="th-watch-changes"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.hotspotWatchChanges}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          hotspotWatchChanges: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-watch-fixes">
+                      {t("thresholds.watchFixes")}
+                    </label>
+                    <Input
+                      id="th-watch-fixes"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.hotspotWatchFixes}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          hotspotWatchFixes: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="gp-panel min-w-0 p-4">
+                <p className="gp-kicker">{t("thresholds.delivery")}</p>
+                <p className="gp-text-muted mt-1 text-xs">{t("thresholds.deliveryHelp")}</p>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-delivery-risky">
+                      {t("thresholds.deliveryRisky")}
+                    </label>
+                    <Input
+                      id="th-delivery-risky"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.deliveryRiskyCount}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          deliveryRiskyCount: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-delivery-watch">
+                      {t("thresholds.deliveryWatch")}
+                    </label>
+                    <Input
+                      id="th-delivery-watch"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.deliveryWatchCount}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          deliveryWatchCount: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="gp-panel min-w-0 p-4">
+                <p className="gp-kicker">{t("thresholds.ownership")}</p>
+                <p className="gp-text-muted mt-1 text-xs">{t("thresholds.ownershipHelp")}</p>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <label className="gp-text-secondary text-xs" htmlFor="th-ownership-watch">
+                      {t("thresholds.ownershipWatch")}
+                    </label>
+                    <Input
+                      id="th-ownership-watch"
+                      type="number"
+                      className="mt-1"
+                      value={riskThresholds.ownershipWatchPercent}
+                      onChange={(e) =>
+                        setRiskThresholds({
+                          ...riskThresholds,
+                          ownershipWatchPercent: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </div>

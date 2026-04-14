@@ -128,3 +128,39 @@ pub struct GitRepositoryState {
     pub short_head_sha: Option<String>,
     pub dirty: bool,
 }
+
+#[derive(Clone, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RiskThresholds {
+    pub hotspot_risky_changes: Option<u32>,
+    pub hotspot_risky_fixes: Option<u32>,
+    pub hotspot_watch_changes: Option<u32>,
+    pub hotspot_watch_fixes: Option<u32>,
+    pub delivery_risky_count: Option<u32>,
+    pub delivery_watch_count: Option<u32>,
+    pub ownership_watch_percent: Option<f64>,
+}
+
+impl RiskThresholds {
+    pub fn hotspot_risky_changes(&self) -> u32 {
+        self.hotspot_risky_changes.unwrap_or(20)
+    }
+    pub fn hotspot_risky_fixes(&self) -> u32 {
+        self.hotspot_risky_fixes.unwrap_or(5)
+    }
+    pub fn hotspot_watch_changes(&self) -> u32 {
+        self.hotspot_watch_changes.unwrap_or(10)
+    }
+    pub fn hotspot_watch_fixes(&self) -> u32 {
+        self.hotspot_watch_fixes.unwrap_or(3)
+    }
+    pub fn delivery_risky_count(&self) -> u32 {
+        self.delivery_risky_count.unwrap_or(6)
+    }
+    pub fn delivery_watch_count(&self) -> u32 {
+        self.delivery_watch_count.unwrap_or(2)
+    }
+    pub fn ownership_watch_percent(&self) -> f64 {
+        self.ownership_watch_percent.unwrap_or(60.0)
+    }
+}

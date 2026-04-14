@@ -4,8 +4,8 @@ use std::process::Command;
 
 use crate::models::overview::{
     ActivityPoint, DeliveryEvent, EmergencyPatternConfig, HotspotCommit, HotspotFile,
-    OverviewAnalysis, OwnershipContributor, SettingsMatchPreview, SettingsPatternCommitSample,
-    SettingsPatternMatch, SettingsPreviewCommit,
+    OverviewAnalysis, OwnershipContributor, RiskThresholds, SettingsMatchPreview,
+    SettingsPatternCommitSample, SettingsPatternMatch, SettingsPreviewCommit,
 };
 
 #[allow(unused_mut)]
@@ -302,6 +302,7 @@ pub fn build_hotspots_analysis(
     period: Option<&str>,
     excluded_paths: Option<&str>,
     bug_keywords: Option<&str>,
+    thresholds: &RiskThresholds,
 ) -> Vec<HotspotFile> {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return Vec::new();
@@ -316,9 +317,13 @@ pub fn build_hotspots_analysis(
         .into_iter()
         .map(|(path, changes)| {
             let fixes = fix_counts.get(&path).copied().unwrap_or(0);
-            let risk = if changes >= 20 && fixes >= 5 {
+            let risk = if changes >= thresholds.hotspot_risky_changes()
+                && fixes >= thresholds.hotspot_risky_fixes()
+            {
                 "risky"
-            } else if changes >= 10 || fixes >= 3 {
+            } else if changes >= thresholds.hotspot_watch_changes()
+                || fixes >= thresholds.hotspot_watch_fixes()
+            {
                 "watch"
             } else {
                 "healthy"
@@ -395,7 +400,10 @@ pub fn build_hotspot_commit_details(
         .collect()
 }
 
-pub fn build_ownership_analysis(workspace_path: Option<&str>) -> Vec<OwnershipContributor> {
+pub fn build_ownership_analysis(
+    workspace_path: Option<&str>,
+    thresholds: &RiskThresholds,
+) -> Vec<OwnershipContributor> {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return Vec::new();
     };
@@ -443,7 +451,11 @@ pub fn build_ownership_analysis(workspace_path: Option<&str>) -> Vec<OwnershipCo
             } else {
                 "status.quiet"
             };
-            let risk = if share >= 60.0 { "watch" } else { "healthy" };
+            let risk = if share >= thresholds.ownership_watch_percent() {
+                "watch"
+            } else {
+                "healthy"
+            };
 
             Some(OwnershipContributor {
                 name: name.trim().to_string(),
@@ -506,6 +518,7 @@ pub fn build_activity_analysis(
 pub fn build_delivery_risk_analysis(
     workspace_path: Option<&str>,
     emergency_patterns: Option<&[EmergencyPatternConfig]>,
+    thresholds: &RiskThresholds,
 ) -> Vec<DeliveryEvent> {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return Vec::new();
@@ -522,9 +535,9 @@ pub fn build_delivery_risk_analysis(
         .map(|event| {
             let aliases = pattern_aliases(&event.pattern);
             let count = count_pattern_aliases(&lower_output, &event.pattern);
-            let risk = if count >= 6 {
+            let risk = if count >= thresholds.delivery_risky_count() {
                 "risky"
-            } else if count >= 2 {
+            } else if count >= thresholds.delivery_watch_count() {
                 "watch"
             } else {
                 "healthy"
@@ -554,6 +567,7 @@ pub fn build_overview_analysis(
     excluded_paths: Option<&str>,
     bug_keywords: Option<&str>,
     emergency_patterns: Option<&[EmergencyPatternConfig]>,
+    thresholds: &RiskThresholds,
 ) -> OverviewAnalysis {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return OverviewAnalysis {
@@ -565,10 +579,16 @@ pub fn build_overview_analysis(
         };
     };
 
-    let hotspots =
-        build_hotspots_analysis(Some(workspace_path), period, excluded_paths, bug_keywords);
-    let ownership = build_ownership_analysis(Some(workspace_path));
-    let delivery = build_delivery_risk_analysis(Some(workspace_path), emergency_patterns);
+    let hotspots = build_hotspots_analysis(
+        Some(workspace_path),
+        period,
+        excluded_paths,
+        bug_keywords,
+        thresholds,
+    );
+    let ownership = build_ownership_analysis(Some(workspace_path), thresholds);
+    let delivery =
+        build_delivery_risk_analysis(Some(workspace_path), emergency_patterns, thresholds);
     let delivery_risk_level = if delivery.iter().any(|row| row.risk == "risky") {
         "high"
     } else if delivery.iter().any(|row| row.risk == "watch") {
@@ -592,6 +612,7 @@ pub fn build_settings_match_preview(
     excluded_paths: Option<&str>,
     bug_keywords: Option<&str>,
     emergency_patterns: Option<&[EmergencyPatternConfig]>,
+    thresholds: &RiskThresholds,
 ) -> SettingsMatchPreview {
     let Some(workspace_path) = workspace_path.filter(|path| is_git_workspace(path)) else {
         return SettingsMatchPreview {
@@ -624,7 +645,7 @@ pub fn build_settings_match_preview(
         .collect();
     let emergency_patterns = normalized_emergency_patterns(emergency_patterns);
     let emergency_matches =
-        build_delivery_risk_analysis(Some(workspace_path), Some(&emergency_patterns))
+        build_delivery_risk_analysis(Some(workspace_path), Some(&emergency_patterns), thresholds)
             .into_iter()
             .map(|row| SettingsPatternMatch {
                 pattern: row.event,

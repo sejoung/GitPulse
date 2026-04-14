@@ -105,6 +105,7 @@ export function OverviewPage() {
   const globalExcludedPaths = useUiStore((state) => state.excludedPaths);
   const globalBugKeywords = useUiStore((state) => state.bugKeywords);
   const globalEmergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const riskThresholds = useUiStore((state) => state.riskThresholds);
   const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
   const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
   const bugKeywords = repositoryOverride?.bugKeywords ?? globalBugKeywords;
@@ -154,25 +155,32 @@ export function OverviewPage() {
     analysisPeriod,
     excludedPaths,
     bugKeywords,
-    emergencyPatterns
+    emergencyPatterns,
+    riskThresholds
   );
   const { data: hotspotRows = [] } = useHotspotsAnalysis(
     workspacePath,
     activeBranch,
     analysisPeriod,
     excludedPaths,
-    bugKeywords
+    bugKeywords,
+    riskThresholds
   );
   const { data: activityRows = [] } = useActivityAnalysis(
     workspacePath,
     activeBranch,
     analysisPeriod
   );
-  const { data: ownershipRows = [] } = useOwnershipAnalysis(workspacePath, activeBranch);
+  const { data: ownershipRows = [] } = useOwnershipAnalysis(
+    workspacePath,
+    activeBranch,
+    riskThresholds
+  );
   const { data: deliveryRows = [] } = useDeliveryRiskAnalysis(
     workspacePath,
     activeBranch,
-    emergencyPatterns
+    emergencyPatterns,
+    riskThresholds
   );
   const translatedPeriodTabs = periodTabs.map((item) => ({
     id: item.id,

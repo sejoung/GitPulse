@@ -24,6 +24,7 @@ export function HotspotsPage() {
   const setActiveItem = useUiStore((state) => state.setActiveItem);
   const globalExcludedPaths = useUiStore((state) => state.excludedPaths);
   const globalBugKeywords = useUiStore((state) => state.bugKeywords);
+  const riskThresholds = useUiStore((state) => state.riskThresholds);
   const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
   const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
   const bugKeywords = repositoryOverride?.bugKeywords ?? globalBugKeywords;
@@ -37,7 +38,8 @@ export function HotspotsPage() {
     selectedBranch,
     analysisPeriod,
     excludedPaths,
-    bugKeywords
+    bugKeywords,
+    riskThresholds
   );
   const hasWorkspace = Boolean(workspacePath);
   const hasData = hotspotRows.length > 0;

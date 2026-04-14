@@ -24,6 +24,26 @@ export type AnalysisRunRecord = {
   contributorCount: number;
   deliveryRiskLevel: "low" | "medium" | "high";
 };
+export type RiskThresholds = {
+  hotspotRiskyChanges: number;
+  hotspotRiskyFixes: number;
+  hotspotWatchChanges: number;
+  hotspotWatchFixes: number;
+  deliveryRiskyCount: number;
+  deliveryWatchCount: number;
+  ownershipWatchPercent: number;
+};
+
+const defaultRiskThresholds: RiskThresholds = {
+  hotspotRiskyChanges: 20,
+  hotspotRiskyFixes: 5,
+  hotspotWatchChanges: 10,
+  hotspotWatchFixes: 3,
+  deliveryRiskyCount: 6,
+  deliveryWatchCount: 2,
+  ownershipWatchPercent: 60,
+};
+
 export type NavigationItem =
   | "overview"
   | "hotspots"
@@ -46,7 +66,9 @@ type UiState = {
   rememberLastRepository: boolean;
   repositoryOverrides: Record<string, RepositoryOverrideSettings>;
   analysisRuns: AnalysisRunRecord[];
+  riskThresholds: RiskThresholds;
   dismissedUpdateVersion: string;
+  setRiskThresholds: (thresholds: RiskThresholds) => void;
   setDismissedUpdateVersion: (version: string) => void;
   setActiveItem: (item: NavigationItem) => void;
   setLanguage: (language: AppLanguage) => void;
@@ -85,6 +107,7 @@ export type PersistedUiSettings = {
   repositoryOverrides: Record<string, RepositoryOverrideSettings>;
   analysisRuns: AnalysisRunRecord[];
   dismissedUpdateVersion: string;
+  riskThresholds: RiskThresholds;
 };
 
 type PersistedUiState = Partial<Omit<PersistedUiSettings, "analysisPeriod">> & {
@@ -92,6 +115,7 @@ type PersistedUiState = Partial<Omit<PersistedUiSettings, "analysisPeriod">> & {
   emergencyKeywords?: string;
   language?: AppLanguage;
   dismissedUpdateVersion?: string;
+  riskThresholds?: RiskThresholds;
 };
 
 const defaultEmergencyPatterns: EmergencyPattern[] = [
@@ -166,6 +190,7 @@ export function selectPersistedUiSettings(state: Pick<UiState, keyof PersistedUi
     repositoryOverrides: state.repositoryOverrides,
     analysisRuns: state.analysisRuns,
     dismissedUpdateVersion: state.dismissedUpdateVersion,
+    riskThresholds: state.riskThresholds,
   };
 }
 
@@ -185,7 +210,9 @@ export const useUiStore = create<UiState>()(
       rememberLastRepository: true,
       repositoryOverrides: {},
       analysisRuns: [],
+      riskThresholds: defaultRiskThresholds,
       dismissedUpdateVersion: "",
+      setRiskThresholds: (riskThresholds) => set({ riskThresholds }),
       setDismissedUpdateVersion: (dismissedUpdateVersion) => set({ dismissedUpdateVersion }),
       setActiveItem: (activeItem) => set({ activeItem }),
       setLanguage: (language) => set({ language }),
@@ -267,11 +294,12 @@ export const useUiStore = create<UiState>()(
           repositoryOverrides: payload.repositoryOverrides ?? state.repositoryOverrides,
           analysisRuns: payload.analysisRuns ?? state.analysisRuns,
           dismissedUpdateVersion: payload.dismissedUpdateVersion ?? state.dismissedUpdateVersion,
+          riskThresholds: payload.riskThresholds ?? state.riskThresholds,
         })),
     }),
     {
       name: "gitpulse.ui",
-      version: 6,
+      version: 7,
       partialize: (state) => selectPersistedUiSettings(state),
       migrate: (persistedState) => {
         const state = persistedState as PersistedUiState;
@@ -290,6 +318,7 @@ export const useUiStore = create<UiState>()(
           repositoryOverrides: state.repositoryOverrides ?? {},
           analysisRuns: state.analysisRuns ?? [],
           dismissedUpdateVersion: state.dismissedUpdateVersion ?? "",
+          riskThresholds: state.riskThresholds ?? defaultRiskThresholds,
         };
       },
     }

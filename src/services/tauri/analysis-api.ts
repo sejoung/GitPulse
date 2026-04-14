@@ -12,7 +12,7 @@ import type {
   SettingsMatchPreview,
   AppUpdateInfo,
 } from "../../domains/metrics/overview";
-import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
+import type { AnalysisPeriod, EmergencyPattern, RiskThresholds } from "../../app/store/ui-store";
 import { appendAppLog } from "./app-log";
 
 type AnalysisParams = {
@@ -21,6 +21,7 @@ type AnalysisParams = {
   excludedPaths?: string;
   bugKeywords?: string;
   emergencyPatterns?: EmergencyPattern[];
+  riskThresholds?: RiskThresholds;
 };
 
 function isTauriRuntime() {
@@ -55,6 +56,7 @@ export function getOverviewAnalysis({
   excludedPaths,
   bugKeywords,
   emergencyPatterns,
+  riskThresholds,
 }: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<OverviewAnalysis>({
@@ -72,6 +74,7 @@ export function getOverviewAnalysis({
     excludedPaths,
     bugKeywords,
     emergencyPatterns,
+    riskThresholds,
   });
 }
 
@@ -80,6 +83,7 @@ export function getHotspotsAnalysis({
   period = "1y",
   excludedPaths,
   bugKeywords,
+  riskThresholds,
 }: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<HotspotFile[]>([]);
@@ -90,6 +94,7 @@ export function getHotspotsAnalysis({
     period,
     excludedPaths,
     bugKeywords,
+    riskThresholds,
   });
 }
 
@@ -111,12 +116,15 @@ export function getHotspotCommitDetails({
   });
 }
 
-export function getOwnershipAnalysis(workspacePath: string) {
+export function getOwnershipAnalysis(workspacePath: string, riskThresholds?: RiskThresholds) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<OwnershipContributor[]>([]);
   }
 
-  return invokeLogged<OwnershipContributor[]>("get_ownership_analysis", { workspacePath });
+  return invokeLogged<OwnershipContributor[]>("get_ownership_analysis", {
+    workspacePath,
+    riskThresholds,
+  });
 }
 
 export function getActivityAnalysis(workspacePath: string, period: AnalysisPeriod = "1y") {
@@ -129,7 +137,8 @@ export function getActivityAnalysis(workspacePath: string, period: AnalysisPerio
 
 export function getDeliveryRiskAnalysis(
   workspacePath: string,
-  emergencyPatterns?: EmergencyPattern[]
+  emergencyPatterns?: EmergencyPattern[],
+  riskThresholds?: RiskThresholds
 ) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<DeliveryEvent[]>([]);
@@ -138,6 +147,7 @@ export function getDeliveryRiskAnalysis(
   return invokeLogged<DeliveryEvent[]>("get_delivery_risk_analysis", {
     workspacePath,
     emergencyPatterns,
+    riskThresholds,
   });
 }
 
@@ -147,6 +157,7 @@ export function getSettingsMatchPreview({
   excludedPaths,
   bugKeywords,
   emergencyPatterns,
+  riskThresholds,
 }: AnalysisParams) {
   if (!isTauriRuntime() || !workspacePath) {
     return Promise.resolve<SettingsMatchPreview>({
@@ -166,6 +177,7 @@ export function getSettingsMatchPreview({
     excludedPaths,
     bugKeywords,
     emergencyPatterns,
+    riskThresholds,
   });
 }
 

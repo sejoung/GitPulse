@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AnalysisPeriod, EmergencyPattern } from "../../app/store/ui-store";
+import type { AnalysisPeriod, EmergencyPattern, RiskThresholds } from "../../app/store/ui-store";
 import { queryKeys } from "../../services/cache/query-keys";
 import { getSettingsMatchPreview } from "../../services/tauri/analysis-api";
 
@@ -8,9 +8,11 @@ export function useSettingsMatchPreview(
   period: AnalysisPeriod,
   excludedPaths: string,
   bugKeywords: string,
-  emergencyPatterns: EmergencyPattern[]
+  emergencyPatterns: EmergencyPattern[],
+  riskThresholds: RiskThresholds
 ) {
   const emergencyPatternKey = JSON.stringify(emergencyPatterns);
+  const riskThresholdsKey = JSON.stringify(riskThresholds);
 
   return useQuery({
     queryKey: queryKeys.settingsMatchPreview(
@@ -18,7 +20,8 @@ export function useSettingsMatchPreview(
       period,
       excludedPaths,
       bugKeywords,
-      emergencyPatternKey
+      emergencyPatternKey,
+      riskThresholdsKey
     ),
     queryFn: () =>
       getSettingsMatchPreview({
@@ -27,6 +30,7 @@ export function useSettingsMatchPreview(
         excludedPaths,
         bugKeywords,
         emergencyPatterns,
+        riskThresholds,
       }),
   });
 }

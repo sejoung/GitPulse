@@ -9,7 +9,8 @@ export const queryKeys = {
     period: string,
     excludedPaths: string,
     bugKeywords: string,
-    emergencyPatterns: string
+    emergencyPatterns: string,
+    riskThresholds: string
   ) =>
     [
       "overview",
@@ -19,14 +20,25 @@ export const queryKeys = {
       excludedPaths,
       bugKeywords,
       emergencyPatterns,
+      riskThresholds,
     ] as const,
   hotspots: (
     workspacePath: string,
     branch: string,
     period: string,
     excludedPaths: string,
-    bugKeywords: string
-  ) => ["hotspots", workspacePath, branch, period, excludedPaths, bugKeywords] as const,
+    bugKeywords: string,
+    riskThresholds: string
+  ) =>
+    [
+      "hotspots",
+      workspacePath,
+      branch,
+      period,
+      excludedPaths,
+      bugKeywords,
+      riskThresholds,
+    ] as const,
   hotspotCommits: (
     workspacePath: string,
     branch: string,
@@ -34,18 +46,23 @@ export const queryKeys = {
     bugKeywords: string,
     path: string
   ) => ["hotspot-commits", workspacePath, branch, period, bugKeywords, path] as const,
-  ownership: (workspacePath: string, branch: string) =>
-    ["ownership", workspacePath, branch] as const,
+  ownership: (workspacePath: string, branch: string, riskThresholds: string) =>
+    ["ownership", workspacePath, branch, riskThresholds] as const,
   activity: (workspacePath: string, branch: string, period: string) =>
     ["activity", workspacePath, branch, period] as const,
-  deliveryRisk: (workspacePath: string, branch: string, emergencyPatterns: string) =>
-    ["delivery-risk", workspacePath, branch, emergencyPatterns] as const,
+  deliveryRisk: (
+    workspacePath: string,
+    branch: string,
+    emergencyPatterns: string,
+    riskThresholds: string
+  ) => ["delivery-risk", workspacePath, branch, emergencyPatterns, riskThresholds] as const,
   settingsMatchPreview: (
     workspacePath: string,
     period: string,
     excludedPaths: string,
     bugKeywords: string,
-    emergencyPatterns: string
+    emergencyPatterns: string,
+    riskThresholds: string
   ) =>
     [
       "settings-match-preview",
@@ -54,5 +71,6 @@ export const queryKeys = {
       excludedPaths,
       bugKeywords,
       emergencyPatterns,
+      riskThresholds,
     ] as const,
 };

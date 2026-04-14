@@ -10,13 +10,15 @@ export function DeliveryRiskPage() {
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const setActiveItem = useUiStore((state) => state.setActiveItem);
   const globalEmergencyPatterns = useUiStore((state) => state.emergencyPatterns);
+  const riskThresholds = useUiStore((state) => state.riskThresholds);
   const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
   const emergencyPatterns = repositoryOverride?.emergencyPatterns ?? globalEmergencyPatterns;
   const [selectedEvent, setSelectedEvent] = useState("");
   const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(
     workspacePath,
     selectedBranch,
-    emergencyPatterns
+    emergencyPatterns,
+    riskThresholds
   );
   const hasWorkspace = Boolean(workspacePath);
   const hasData = deliveryRows.length > 0;

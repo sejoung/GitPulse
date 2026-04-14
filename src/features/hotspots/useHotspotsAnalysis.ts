@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AnalysisPeriod } from "../../app/store/ui-store";
+import type { AnalysisPeriod, RiskThresholds } from "../../app/store/ui-store";
 import { queryKeys } from "../../services/cache/query-keys";
 import { getHotspotCommitDetails, getHotspotsAnalysis } from "../../services/tauri/analysis-api";
 
@@ -8,11 +8,22 @@ export function useHotspotsAnalysis(
   branch: string,
   period: AnalysisPeriod,
   excludedPaths: string,
-  bugKeywords: string
+  bugKeywords: string,
+  riskThresholds: RiskThresholds
 ) {
+  const riskThresholdsKey = JSON.stringify(riskThresholds);
+
   return useQuery({
-    queryKey: queryKeys.hotspots(workspacePath, branch, period, excludedPaths, bugKeywords),
-    queryFn: () => getHotspotsAnalysis({ workspacePath, period, excludedPaths, bugKeywords }),
+    queryKey: queryKeys.hotspots(
+      workspacePath,
+      branch,
+      period,
+      excludedPaths,
+      bugKeywords,
+      riskThresholdsKey
+    ),
+    queryFn: () =>
+      getHotspotsAnalysis({ workspacePath, period, excludedPaths, bugKeywords, riskThresholds }),
   });
 }
 

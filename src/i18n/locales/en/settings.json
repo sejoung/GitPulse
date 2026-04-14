@@ -127,6 +127,23 @@
     "emergencyPatternsHelp": "Use commas for aliases in one row, for example: revert, reverted. The row signal is shared by every alias.",
     "cacheKey": "Cache key"
   },
+  "thresholds": {
+    "title": "Risk thresholds",
+    "description": "Adjust the numeric boundaries that determine signal levels.",
+    "hotspots": "Hotspots",
+    "hotspotsHelp": "File change frequency and fix overlap.",
+    "riskyChanges": "Risky: min changes",
+    "riskyFixes": "Risky: min fixes",
+    "watchChanges": "Watch: min changes",
+    "watchFixes": "Watch: min fixes",
+    "delivery": "Delivery risk",
+    "deliveryHelp": "Emergency pattern match count per event.",
+    "deliveryRisky": "Risky: min matches",
+    "deliveryWatch": "Watch: min matches",
+    "ownership": "Ownership",
+    "ownershipHelp": "Single contributor commit share.",
+    "ownershipWatch": "Watch: min %"
+  },
   "presets": {
     "title": "Settings presets",
     "description": "Apply a starting configuration for common repository shapes, then adjust the details below.",

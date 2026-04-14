@@ -17,10 +17,12 @@ export function OwnershipPage() {
   const { t } = useTranslation(["ownership", "common"]);
   const workspacePath = useUiStore((state) => state.workspacePath);
   const selectedBranch = useUiStore((state) => state.selectedBranch);
+  const riskThresholds = useUiStore((state) => state.riskThresholds);
   const setActiveItem = useUiStore((state) => state.setActiveItem);
   const { data: contributorRows = [], isLoading } = useOwnershipAnalysis(
     workspacePath,
-    selectedBranch
+    selectedBranch,
+    riskThresholds
   );
   const [selectedContributorName, setSelectedContributorName] = useState("");
   const hasWorkspace = Boolean(workspacePath);
