@@ -6,12 +6,14 @@ import { getOwnershipAnalysis } from "../../services/tauri/analysis-api";
 export function useOwnershipAnalysis(
   workspacePath: string,
   branch: string,
+  headSha: string | null,
   riskThresholds: RiskThresholds
 ) {
   const riskThresholdsKey = JSON.stringify(riskThresholds);
 
   return useQuery({
-    queryKey: queryKeys.ownership(workspacePath, branch, riskThresholdsKey),
+    queryKey: queryKeys.ownership(workspacePath, branch, headSha ?? "", riskThresholdsKey),
     queryFn: () => getOwnershipAnalysis(workspacePath, riskThresholds),
+    enabled: Boolean(workspacePath && headSha),
   });
 }

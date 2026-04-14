@@ -6,6 +6,7 @@ export const queryKeys = {
   overview: (
     workspacePath: string,
     branch: string,
+    headSha: string,
     period: string,
     excludedPaths: string,
     bugKeywords: string,
@@ -16,6 +17,7 @@ export const queryKeys = {
       "overview",
       workspacePath,
       branch,
+      headSha,
       period,
       excludedPaths,
       bugKeywords,
@@ -25,6 +27,7 @@ export const queryKeys = {
   hotspots: (
     workspacePath: string,
     branch: string,
+    headSha: string,
     period: string,
     excludedPaths: string,
     bugKeywords: string,
@@ -34,6 +37,7 @@ export const queryKeys = {
       "hotspots",
       workspacePath,
       branch,
+      headSha,
       period,
       excludedPaths,
       bugKeywords,
@@ -42,20 +46,23 @@ export const queryKeys = {
   hotspotCommits: (
     workspacePath: string,
     branch: string,
+    headSha: string,
     period: string,
     bugKeywords: string,
     path: string
-  ) => ["hotspot-commits", workspacePath, branch, period, bugKeywords, path] as const,
-  ownership: (workspacePath: string, branch: string, riskThresholds: string) =>
-    ["ownership", workspacePath, branch, riskThresholds] as const,
-  activity: (workspacePath: string, branch: string, period: string) =>
-    ["activity", workspacePath, branch, period] as const,
+  ) => ["hotspot-commits", workspacePath, branch, headSha, period, bugKeywords, path] as const,
+  ownership: (workspacePath: string, branch: string, headSha: string, riskThresholds: string) =>
+    ["ownership", workspacePath, branch, headSha, riskThresholds] as const,
+  activity: (workspacePath: string, branch: string, headSha: string, period: string) =>
+    ["activity", workspacePath, branch, headSha, period] as const,
   deliveryRisk: (
     workspacePath: string,
     branch: string,
+    headSha: string,
     emergencyPatterns: string,
     riskThresholds: string
-  ) => ["delivery-risk", workspacePath, branch, emergencyPatterns, riskThresholds] as const,
+  ) =>
+    ["delivery-risk", workspacePath, branch, headSha, emergencyPatterns, riskThresholds] as const,
   settingsMatchPreview: (
     workspacePath: string,
     period: string,

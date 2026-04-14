@@ -6,6 +6,7 @@ import { getOverviewAnalysis } from "../../services/tauri/analysis-api";
 export function useOverviewAnalysis(
   workspacePath: string,
   branch: string,
+  headSha: string | null,
   period: AnalysisPeriod,
   excludedPaths: string,
   bugKeywords: string,
@@ -19,6 +20,7 @@ export function useOverviewAnalysis(
     queryKey: queryKeys.overview(
       workspacePath,
       branch,
+      headSha ?? "",
       period,
       excludedPaths,
       bugKeywords,
@@ -34,5 +36,6 @@ export function useOverviewAnalysis(
         emergencyPatterns,
         riskThresholds,
       }),
+    enabled: Boolean(workspacePath && headSha),
   });
 }

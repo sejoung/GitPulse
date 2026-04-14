@@ -6,6 +6,7 @@ import { getDeliveryRiskAnalysis } from "../../services/tauri/analysis-api";
 export function useDeliveryRiskAnalysis(
   workspacePath: string,
   branch: string,
+  headSha: string | null,
   emergencyPatterns: EmergencyPattern[],
   riskThresholds: RiskThresholds
 ) {
@@ -13,7 +14,14 @@ export function useDeliveryRiskAnalysis(
   const riskThresholdsKey = JSON.stringify(riskThresholds);
 
   return useQuery({
-    queryKey: queryKeys.deliveryRisk(workspacePath, branch, emergencyPatternKey, riskThresholdsKey),
+    queryKey: queryKeys.deliveryRisk(
+      workspacePath,
+      branch,
+      headSha ?? "",
+      emergencyPatternKey,
+      riskThresholdsKey
+    ),
     queryFn: () => getDeliveryRiskAnalysis(workspacePath, emergencyPatterns, riskThresholds),
+    enabled: Boolean(workspacePath && headSha),
   });
 }

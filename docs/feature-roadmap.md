@@ -4,7 +4,7 @@
 
 - [x] **Version update notification** - Check GitHub Releases API on app launch, show badge when new version available
 - [x] **Risk threshold customization** - Expose hotspot (20/5), delivery (6/2), ownership (60%) thresholds in Settings
-- [ ] **Incremental analysis** - Cache last analyzed HEAD SHA, only process new commits since then for large repos
+- [x] **Incremental analysis** - Cache last analyzed HEAD SHA, only process new commits since then for large repos
 - [ ] **Keyboard shortcuts** - Page navigation (1-5), refresh analysis (R), open settings (S), select workspace (O)
 
 ## Medium Priority

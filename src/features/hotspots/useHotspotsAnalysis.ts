@@ -6,6 +6,7 @@ import { getHotspotCommitDetails, getHotspotsAnalysis } from "../../services/tau
 export function useHotspotsAnalysis(
   workspacePath: string,
   branch: string,
+  headSha: string | null,
   period: AnalysisPeriod,
   excludedPaths: string,
   bugKeywords: string,
@@ -17,6 +18,7 @@ export function useHotspotsAnalysis(
     queryKey: queryKeys.hotspots(
       workspacePath,
       branch,
+      headSha ?? "",
       period,
       excludedPaths,
       bugKeywords,
@@ -24,19 +26,28 @@ export function useHotspotsAnalysis(
     ),
     queryFn: () =>
       getHotspotsAnalysis({ workspacePath, period, excludedPaths, bugKeywords, riskThresholds }),
+    enabled: Boolean(workspacePath && headSha),
   });
 }
 
 export function useHotspotCommitDetails(
   workspacePath: string,
   branch: string,
+  headSha: string | null,
   period: AnalysisPeriod,
   bugKeywords: string,
   path: string
 ) {
   return useQuery({
-    queryKey: queryKeys.hotspotCommits(workspacePath, branch, period, bugKeywords, path),
+    queryKey: queryKeys.hotspotCommits(
+      workspacePath,
+      branch,
+      headSha ?? "",
+      period,
+      bugKeywords,
+      path
+    ),
     queryFn: () => getHotspotCommitDetails({ workspacePath, period, bugKeywords, filePath: path }),
-    enabled: Boolean(workspacePath && path),
+    enabled: Boolean(workspacePath && headSha && path),
   });
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUiStore } from "../../app/store/ui-store";
 import { Badge, Button, DetailPanel, PageHeader, StatCard, Table } from "../../components/ui";
+import { useGitRepositoryState } from "../overview/useGitBranches";
 import { useDeliveryRiskAnalysis } from "./useDeliveryRiskAnalysis";
 
 export function DeliveryRiskPage() {
@@ -13,10 +14,13 @@ export function DeliveryRiskPage() {
   const riskThresholds = useUiStore((state) => state.riskThresholds);
   const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
   const emergencyPatterns = repositoryOverride?.emergencyPatterns ?? globalEmergencyPatterns;
+  const { data: repositoryState } = useGitRepositoryState(workspacePath);
+  const headSha = repositoryState?.headSha ?? null;
   const [selectedEvent, setSelectedEvent] = useState("");
   const { data: deliveryRows = [], isLoading } = useDeliveryRiskAnalysis(
     workspacePath,
     selectedBranch,
+    headSha,
     emergencyPatterns,
     riskThresholds
   );

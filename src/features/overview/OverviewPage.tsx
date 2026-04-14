@@ -149,9 +149,11 @@ export function OverviewPage() {
   const remoteCheckContextKey = `${workspacePath}:${activeBranch}`;
   const lastRemoteCheckedAt =
     remoteCheckState.contextKey === remoteCheckContextKey ? remoteCheckState.checkedAt : null;
+  const headSha = repositoryState?.headSha ?? null;
   const { data, isLoading, isError } = useOverviewAnalysis(
     workspacePath,
     activeBranch,
+    headSha,
     analysisPeriod,
     excludedPaths,
     bugKeywords,
@@ -161,6 +163,7 @@ export function OverviewPage() {
   const { data: hotspotRows = [] } = useHotspotsAnalysis(
     workspacePath,
     activeBranch,
+    headSha,
     analysisPeriod,
     excludedPaths,
     bugKeywords,
@@ -169,16 +172,19 @@ export function OverviewPage() {
   const { data: activityRows = [] } = useActivityAnalysis(
     workspacePath,
     activeBranch,
+    headSha,
     analysisPeriod
   );
   const { data: ownershipRows = [] } = useOwnershipAnalysis(
     workspacePath,
     activeBranch,
+    headSha,
     riskThresholds
   );
   const { data: deliveryRows = [] } = useDeliveryRiskAnalysis(
     workspacePath,
     activeBranch,
+    headSha,
     emergencyPatterns,
     riskThresholds
   );
@@ -332,12 +338,12 @@ export function OverviewPage() {
   }, []);
 
   function refreshAnalysis() {
+    void queryClient.invalidateQueries({ queryKey: ["repository-state"] });
     void queryClient.invalidateQueries({ queryKey: ["overview"] });
     void queryClient.invalidateQueries({ queryKey: ["hotspots"] });
     void queryClient.invalidateQueries({ queryKey: ["ownership"] });
     void queryClient.invalidateQueries({ queryKey: ["activity"] });
     void queryClient.invalidateQueries({ queryKey: ["delivery-risk"] });
-    void queryClient.invalidateQueries({ queryKey: ["repository-state"] });
   }
 
   function exportReport(format: "json" | "md") {

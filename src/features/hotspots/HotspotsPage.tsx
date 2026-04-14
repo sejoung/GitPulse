@@ -14,6 +14,7 @@ import {
   Table,
   Tabs,
 } from "../../components/ui";
+import { useGitRepositoryState } from "../overview/useGitBranches";
 import { useHotspotCommitDetails, useHotspotsAnalysis } from "./useHotspotsAnalysis";
 
 export function HotspotsPage() {
@@ -28,6 +29,8 @@ export function HotspotsPage() {
   const repositoryOverride = useUiStore((state) => state.repositoryOverrides[workspacePath]);
   const excludedPaths = repositoryOverride?.excludedPaths ?? globalExcludedPaths;
   const bugKeywords = repositoryOverride?.bugKeywords ?? globalBugKeywords;
+  const { data: repositoryState } = useGitRepositoryState(workspacePath);
+  const headSha = repositoryState?.headSha ?? null;
   const [selectedPath, setSelectedPath] = useState("");
   const [commitScope, setCommitScope] = useState<"all" | "matched">("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
@@ -36,6 +39,7 @@ export function HotspotsPage() {
   const { data: hotspotRows = [], isLoading } = useHotspotsAnalysis(
     workspacePath,
     selectedBranch,
+    headSha,
     analysisPeriod,
     excludedPaths,
     bugKeywords,
@@ -47,6 +51,7 @@ export function HotspotsPage() {
   const { data: commitRows = [], isLoading: isCommitLoading } = useHotspotCommitDetails(
     workspacePath,
     selectedBranch,
+    headSha,
     analysisPeriod,
     bugKeywords,
     selectedHotspot?.path ?? ""

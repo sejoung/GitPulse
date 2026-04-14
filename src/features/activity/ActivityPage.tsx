@@ -10,6 +10,7 @@ import {
   StatCard,
   Table,
 } from "../../components/ui";
+import { useGitRepositoryState } from "../overview/useGitBranches";
 import { useActivityAnalysis } from "./useActivityAnalysis";
 
 export function ActivityPage() {
@@ -18,9 +19,12 @@ export function ActivityPage() {
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const analysisPeriod = useUiStore((state) => state.analysisPeriod);
   const setActiveItem = useUiStore((state) => state.setActiveItem);
+  const { data: repositoryState } = useGitRepositoryState(workspacePath);
+  const headSha = repositoryState?.headSha ?? null;
   const { data: activityRows = [], isLoading } = useActivityAnalysis(
     workspacePath,
     selectedBranch,
+    headSha,
     analysisPeriod
   );
   const hasWorkspace = Boolean(workspacePath);

@@ -11,6 +11,7 @@ import {
   StatCard,
   Table,
 } from "../../components/ui";
+import { useGitRepositoryState } from "../overview/useGitBranches";
 import { useOwnershipAnalysis } from "./useOwnershipAnalysis";
 
 export function OwnershipPage() {
@@ -19,9 +20,12 @@ export function OwnershipPage() {
   const selectedBranch = useUiStore((state) => state.selectedBranch);
   const riskThresholds = useUiStore((state) => state.riskThresholds);
   const setActiveItem = useUiStore((state) => state.setActiveItem);
+  const { data: repositoryState } = useGitRepositoryState(workspacePath);
+  const headSha = repositoryState?.headSha ?? null;
   const { data: contributorRows = [], isLoading } = useOwnershipAnalysis(
     workspacePath,
     selectedBranch,
+    headSha,
     riskThresholds
   );
   const [selectedContributorName, setSelectedContributorName] = useState("");
