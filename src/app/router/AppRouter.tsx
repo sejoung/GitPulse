@@ -7,6 +7,7 @@ import { HotspotsPage } from "../../features/hotspots/HotspotsPage";
 import { OverviewPage } from "../../features/overview/OverviewPage";
 import { OwnershipPage } from "../../features/ownership/OwnershipPage";
 import { SettingsPage } from "../../features/settings/SettingsPage";
+import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
 
 function ActivePage() {
   const activeItem = useUiStore((state) => state.activeItem);
@@ -29,6 +30,8 @@ function ActivePage() {
 }
 
 export function AppRouter() {
+  useKeyboardShortcuts();
+
   return (
     <AppShell>
       <AppErrorBoundary>
