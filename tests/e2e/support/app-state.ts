@@ -20,6 +20,7 @@ export type PartialUiState = {
       emergencyPatterns: { pattern: string; signal: string }[];
     }
   >;
+  dismissedUpdateVersion?: string;
   analysisRuns?: {
     workspacePath: string;
     branch: string;
@@ -53,6 +54,7 @@ const defaultState = {
   rememberLastRepository: true,
   repositoryOverrides: {},
   analysisRuns: [],
+  dismissedUpdateVersion: "",
 } as const;
 
 export async function seedAppState(page: Page, overrides: PartialUiState = {}) {
@@ -66,7 +68,7 @@ export async function seedAppState(page: Page, overrides: PartialUiState = {}) {
       "gitpulse.ui",
       JSON.stringify({
         state: value,
-        version: 5,
+        version: 6,
       })
     );
     window.localStorage.setItem("gitpulse.language", value.language);
